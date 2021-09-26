@@ -1,3 +1,5 @@
+require("dotenv-safe").config();
+
 const AWS = require("aws-sdk");
 const { Kafka } = require("kafkajs");
 
@@ -10,6 +12,9 @@ const kafka = new Kafka({
 
 const producer = kafka.producer();
 
+const inputBucket = process.env.INPUT_S3_BUCKET;
+const keysTopic = process.env.KEYS_TOPIC;
+
 const run = async () => {
   let isReadingFinished = false;
   let res;
@@ -19,23 +24,28 @@ const run = async () => {
   while (!isReadingFinished) {
     res = await s3
       .listObjectsV2({
-        Bucket: "nurtai-pics-test",
+        Bucket: inputBucket,
         MaxKeys: 100,
         ...(res ? { ContinuationToken: res.NextContinuationToken } : {}),
       })
       .promise();
 
-    await Promise.all(
-      res.Contents.map((element) =>
-        producer.send({
-          topic: "pics-keys",
-          messages: [{ value: JSON.stringify({ key: element.Key }) }],
-        })
-      )
-    );
+    const messages = res.Contents.map((element) => ({
+      key: element.Key,
+      value: element.Key,
+    }));
+
+    console.log("==> messages", messages);
+
+    await producer.send({
+      topic: keysTopic,
+      messages,
+    });
 
     isReadingFinished = !res.IsTruncated;
   }
+
+  await producer.disconnect();
 };
 
 run().catch(console.error);

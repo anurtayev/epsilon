@@ -4,14 +4,20 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon"
+    "start": "nodemon",
+    "start:kafka": "docker compose up",
+    "start:import:keys": "node scripts/importKeysFromS3.js",
+    "start:import:meta": "node scripts/importMetaFromOriginalDisk.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "aws-sdk": "^2.991.0",
-    "kafkajs": "^1.15.0"
+    "dotenv-safe": "^8.2.0",
+    "fs-extra": "^10.0.0",
+    "kafkajs": "^1.15.0",
+    "klaw": "^4.0.1"
   },
   "devDependencies": {
     "nodemon": "^2.0.12"
