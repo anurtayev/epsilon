@@ -17,7 +17,7 @@ const getParams = (event) => {
     queryStringParameters,
     "Height and width query string parameters are required"
   );
-  const imageKey = rawPath.slice(1);
+  const imageKey = rawPath.slice(9);
   const { width, height } = queryStringParameters;
   assert(
     width && height,
@@ -38,9 +38,6 @@ module.exports.handler = async (event, context) => {
     Bucket: bucketName,
     Key: imageKey,
   }).promise();
-
-  console.log(typeof imgBuffer);
-  console.log(imgBuffer);
 
   return {
     statusCode: 200,
