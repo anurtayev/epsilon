@@ -3,36 +3,22 @@ const { Command } = require("commander");
 const cmd = new Command(CMD_NAME);
 module.exports = cmd;
 
-const S3 = require("aws-sdk/clients/s3");
+// const { readFile } = require("fs/promises");
 
-const { batchWrite } = require("../../services/dynamodb");
-const readAllFiles = require("./readAllFiles");
-
-const s3 = new S3({ apiVersion: "2006-03-01" });
-const inputBucket = process.env.INPUT_S3_BUCKET;
-const META_FOLDER_NAME = ".metaFolder";
+// const { batchWrite } = require("../../services/dynamodb");
+const {
+  getObject,
+  readAllFilesFilteredByAllowedExtension,
+} = require("../../services/s3");
+const { getMetaFilePath, getExifData } = require("../../util");
 
 cmd.action(async () => {
-  await readAllFiles({ inputBucket, callback: sendToDynamo, s3 });
+  await readAllFilesFilteredByAllowedExtension(sendToDynamo);
 });
 
 async function sendToDynamo(elements) {
   while (elements.length) {
-    const items = await Promise.all(
-      elements.splice(0, 25).map(async (id) => {
-        const extension = id.split(".").slice(-1)[0].toLowerCase();
-        const meta = extractMetaInfo(id);
-        return {
-          PutRequest: {
-            Item: {
-              id,
-              extension,
-              ...(meta || {}),
-            },
-          },
-        };
-      })
-    );
+    const items = await Promise.all(elements.splice(0, 25).map(processItem));
 
     console.log(JSON.stringify(items, null, 2));
 
@@ -44,29 +30,53 @@ async function sendToDynamo(elements) {
   }
 }
 
-async function extractMetaInfo(id) {
-  const idParts = id.split("/");
-  const metaDataFilename =
-    idParts.slice(0, -1).join("/") +
-    "/" +
-    META_FOLDER_NAME +
-    "/" +
-    idParts.slice(-1)[0] +
-    ".json";
+async function processItem(id) {
+  const meta = await extractMetaInfo(id);
+  const exif = await extractExif(id);
+  return {
+    PutRequest: {
+      Item: {
+        id,
+        ...(meta || {}),
+        ...(exif || {}),
+      },
+    },
+  };
+}
 
+async function extractMetaInfo(id) {
   let res;
   let meta;
   try {
-    res = await s3
-      .getObject({
-        Bucket: inputBucket,
-        Key: metaDataFilename,
-      })
-      .promise();
+    res = await getObject(getMetaFilePath(id));
     meta = JSON.parse(res.Body.toString());
   } catch (error) {
     // NOOP
   }
 
   return meta;
+}
+
+async function extractExif(id) {
+  const { Body: fileBuffer } = await getObject(id);
+
+  try {
+    const {
+      gps,
+      image: { Orientation, XResolution, YResolution },
+      exif: { CreateDate, ExifImageWidth, ExifImageHeight },
+    } = await getExifData(fileBuffer);
+
+    return {
+      gps,
+      orientation: Orientation,
+      xResolution: XResolution,
+      yResolution: YResolution,
+      dateCreated: CreateDate,
+      width: ExifImageWidth,
+      height: ExifImageHeight,
+    };
+  } catch (error) {
+    // console.log(error);
+  }
 }

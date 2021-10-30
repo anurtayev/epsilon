@@ -1,24 +1,20 @@
-const ALLOWED_EXTENSIONS = ["jpg", "jpeg"];
+const { isExtensionSupported } = require("../../util");
+const s3 = require("./s3");
 
-module.exports = async function ({ inputBucket, callback, s3 }) {
+module.exports = async function (callback) {
   let isReadingFinished = false;
   let res;
 
   while (!isReadingFinished) {
     res = await s3
       .listObjectsV2({
-        Bucket: inputBucket,
         MaxKeys: 100,
         ...(res ? { ContinuationToken: res.NextContinuationToken } : {}),
       })
       .promise();
 
     await callback(
-      res.Contents.filter((element) =>
-        ALLOWED_EXTENSIONS.includes(
-          element.Key.split(".").slice(-1)[0].toLowerCase()
-        )
-      ).map(({ Key: id }) => id)
+      res.Contents.map(({ Key: id }) => id).filter(isExtensionSupported)
     );
 
     isReadingFinished = !res.IsTruncated;

@@ -6,10 +6,10 @@
   "scripts": {
     "start": "nodemon",
     "start:kafka": "docker compose up",
-    "debug": "node cli walkS3",
+    "debug": "node cli walkDisk",
     "start:import:keys": "node scripts/importKeysFromS3.js",
     "start:import:meta": "node scripts/importMetaFromOriginalDisk.js",
-    "install:sharp": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp"
+    "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp"
   },
   "keywords": [],
   "author": "",
@@ -18,10 +18,11 @@
     "aws-sdk": "^2.991.0",
     "commander": "^8.3.0",
     "dotenv-safe": "^8.2.0",
+    "exif": "^0.6.0",
     "fs-extra": "^10.0.0",
     "kafkajs": "^1.15.0",
     "klaw": "^4.0.1",
-    "sharp": "^0.29.1"
+    "sharp": "^0.29.2"
   },
   "devDependencies": {
     "eslint": "^8.1.0",
