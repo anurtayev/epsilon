@@ -1,1 +1,1 @@
-module.exports = require("./walkDisk");
+module.exports = require("./streamDisk");
