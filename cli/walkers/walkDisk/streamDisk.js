@@ -17,12 +17,11 @@ cmd.action(async () => {
     new Transform({
       objectMode: true,
       async transform({ stats, path }, encoding, callback) {
-        console.log(path);
         !stats.isDirectory() && isExtensionSupported(path)
           ? callback(null, await processItem(path))
           : callback();
       },
-      dynamodbWritable,
-    })
+    }),
+    dynamodbWritable
   );
 });

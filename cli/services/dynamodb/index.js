@@ -1,1 +1,1 @@
-module.exports = { ...require("./batchWrite"), ...require("./writable") };
+module.exports = { ...require("./writable") };

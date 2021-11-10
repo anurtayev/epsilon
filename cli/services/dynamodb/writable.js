@@ -10,7 +10,6 @@ const dynamodbWritable = new Writable({
     callback();
   },
   write(chunk, encoding, callback) {
-    console.log("puja2");
     this.buffer.push(chunk);
 
     if (this.buffer.length === MAX_BUFFER_SIZE) {
