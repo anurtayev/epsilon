@@ -1,1 +1,1 @@
-module.exports = { put: require("./put"), batchWrite: require("./batchWrite") };
+module.exports = { ...require("./batchWrite"), ...require("./writable") };

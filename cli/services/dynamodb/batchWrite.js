@@ -1,13 +1,17 @@
 const documentClient = require("./dynamodb");
 
-const tableName = process.env.DD_TABLE_NAME;
+module.exports = {
+  batchWrite,
+};
 
-module.exports = async function (items) {
+async function batchWrite(items) {
   return documentClient
     .batchWrite({
       RequestItems: {
-        [tableName]: items.map((item) => ({ PutRequest: { Item: item } })),
+        [process.env.DD_TABLE_NAME]: items.map((item) => ({
+          PutRequest: { Item: item },
+        })),
       },
     })
     .promise();
-};
+}
