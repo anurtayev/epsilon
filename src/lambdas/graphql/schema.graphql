@@ -1,0 +1,62 @@
+input MetaDataInput {
+  tags: [String!]
+  attributes: [[String!]!]
+}
+
+type MetaData {
+  tags: [String!]
+  attributes: [[String!]!]
+}
+
+interface Entry {
+  id: ID!
+  metaData: MetaData
+}
+
+type Folder implements Entry {
+  id: ID!
+  metaData: MetaData
+}
+
+type File implements Entry {
+  id: ID!
+  metaData: MetaData
+
+  contentType: String!
+  thumbImageUrl: String!
+  imageUrl: String!
+
+  prev: String
+  next: String
+}
+
+type Query {
+  entries(id: String, metaDataInput: MetaDataInput): [Entry!]!
+
+  entry(id: String!): Entry
+
+  """
+  returns list of all tags used in repository
+  """
+  tags: [String!]!
+
+  """
+  returns list of all attributes used in repository
+  """
+  attributes: [String!]!
+}
+
+type Mutation {
+  """
+  Adds new tag to a folder entry. If element does
+  exist it returns updated metadata object or null
+  otherwise.
+  """
+  addTag(id: String!, tag: String!): MetaData
+  removeTag(id: String!, tag: String!): MetaData
+  addAttribute(id: String!, attribute: [String!]!): MetaData
+  removeAttribute(id: String!, attributeKey: String!): MetaData
+  setTitle(id: String!, title: String!): MetaData
+  setDescription(id: String!, description: String!): MetaData
+  setMetaData(id: String!, metaDataInput: MetaDataInput!): MetaData
+}

@@ -14,13 +14,14 @@ async function exifrExtract(id) {
     } = exifrData;
 
     return {
-      src: "exifr",
       orientation,
-      dateCreated,
+      dateCreated: dateCreated && dateCreated.toISOString(),
       width,
       height,
       latitude,
       longitude,
+      monthCreated: dateCreated && dateCreated.getMonth() + 1,
+      yearCreated: dateCreated && dateCreated.getFullYear(),
     };
   }
 }

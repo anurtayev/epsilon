@@ -18,7 +18,7 @@ provider:
 
 functions:
   api:
-    handler: src/resizer.handler
+    handler: src/lambdas/resizer/index.handler
     events:
       - httpApi: '*'
     environment:

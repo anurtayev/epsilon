@@ -17,8 +17,16 @@ module.exports = {
 
     return {
       id: relative(process.env.REPOSITORY_PATH, id),
-      ...(meta || {}),
-      ...(exif || {}),
+      tags: meta && meta.tags,
+      attributes: ((meta && meta.attributes) || exif) && {
+        ...exif,
+        ...(meta &&
+          meta.attributes &&
+          meta.attributes.reduce((acc, cur) => {
+            acc[cur[0]] = cur[1];
+            return acc;
+          }, {})),
+      },
     };
   },
 };

@@ -1,5 +1,4 @@
 const AWS = require("aws-sdk");
-const { pipeline } = require("stream");
 const sharp = require("sharp");
 const assert = require("assert");
 
