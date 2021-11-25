@@ -1,6 +1,6 @@
 import type { AWS } from "@serverless/typescript";
 
-import hello from "@lambdas/hello";
+import oracle from "@lambdas/oracle";
 
 const serverlessConfiguration: AWS = {
   service: "epsilon",
@@ -35,7 +35,7 @@ const serverlessConfiguration: AWS = {
     },
   },
   // import the function via paths
-  functions: { hello },
+  functions: { oracle },
   package: { individually: true },
   custom: {
     esbuild: {
