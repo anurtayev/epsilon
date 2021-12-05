@@ -36,7 +36,7 @@ const serverlessConfiguration: AWS = {
   },
   // import the function via paths
   functions: { oracle },
-  package: { individually: true },
+  package: { individually: true, patterns: ["src/**"] },
   custom: {
     esbuild: {
       bundle: true,

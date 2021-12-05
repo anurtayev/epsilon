@@ -6,8 +6,8 @@ export default {
   events: [
     {
       http: {
-        method: "get",
-        path: "oracle",
+        method: "post",
+        path: "/oracle",
         request: {
           schemas: {
             "application/json": schema,

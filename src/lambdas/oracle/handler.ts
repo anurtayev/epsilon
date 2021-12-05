@@ -9,8 +9,11 @@ import rootValue from "./root";
 import schema from "./schema";
 
 const oracle: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
-  event
+  event,
+  context
 ) => {
+  console.log({ event, context });
+
   const fh = await readFile(join(__dirname, "schema.graphql"));
   const schema2 = buildSchema(fh.toString());
 
@@ -23,6 +26,7 @@ const oracle: ValidatedEventAPIGatewayProxyEvent<typeof schema> = async (
   return formatJSONResponse({
     message: data || errors,
     event,
+    context,
   });
 };
 
