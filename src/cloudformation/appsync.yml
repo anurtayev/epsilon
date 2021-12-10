@@ -1,0 +1,98 @@
+Description: Epsilon AppSync
+
+Parameters:
+  ApiName:
+    Type: String
+    Description: Name of the API
+    MinLength: 3
+    MaxLength: 20
+    AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
+  Environment:
+    Default: dev
+    Description: Back-end environment name
+    Type: String
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${ApiName}-${Environment}-table
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+  DynamoDBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${APIName}-${Environment}-dynamodb-role
+      ManagedPolicyArns:
+        - Ref: AppSyncDynamoDBPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+    DependsOn:
+      - AppSyncDynamoDBPolicy
+  AppSyncDynamoDBPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Managed policy to allow AWS AppSync to access the tables created by this template.
+      Path: /appsync/
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:DeleteItem
+              - dynamodb:UpdateItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:BatchGetItem
+              - dynamodb:BatchWriteItem
+            Resource: !Join [ "", [ !GetAtt DynamoDBTable.Arn, "*" ] ]
+  Api:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub ${ApiName}-${Environment}-appsync
+      AuthenticationType: API_KEY
+  ApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+  Schema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      DefinitionS3Location: s3://aspan-epsilon-deployment/cloudformation/schema.graphql
+  AppSyncNotesTableDataSource:
+    Type: "AWS::AppSync::DataSource"
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      Name: !Sub ${ApiName}-${Environment}-table
+      Description: "The Notes Table AppSync Data Source"
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref DynamoDBTable
+        AwsRegion: !Sub ${AWS::Region}
+
+Outputs:
+  ApiId: 
+    Value: !GetAtt Api.ApiId
+  Arn:
+    Value: !GetAtt Api.Arn
+  GraphQLUrl: 
+    Value: !GetAtt Api.GraphQLUrl

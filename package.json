@@ -6,7 +6,11 @@
   "scripts": {
     "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp",
     "codegen": "graphql-codegen --config codegen.yml",
-    "sls": "sls"
+    "aws:cloudformation:upload": "dotenv cross-var aws s3 sync cloudformation s3://%S3_DEPLOYMENT_BUCKET%/cloudformation",
+    "aws:cloudformation:validate": "dotenv cross-var \"aws cloudformation validate-template --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml\"",
+    "aws:cloudformation:create": "dotenv cross-var \"aws cloudformation create-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
+    "aws:cloudformation:update": "dotenv cross-var \"aws cloudformation update-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
+    "aws:cloudformation:describe": "aws cloudformation describe-stacks --stack-name aspan-epsilon-appsync"
   },
   "keywords": [],
   "author": "",
@@ -27,14 +31,13 @@
     "@graphql-codegen/introspection": "2.1.0",
     "@graphql-codegen/typescript": "2.4.1",
     "@graphql-codegen/typescript-resolvers": "2.4.2",
-    "@serverless/typescript": "^2.23.0",
     "@types/aws-lambda": "^8.10.71",
     "@types/node": "^14.14.25",
+    "cross-var": "^1.1.0",
+    "dotenv-cli": "^4.1.1",
     "eslint": "^8.1.0",
     "json-schema-to-ts": "^1.5.0",
     "prettier": "^2.4.1",
-    "serverless": "^2.66.2",
-    "serverless-esbuild": "^1.17.1",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.5.2"

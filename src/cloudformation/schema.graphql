@@ -1,0 +1,110 @@
+﻿schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
+
+type Entry {
+  attributes: [[String!]!]
+  id: String!
+  tags: [String!]
+}
+
+type EntryConnection {
+  items: [Entry]
+  nextToken: String
+}
+
+type Mutation {
+  createEntry(input: CreateEntryInput!): Entry
+  deleteEntry(input: DeleteEntryInput!): Entry
+  updateEntry(input: UpdateEntryInput!): Entry
+}
+
+type Query {
+  getEntry(id: String!): Entry
+  listEntries(filter: TableEntryFilterInput, limit: Int, nextToken: String): EntryConnection
+}
+
+type Subscription {
+  onCreateEntry(attributes: [[String!]!], id: String, tags: [String!]): Entry @aws_subscribe(mutations : ["createEntry"])
+  onDeleteEntry(attributes: [[String!]!], id: String, tags: [String!]): Entry @aws_subscribe(mutations : ["deleteEntry"])
+  onUpdateEntry(attributes: [[String!]!], id: String, tags: [String!]): Entry @aws_subscribe(mutations : ["updateEntry"])
+}
+
+input CreateEntryInput {
+  attributes: [[String!]!]
+  id: String!
+  tags: [String!]
+}
+
+input DeleteEntryInput {
+  id: String!
+}
+
+input TableBooleanFilterInput {
+  eq: Boolean
+  ne: Boolean
+}
+
+input TableEntryFilterInput {
+  attributes: TableStringFilterInput
+  id: TableStringFilterInput
+  tags: TableStringFilterInput
+}
+
+input TableFloatFilterInput {
+  between: [Float]
+  contains: Float
+  eq: Float
+  ge: Float
+  gt: Float
+  le: Float
+  lt: Float
+  ne: Float
+  notContains: Float
+}
+
+input TableIDFilterInput {
+  beginsWith: ID
+  between: [ID]
+  contains: ID
+  eq: ID
+  ge: ID
+  gt: ID
+  le: ID
+  lt: ID
+  ne: ID
+  notContains: ID
+}
+
+input TableIntFilterInput {
+  between: [Int]
+  contains: Int
+  eq: Int
+  ge: Int
+  gt: Int
+  le: Int
+  lt: Int
+  ne: Int
+  notContains: Int
+}
+
+input TableStringFilterInput {
+  beginsWith: String
+  between: [String]
+  contains: String
+  eq: String
+  ge: String
+  gt: String
+  le: String
+  lt: String
+  ne: String
+  notContains: String
+}
+
+input UpdateEntryInput {
+  attributes: [[String!]!]
+  id: String!
+  tags: [String!]
+}
