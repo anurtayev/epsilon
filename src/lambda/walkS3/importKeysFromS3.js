@@ -3,7 +3,7 @@ require("dotenv-safe").config();
 const AWS = require("aws-sdk");
 const { Kafka } = require("kafkajs");
 
-s3 = new AWS.S3({ apiVersion: "2006-03-01" });
+const s3 = new AWS.S3({ apiVersion: "2006-03-01" });
 
 const kafka = new Kafka({
   clientId: "epsilon-starter",

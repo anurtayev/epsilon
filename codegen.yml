@@ -1,7 +1,7 @@
 overwrite: true
-schema: "./src/lambdas/oracle/schema.graphql"
+schema: "./src/cloudformation/schema.graphql"
 generates:
-  ./src/lambdas/oracle/graphqlTypes.ts:
+  ./src/libs/graphqlTypes.ts:
     plugins:
       - "typescript"
       - "typescript-resolvers"

@@ -1,20 +1,13 @@
-const CMD_NAME = "walkS3";
-const { Command } = require("commander");
-const cmd = new Command(CMD_NAME);
-module.exports = cmd;
-
-// const { readFile } = require("fs/promises");
-
 // const { batchWrite } = require("../../services/dynamodb");
 const {
   getObject,
   readAllFilesFilteredByAllowedExtension,
-} = require("../../services/s3");
+} = require("@lib/s3");
 const { getMetaFilePath, getExifData } = require("../../util");
 
-cmd.action(async () => {
+const run = async () => {
   await readAllFilesFilteredByAllowedExtension(sendToDynamo);
-});
+};
 
 async function sendToDynamo(elements) {
   while (elements.length) {
@@ -80,3 +73,5 @@ async function extractExif(id) {
     // console.log(error);
   }
 }
+
+console.log("asdfsadf");

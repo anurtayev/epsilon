@@ -1,8 +1,7 @@
 {
   "name": "epsilon",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "aspan back-end",
   "scripts": {
     "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp",
     "codegen": "graphql-codegen --config codegen.yml",
@@ -10,20 +9,16 @@
     "aws:cloudformation:validate": "dotenv cross-var \"aws cloudformation validate-template --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml\"",
     "aws:cloudformation:create": "dotenv cross-var \"aws cloudformation create-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
     "aws:cloudformation:update": "dotenv cross-var \"aws cloudformation update-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
-    "aws:cloudformation:describe": "aws cloudformation describe-stacks --stack-name aspan-epsilon-appsync"
+    "aws:cloudformation:describe": "aws cloudformation describe-stacks --stack-name aspan-epsilon-appsync",
+    "start": "tsc && TS_NODE_BASEURL=./build node -r tsconfig-paths/register ./build/lambda/walkS3/walkS3.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@middy/core": "^2.5.3",
     "@middy/http-json-body-parser": "^2.5.3",
     "aws-sdk": "^2.991.0",
     "dotenv-safe": "^8.2.0",
     "exifr": "^7.1.3",
-    "fs-extra": "^10.0.0",
     "graphql": "^16.0.1",
-    "klaw": "^4.0.1",
     "sharp": "^0.29.2"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
-import type { ValidatedEventAPIGatewayProxyEvent } from "@libs/apiGateway";
-import { formatJSONResponse } from "@libs/apiGateway";
-import { middyfy } from "@libs/lambda";
+import type { ValidatedEventAPIGatewayProxyEvent } from "src/lib/apiGateway";
+import { formatJSONResponse } from "src/lib/apiGateway";
+import { middyfy } from "src/lib/lambda";
 import { graphql, buildSchema } from "graphql";
 import { readFile } from "fs/promises";
 import { join } from "path";
