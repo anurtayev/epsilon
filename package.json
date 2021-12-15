@@ -10,7 +10,8 @@
     "aws:cloudformation:create": "dotenv cross-var \"aws cloudformation create-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
     "aws:cloudformation:update": "dotenv cross-var \"aws cloudformation update-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
     "aws:cloudformation:describe": "aws cloudformation describe-stacks --stack-name aspan-epsilon-appsync",
-    "start": "tsc && TS_NODE_BASEURL=./build node -r tsconfig-paths/register ./build/lambda/walkS3/walkS3.js"
+    "build": "dotenv cross-var \"tsc && TS_NODE_BASEURL=./build node -r tsconfig-paths/register ./build/lambda/walkS3/walkS3.js\"",
+    "start": "ts-node src/lambda/walkS3/walkS3"
   },
   "dependencies": {
     "@middy/core": "^2.5.3",

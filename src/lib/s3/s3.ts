@@ -1,6 +1,5 @@
-import S3 from "aws-sdk/clients/s3";
+import * as S3 from "aws-sdk/clients/s3";
 
-export default new S3({
-  params: { Bucket: process.env.MEDIA_S3_BUCKET },
+export const s3 = new S3({
   apiVersion: "2006-03-01",
 });

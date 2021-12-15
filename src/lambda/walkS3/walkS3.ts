@@ -1,77 +1,34 @@
-// const { batchWrite } = require("../../services/dynamodb");
-const {
-  getObject,
-  readAllFilesFilteredByAllowedExtension,
-} = require("@lib/s3");
-const { getMetaFilePath, getExifData } = require("../../util");
+import { pipeline as pipelineWithCallback, Writable } from "stream";
+import { promisify } from "util";
+
+import { s3KeysReadable } from "@lib/s3";
+import { extractMetaTransform } from "@lib/meta";
+import { extractExifTransform } from "@lib/exif";
+
+const pipeline = promisify(pipelineWithCallback);
 
 const run = async () => {
-  await readAllFilesFilteredByAllowedExtension(sendToDynamo);
+  try {
+    await pipeline(
+      s3KeysReadable,
+
+      extractMetaTransform,
+
+      extractExifTransform,
+
+      new Writable({
+        // @ts-ignore
+        write(mediaFileMeta, encoding, callback) {
+          mediaFileMeta.meta &&
+            console.log(JSON.stringify(mediaFileMeta, null, 2));
+          callback();
+        },
+        objectMode: true,
+      })
+    );
+  } catch (error) {
+    console.log(error.message);
+  }
 };
 
-async function sendToDynamo(elements) {
-  while (elements.length) {
-    const items = await Promise.all(elements.splice(0, 25).map(processItem));
-
-    console.log(JSON.stringify(items, null, 2));
-
-    // await batchWrite({
-    //   RequestItems: {
-    //     items,
-    //   },
-    // });
-  }
-}
-
-async function processItem(id) {
-  const meta = await extractMetaInfo(id);
-  const exif = await extractExif(id);
-  return {
-    PutRequest: {
-      Item: {
-        id,
-        ...(meta || {}),
-        ...(exif || {}),
-      },
-    },
-  };
-}
-
-async function extractMetaInfo(id) {
-  let res;
-  let meta;
-  try {
-    res = await getObject(getMetaFilePath(id));
-    meta = JSON.parse(res.Body.toString());
-  } catch (error) {
-    // NOOP
-  }
-
-  return meta;
-}
-
-async function extractExif(id) {
-  const { Body: fileBuffer } = await getObject(id);
-
-  try {
-    const {
-      gps,
-      image: { Orientation, XResolution, YResolution },
-      exif: { CreateDate, ExifImageWidth, ExifImageHeight },
-    } = await getExifData(fileBuffer);
-
-    return {
-      gps,
-      orientation: Orientation,
-      xResolution: XResolution,
-      yResolution: YResolution,
-      dateCreated: CreateDate,
-      width: ExifImageWidth,
-      height: ExifImageHeight,
-    };
-  } catch (error) {
-    // console.log(error);
-  }
-}
-
-console.log("asdfsadf");
+run();

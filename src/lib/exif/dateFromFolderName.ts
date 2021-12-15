@@ -1,7 +1,7 @@
 const { relative } = require("path");
 const sharp = require("sharp");
 
-async function extractDateInformationFromFolderName(id) {
+export async function extractDateInformationFromFolderName(id) {
   let meta;
 
   const relativeId = relative(process.env.REPOSITORY_PATH, id);
@@ -33,5 +33,3 @@ async function extractDateInformationFromFolderName(id) {
 
   return meta;
 }
-
-module.exports = { extractDateInformationFromFolderName };

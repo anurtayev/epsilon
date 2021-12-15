@@ -1,10 +1,10 @@
-import s3 from "./s3";
+import { s3 } from "./s3";
 
-export default async function (id: string) {
+export async function getObject(id: string) {
   return s3
     .getObject({
       Key: id,
-      Bucket: "",
+      Bucket: process.env.MEDIA_S3_BUCKET,
     })
     .promise();
 }

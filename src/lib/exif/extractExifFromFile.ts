@@ -1,7 +1,7 @@
 const getExifData = require("util").promisify(require("exif").ExifImage);
 const { readFile } = require("fs/promises");
 
-async function extractExifFromFile(id) {
+export async function extractExifFromFile(id) {
   const fileBuffer = await readFile(id);
 
   try {
@@ -54,5 +54,3 @@ function transformGpsData({
     lon: (lon[0] + lon[1] / 60 + lon[2] / 3600) * (lonRef === "E" ? 1 : -1),
   };
 }
-
-module.exports = { extractExifFromFile };

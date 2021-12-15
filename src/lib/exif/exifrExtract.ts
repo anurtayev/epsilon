@@ -1,7 +1,7 @@
-var exifr = require("exifr");
+import exifr from "exifr";
 
-async function exifrExtract(id) {
-  const exifrData = await exifr.parse(id);
+export async function exifrExtract(mediaFileBuf) {
+  const exifrData = await exifr.parse(mediaFileBuf);
 
   if (exifrData) {
     const {
@@ -25,5 +25,3 @@ async function exifrExtract(id) {
     };
   }
 }
-
-module.exports = { exifrExtract };

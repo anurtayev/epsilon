@@ -1,4 +1,2 @@
-module.exports = {
-  getObject: require("./getObject"),
-  readAllFilesFilteredByAllowedExtension: require("./readAllFilesFilteredByAllowedExtension"),
-};
+export { getObject } from "./getObject";
+export { s3KeysReadable } from "./s3KeysReadable";
