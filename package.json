@@ -5,13 +5,8 @@
   "scripts": {
     "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp",
     "codegen": "graphql-codegen --config codegen.yml",
-    "aws:cloudformation:upload": "dotenv cross-var aws s3 sync cloudformation s3://%S3_DEPLOYMENT_BUCKET%/cloudformation",
-    "aws:cloudformation:validate": "dotenv cross-var \"aws cloudformation validate-template --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml\"",
-    "aws:cloudformation:create": "dotenv cross-var \"aws cloudformation create-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
-    "aws:cloudformation:update": "dotenv cross-var \"aws cloudformation update-stack --stack-name aspan-epsilon-appsync --template-url https://%S3_DEPLOYMENT_BUCKET%.s3.amazonaws.com/cloudformation/appsync.yml --parameters ParameterKey=ApiName,ParameterValue=AspanEpsilonDev\"",
-    "aws:cloudformation:describe": "aws cloudformation describe-stacks --stack-name aspan-epsilon-appsync",
-    "build": "dotenv cross-var \"tsc && TS_NODE_BASEURL=./build node -r tsconfig-paths/register ./build/lambda/walkS3/walkS3.js\"",
-    "start": "ts-node src/lambda/walkS3/walkS3"
+    "deploy": "scripts/deploy.sh",
+    "start": "dotenv ts-node src/lambda/exif/exif.local.ts"
   },
   "dependencies": {
     "@middy/core": "^2.5.3",
@@ -29,13 +24,12 @@
     "@graphql-codegen/typescript-resolvers": "2.4.2",
     "@types/aws-lambda": "^8.10.71",
     "@types/node": "^14.14.25",
-    "cross-var": "^1.1.0",
     "dotenv-cli": "^4.1.1",
     "eslint": "^8.1.0",
     "json-schema-to-ts": "^1.5.0",
     "prettier": "^2.4.1",
+    "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
-    "tsconfig-paths": "^3.9.0",
     "typescript": "^4.5.2"
   }
 }

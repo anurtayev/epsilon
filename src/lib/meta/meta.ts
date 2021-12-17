@@ -1,7 +1,5 @@
 import { Transform } from "stream";
-import { getObject } from "@lib/s3";
-
-const META_FOLDER_NAME = ".metaFolder";
+import { getObject } from "../s3";
 
 export const extractMetaTransform = new Transform({
   objectMode: true,
@@ -10,7 +8,9 @@ export const extractMetaTransform = new Transform({
     let meta;
     try {
       meta = JSON.parse(
-        (await getObject(getMetaFilePath(id))).Body.toString("utf-8")
+        (
+          await getObject({ key: id, bucket: process.env.MEDIA_S3_BUCKET })
+        ).Body.toString("utf-8")
       );
     } catch (error) {
       //
@@ -30,15 +30,3 @@ export const extractMetaTransform = new Transform({
     callback();
   },
 });
-
-function getMetaFilePath(id: string) {
-  const idParts = id.split("/");
-  return (
-    idParts.slice(0, -1).join("/") +
-    "/" +
-    META_FOLDER_NAME +
-    "/" +
-    idParts.slice(-1)[0] +
-    ".json"
-  );
-}

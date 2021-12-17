@@ -1,12 +1,8 @@
-const { relative } = require("path");
-const sharp = require("sharp");
-
-export async function extractDateInformationFromFolderName(id) {
+export async function extractDateInformationFromFolderName(key) {
   let meta;
 
-  const relativeId = relative(process.env.REPOSITORY_PATH, id);
   const SUBSTRING_ANSI_DATES_BEGIN_WITH = "20";
-  const idParts = relativeId.split(".");
+  const idParts = key.split(".");
   if (
     idParts[0].startsWith(SUBSTRING_ANSI_DATES_BEGIN_WITH) &&
     idParts[0].length === 8
@@ -22,13 +18,6 @@ export async function extractDateInformationFromFolderName(id) {
       yearCreated: dateCreatedBin.getFullYear(),
       monthCreated: dateCreatedBin.getMonth() + 1,
     };
-  }
-
-  const img = await sharp(id).metadata();
-  if (img) {
-    meta = {};
-    meta.width = img.width;
-    meta.height = img.height;
   }
 
   return meta;

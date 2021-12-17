@@ -1,10 +1,16 @@
 import { s3 } from "./s3";
 
-export async function getObject(id: string) {
+export async function getObject({
+  bucket,
+  key,
+}: {
+  bucket: string;
+  key: string;
+}) {
   return s3
     .getObject({
-      Key: id,
-      Bucket: process.env.MEDIA_S3_BUCKET,
+      Key: key,
+      Bucket: bucket,
     })
     .promise();
 }

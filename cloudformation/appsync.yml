@@ -2,6 +2,7 @@ Description: Epsilon AppSync
 
 Parameters:
   ApiName:
+    Default: AspanEpsilonDev
     Type: String
     Description: Name of the API
     MinLength: 3
@@ -14,6 +15,26 @@ Parameters:
     MinLength: 1
     MaxLength: 16
     AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+  DeploymentBucket:
+    Default: aspan-epsilon-deployment
+    Description: Back-end environment name
+    Type: String
+    MinLength: 1
+    MaxLength: 100
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-]*"
+  DeploymentPackageArchive:
+    Description: Back-end environment name
+    Default: deployment-package.zip
+    Type: String
+    MinLength: 1
+    MaxLength: 100
+  MediaBucket:
+    Default: nurtai-pics-test
+    Description: Bucket for media files storage
+    Type: String
+    MinLength: 1
+    MaxLength: 100
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-]*"
 
 Resources:
   DynamoDBTable:
@@ -30,7 +51,7 @@ Resources:
   DynamoDBRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${APIName}-${Environment}-dynamodb-role
+      RoleName: !Sub ${ApiName}-${Environment}-dynamodb-role
       ManagedPolicyArns:
         - Ref: AppSyncDynamoDBPolicy
       AssumeRolePolicyDocument:
@@ -76,18 +97,50 @@ Resources:
     Type: AWS::AppSync::GraphQLSchema
     Properties:
       ApiId: !GetAtt Api.ApiId
-      DefinitionS3Location: s3://aspan-epsilon-deployment/cloudformation/schema.graphql
+      DefinitionS3Location: !Sub s3://${DeploymentBucket}/cloudformation/schema.graphql
   AppSyncNotesTableDataSource:
-    Type: "AWS::AppSync::DataSource"
+    Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt Api.ApiId
-      Name: !Sub ${ApiName}-${Environment}-table
+      Name: !Sub ${ApiName}_${Environment}_table
       Description: "The Notes Table AppSync Data Source"
       Type: AMAZON_DYNAMODB
       ServiceRoleArn: !GetAtt DynamoDBRole.Arn
       DynamoDBConfig:
         TableName: !Ref DynamoDBTable
         AwsRegion: !Sub ${AWS::Region}
+  ExifLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs14.x
+      Role: !GetAtt ExifLambdaExecutionRole.Arn
+      Handler: build/lambda/exif/exif.handler
+      Code:
+        S3Bucket: !Sub ${DeploymentBucket}
+        S3Key: !Sub ${DeploymentPackageArchive}
+      Description: Invoke a function during stack creation.
+  ExifLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: root
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:*
+            Resource: arn:aws:logs:*:*:*
 
 Outputs:
   ApiId: 

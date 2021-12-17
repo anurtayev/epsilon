@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "baseUrl": "./src",
-    "paths": {
-      "@lambda/*": ["lambda/*"],
-      "@lib/*": ["lib/*"]
-    }
-  }
-}

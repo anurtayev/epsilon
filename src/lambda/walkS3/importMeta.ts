@@ -1,9 +1,8 @@
 import { pipeline as pipelineWithCallback, Writable } from "stream";
 import { promisify } from "util";
 
-import { s3KeysReadable } from "@lib/s3";
-import { extractMetaTransform } from "@lib/meta";
-import { extractExifTransform } from "@lib/exif";
+import { s3KeysReadable } from "../../lib/s3";
+import { extractMetaTransform } from "../../lib/meta";
 
 const pipeline = promisify(pipelineWithCallback);
 
@@ -13,8 +12,6 @@ const run = async () => {
       s3KeysReadable,
 
       extractMetaTransform,
-
-      extractExifTransform,
 
       new Writable({
         // @ts-ignore
