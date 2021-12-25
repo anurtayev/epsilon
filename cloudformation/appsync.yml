@@ -1,46 +1,29 @@
-Description: Epsilon AppSync
+Description: Aspan picture repository back-end
 
 Parameters:
-  ApiName:
-    Default: AspanEpsilonDev
+  ProjectName:
     Type: String
-    Description: Name of the API
+    Description: Project name
     MinLength: 3
     MaxLength: 20
     AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
   Environment:
-    Default: dev
-    Description: Back-end environment name
+    Description: Environment
     Type: String
     MinLength: 1
     MaxLength: 16
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
-  DeploymentBucket:
-    Default: aspan-epsilon-deployment
-    Description: Back-end environment name
+    AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
+  DeploymentBucketName:
+    Description: Deployment bucket name
     Type: String
     MinLength: 1
     MaxLength: 100
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-]*"
-  DeploymentPackageArchive:
-    Description: Back-end environment name
-    Default: deployment-package.zip
-    Type: String
-    MinLength: 1
-    MaxLength: 100
-  MediaBucket:
-    Default: nurtai-pics-test
-    Description: Bucket for media files storage
-    Type: String
-    MinLength: 1
-    MaxLength: 100
-    AllowedPattern: "[a-zA-Z][a-zA-Z0-9-]*"
 
 Resources:
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${ApiName}-${Environment}-table
+      TableName: !Sub ${ProjectName}-${Environment}-table
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: "id"
@@ -51,7 +34,7 @@ Resources:
   DynamoDBRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ApiName}-${Environment}-dynamodb-role
+      RoleName: !Sub ${ProjectName}-${Environment}-dynamodb-role
       ManagedPolicyArns:
         - Ref: AppSyncDynamoDBPolicy
       AssumeRolePolicyDocument:
@@ -83,11 +66,11 @@ Resources:
               - dynamodb:Scan
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
-            Resource: !Join [ "", [ !GetAtt DynamoDBTable.Arn, "*" ] ]
+            Resource: !Join ["", [!GetAtt DynamoDBTable.Arn, "*"]]
   Api:
     Type: AWS::AppSync::GraphQLApi
     Properties:
-      Name: !Sub ${ApiName}-${Environment}-appsync
+      Name: !Sub ${ProjectName}-${Environment}-appsync
       AuthenticationType: API_KEY
   ApiKey:
     Type: AWS::AppSync::ApiKey
@@ -97,12 +80,12 @@ Resources:
     Type: AWS::AppSync::GraphQLSchema
     Properties:
       ApiId: !GetAtt Api.ApiId
-      DefinitionS3Location: !Sub s3://${DeploymentBucket}/cloudformation/schema.graphql
+      DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema.graphql
   AppSyncNotesTableDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt Api.ApiId
-      Name: !Sub ${ApiName}_${Environment}_table
+      Name: !Sub ${ProjectName}_${Environment}_table
       Description: "The Notes Table AppSync Data Source"
       Type: AMAZON_DYNAMODB
       ServiceRoleArn: !GetAtt DynamoDBRole.Arn
@@ -116,36 +99,69 @@ Resources:
       Role: !GetAtt ExifLambdaExecutionRole.Arn
       Handler: build/lambda/exif/exif.handler
       Code:
-        S3Bucket: !Sub ${DeploymentBucket}
-        S3Key: !Sub ${DeploymentPackageArchive}
+        S3Bucket: !Ref DeploymentBucketName
+        S3Key: !Sub ${ProjectName}-${Environment}.zip
       Description: Invoke a function during stack creation.
   ExifLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-          Action:
-          - sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
       Path: "/"
       Policies:
-      - PolicyName: root
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-          - Effect: Allow
-            Action:
-            - logs:*
-            Resource: arn:aws:logs:*:*:*
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName: !Sub ${ProjectName}-${Environment}-media
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
+  S3BucketRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Rule to invoke ExifLambda when new media file is uploaded
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - Object Created
+        detail:
+          bucket:
+            name:
+              - !Ref S3Bucket
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt ExifLambda.Arn
+          Id: ExifLambdaTarget
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ExifLambda
+      Action: "lambda:InvokeFunction"
+      Principal: "events.amazonaws.com"
+      SourceArn: !GetAtt S3BucketRule.Arn
 
 Outputs:
-  ApiId: 
+  ApiId:
     Value: !GetAtt Api.ApiId
   Arn:
     Value: !GetAtt Api.Arn
-  GraphQLUrl: 
+  GraphQLUrl:
     Value: !GetAtt Api.GraphQLUrl
