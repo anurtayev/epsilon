@@ -8,11 +8,11 @@ export const handler = async (event) => {
   log("new event:", JSON.stringify(event, null, 2));
 
   const {
-    s3: {
+    detail: {
       object: { key },
       bucket: { name: bucket },
     },
-  } = event.Records[0];
+  } = event;
   log("key:", key, "bucket:", bucket);
 
   let exif: object;
@@ -29,6 +29,4 @@ export const handler = async (event) => {
     exif = await extractDateInformationFromFolderName(key);
     log("date information from folder:", exif);
   }
-
-  return { statusCode: 200 };
 };

@@ -1,18 +1,12 @@
 Description: Aspan picture repository back-end
 
 Parameters:
-  ProjectName:
-    Type: String
-    Description: Project name
-    MinLength: 3
-    MaxLength: 20
-    AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
-  Environment:
-    Description: Environment
+  Timestamp:
+    Description: Timestamp
     Type: String
     MinLength: 1
     MaxLength: 16
-    AllowedPattern: "^[a-zA-Z][a-zA-Z0-9_]*$"
+    AllowedPattern: "[0-9]*"
   DeploymentBucketName:
     Description: Deployment bucket name
     Type: String
@@ -23,7 +17,7 @@ Resources:
   DynamoDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${ProjectName}-${Environment}-table
+      TableName: !Sub ${AWS::StackName}-table
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: "id"
@@ -34,7 +28,7 @@ Resources:
   DynamoDBRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${ProjectName}-${Environment}-dynamodb-role
+      RoleName: !Sub ${AWS::StackName}-dynamodb-role
       ManagedPolicyArns:
         - Ref: AppSyncDynamoDBPolicy
       AssumeRolePolicyDocument:
@@ -70,7 +64,7 @@ Resources:
   Api:
     Type: AWS::AppSync::GraphQLApi
     Properties:
-      Name: !Sub ${ProjectName}-${Environment}-appsync
+      Name: !Sub ${AWS::StackName}-appsync
       AuthenticationType: API_KEY
   ApiKey:
     Type: AWS::AppSync::ApiKey
@@ -85,7 +79,7 @@ Resources:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt Api.ApiId
-      Name: !Sub ${ProjectName}_${Environment}_table
+      Name: !Join ["_", [!Join ["_", !Split ["-",!Sub "${AWS::StackName}"]], "datasource"]]
       Description: "The Notes Table AppSync Data Source"
       Type: AMAZON_DYNAMODB
       ServiceRoleArn: !GetAtt DynamoDBRole.Arn
@@ -100,7 +94,7 @@ Resources:
       Handler: build/lambda/exif/exif.handler
       Code:
         S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${ProjectName}-${Environment}.zip
+        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
       Description: Invoke a function during stack creation.
   ExifLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -128,7 +122,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub ${ProjectName}-${Environment}-media
+      BucketName: !Sub ${AWS::StackName}-media
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
