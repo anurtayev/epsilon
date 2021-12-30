@@ -86,38 +86,6 @@ Resources:
       DynamoDBConfig:
         TableName: !Ref DynamoDBTable
         AwsRegion: !Sub ${AWS::Region}
-  ExifLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Runtime: nodejs14.x
-      Role: !GetAtt ExifLambdaExecutionRole.Arn
-      Handler: build/lambda/exif/exif.handler
-      Code:
-        S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Description: Invoke a function during stack creation.
-  ExifLambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: "/"
-      Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:*
-                Resource: arn:aws:logs:*:*:*
   S3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -156,6 +124,53 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt S3BucketRule.Arn
+  ExifLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs14.x
+      Role: !GetAtt ExifLambdaExecutionRole.Arn
+      Handler: build/lambda/exif/exif.handler
+      Code:
+        S3Bucket: !Ref DeploymentBucketName
+        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
+      Description: Invoke a function during stack creation.
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref DynamoDBTable
+  ExifLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Join 
+                  - "/"
+                  - 
+                    - !GetAtt S3Bucket.Arn
+                    - "*"
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                Resource: !GetAtt DynamoDBTable.Arn
 
 Outputs:
   ApiId:

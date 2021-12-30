@@ -1,38 +1,28 @@
 {
-    "Records": [
-        {
-            "eventVersion": "2.1",
-            "eventSource": "aws:s3",
-            "awsRegion": "ca-central-1",
-            "eventTime": "2021-12-16T20:56:57.157Z",
-            "eventName": "ObjectCreated:Put",
-            "userIdentity": {
-                "principalId": "AWS:AROAWCELNA5MF34SDNERK:anurtayev@yahoo.com"
-            },
-            "requestParameters": {
-                "sourceIPAddress": "76.69.25.143"
-            },
-            "responseElements": {
-                "x-amz-request-id": "ZDXENBYQ3S3KGFGR",
-                "x-amz-id-2": "CL9XKrrD0RtUccxiMKvOXCycYIvgNsBnlqeJG8JZyzp2TcDJGk3Vt54fDTSctCg3SgYH6iXtbga3V0JfnOYz3OT3pPM6bkL3"
-            },
-            "s3": {
-                "s3SchemaVersion": "1.0",
-                "configurationId": "event-1",
-                "bucket": {
-                    "name": "nurtai-pics-test",
-                    "ownerIdentity": {
-                        "principalId": "AT9UK8LOE5WJG"
-                    },
-                    "arn": "arn:aws:s3:::nurtai-pics-test"
-                },
-                "object": {
-                    "key": "honda3.jpg",
-                    "size": 4587230,
-                    "eTag": "148ae8c4ab0d34c56b0e8cdadac968b6",
-                    "sequencer": "0061BBA8191111F2BE"
-                }
-            }
-        }
-    ]
+    "version": "0",
+    "id": "cfaaa11e-e8f2-b5ad-4a95-87d95e2c317c",
+    "detail-type": "Object Created",
+    "source": "aws.s3",
+    "account": "416904185688",
+    "time": "2021-12-29T13:25:25Z",
+    "region": "us-east-1",
+    "resources": [
+        "arn:aws:s3:::epsilon-development-media"
+    ],
+    "detail": {
+        "version": "0",
+        "bucket": {
+            "name": "epsilon-development-media"
+        },
+        "object": {
+            "key": "A0BB3035-96FE-4D2B-A53B-F0426CC46393.jpeg",
+            "size": 3708061,
+            "etag": "e670824fd0f135ac83ef331678e88c31",
+            "sequencer": "0061CC61C515826333"
+        },
+        "request-id": "XJ9EPED04A4Y4H38",
+        "requester": "416904185688",
+        "source-ip-address": "76.69.25.143",
+        "reason": "PutObject"
+    }
 }

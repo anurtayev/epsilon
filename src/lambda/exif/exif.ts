@@ -1,11 +1,12 @@
-import { log } from "console";
+import { error, info } from "console";
 import { getObject } from "../../lib/s3";
+import { put } from "../../lib/dynamodb";
 
 import { extractDateInformationFromFolderName } from "./dateFromFolderName";
 import { exifrExtract } from "./exifrExtract";
 
 export const handler = async (event) => {
-  log("new event:", JSON.stringify(event, null, 2));
+  info(JSON.stringify(event, null, 2));
 
   const {
     detail: {
@@ -13,20 +14,24 @@ export const handler = async (event) => {
       bucket: { name: bucket },
     },
   } = event;
-  log("key:", key, "bucket:", bucket);
+  info("key:", key, "bucket:", bucket);
 
   let exif: object;
 
   try {
     const buf = (await getObject({ bucket, key })).Body;
     exif = await exifrExtract(buf);
-  } catch (error) {
-    //
+    exif && info("exif source: file");
+  } catch (e) {
+    error(e);
   }
 
-  if (exif) log("exif from file:", exif);
-  else {
+  if (!exif) {
     exif = await extractDateInformationFromFolderName(key);
-    log("date information from folder:", exif);
+    exif && info("exif source: folder name");
   }
+
+  info("exif:", exif);
+  await put({ id: key, attributes: exif });
+  info("success");
 };
