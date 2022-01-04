@@ -4,7 +4,7 @@ const assert = require("assert");
 
 const S3 = new AWS.S3({
   region: process.env.AWS_REGION,
-  apiVersion: "2006–03–01",
+  apiVersion: "2006-03-01",
 });
 
 const bucketName = process.env.INPUT_S3_BUCKET;
