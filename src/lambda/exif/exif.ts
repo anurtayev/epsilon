@@ -1,9 +1,13 @@
 import { error, info } from "console";
+import { extname } from "path";
+
 import { getObject } from "../../lib/s3";
 import { put } from "../../lib/dynamodb";
 
 import { extractDateInformationFromFolderName } from "./dateFromFolderName";
 import { exifrExtract } from "./exifrExtract";
+
+const ALLOWED_EXTENSIONS = [".jpeg", ".jpg"];
 
 export const handler = async (event) => {
   info(JSON.stringify(event, null, 2));
@@ -15,6 +19,9 @@ export const handler = async (event) => {
     },
   } = event;
   info("key:", key, "bucket:", bucket);
+
+  const ext = extname(key).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext)) return;
 
   let exif: object;
 
@@ -32,6 +39,9 @@ export const handler = async (event) => {
   }
 
   info("exif:", exif);
-  await put({ id: key, attributes: exif });
-  info("success");
+  if (exif) {
+    const meta = { id: key, attributes: exif };
+    await put(meta);
+    info("created meta data entry:", JSON.stringify(meta, null, 2));
+  }
 };
