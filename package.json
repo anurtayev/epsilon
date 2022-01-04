@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "aspan back-end",
   "scripts": {
+    "deploy": "scripts/deploy.sh",
     "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp",
     "codegen": "graphql-codegen --config codegen.yml",
-    "deploy": "scripts/deploy.sh",
     "start": "dotenv ts-node src/lambda/exif/exif.local.ts"
   },
   "dependencies": {

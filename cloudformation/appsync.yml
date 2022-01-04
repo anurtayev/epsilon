@@ -14,7 +14,7 @@ Parameters:
     MaxLength: 100
 
 Resources:
-  DynamoDBTable:
+  MetaTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub ${AWS::StackName}-table
@@ -60,7 +60,8 @@ Resources:
               - dynamodb:Scan
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
-            Resource: !Join ["", [!GetAtt DynamoDBTable.Arn, "*"]]
+            Resource: !Join ["", [!GetAtt MetaTable.Arn, "*"]]
+
   Api:
     Type: AWS::AppSync::GraphQLApi
     Properties:
@@ -75,7 +76,7 @@ Resources:
     Properties:
       ApiId: !GetAtt Api.ApiId
       DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema.graphql
-  AppSyncNotesTableDataSource:
+  MetaDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt Api.ApiId
@@ -84,8 +85,182 @@ Resources:
       Type: AMAZON_DYNAMODB
       ServiceRoleArn: !GetAtt DynamoDBRole.Arn
       DynamoDBConfig:
-        TableName: !Ref DynamoDBTable
+        TableName: !Ref MetaTable
         AwsRegion: !Sub ${AWS::Region}
+  GetEntryQueryResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: Schema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      TypeName: Query
+      FieldName: getEntry
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "GetItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id),
+          },
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+  ListEntriesQueryResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: Schema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      TypeName: Query
+      FieldName: listEntries
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "Scan",
+          "filter": #if($context.args.filter) $util.transform.toDynamoDBFilterExpression($ctx.args.filter) #else null #end,
+          "limit": $util.defaultIfNull($ctx.args.limit, 20),
+          "nextToken": $util.toJson($util.defaultIfNullOrEmpty($ctx.args.nextToken, null)),
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+  CreateEntryMutationResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: Schema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      TypeName: Mutation
+      FieldName: createEntry
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "PutItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
+          },
+          "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args.input),
+          "condition": {
+            "expression": "attribute_not_exists(#id)",
+            "expressionNames": {
+              "#id": "id",
+            },
+          },
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+  UpdateEntryMutationResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: Schema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      TypeName: Mutation
+      FieldName: updateEntry
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "UpdateItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
+          },
+
+          ## Set up some space to keep track of things we're updating **
+          #set( $expNames  = {} )
+          #set( $expValues = {} )
+          #set( $expSet = {} )
+          #set( $expAdd = {} )
+          #set( $expRemove = [] )
+
+          ## Iterate through each argument, skipping keys **
+          #foreach( $entry in $util.map.copyAndRemoveAllKeys($ctx.args.input, ["id"]).entrySet() )
+            #if( $util.isNull($entry.value) )
+              ## If the argument is set to "null", then remove that attribute from the item in DynamoDB **
+
+              #set( $discard = ${expRemove.add("#${entry.key}")} )
+              $!{expNames.put("#${entry.key}", "${entry.key}")}
+            #else
+              ## Otherwise set (or update) the attribute on the item in DynamoDB **
+
+              $!{expSet.put("#${entry.key}", ":${entry.key}")}
+              $!{expNames.put("#${entry.key}", "${entry.key}")}
+              $!{expValues.put(":${entry.key}", $util.dynamodb.toDynamoDB($entry.value))}
+            #end
+          #end
+
+          ## Start building the update expression, starting with attributes we're going to SET **
+          #set( $expression = "" )
+          #if( !${expSet.isEmpty()} )
+            #set( $expression = "SET" )
+            #foreach( $entry in $expSet.entrySet() )
+              #set( $expression = "${expression} ${entry.key} = ${entry.value}" )
+              #if ( $foreach.hasNext )
+                #set( $expression = "${expression}," )
+              #end
+            #end
+          #end
+
+          ## Continue building the update expression, adding attributes we're going to ADD **
+          #if( !${expAdd.isEmpty()} )
+            #set( $expression = "${expression} ADD" )
+            #foreach( $entry in $expAdd.entrySet() )
+              #set( $expression = "${expression} ${entry.key} ${entry.value}" )
+              #if ( $foreach.hasNext )
+                #set( $expression = "${expression}," )
+              #end
+            #end
+          #end
+
+          ## Continue building the update expression, adding attributes we're going to REMOVE **
+          #if( !${expRemove.isEmpty()} )
+            #set( $expression = "${expression} REMOVE" )
+
+            #foreach( $entry in $expRemove )
+              #set( $expression = "${expression} ${entry}" )
+              #if ( $foreach.hasNext )
+                #set( $expression = "${expression}," )
+              #end
+            #end
+          #end
+
+          ## Finally, write the update expression into the document, along with any expressionNames and expressionValues **
+          "update": {
+            "expression": "${expression}",
+            #if( !${expNames.isEmpty()} )
+              "expressionNames": $utils.toJson($expNames),
+            #end
+            #if( !${expValues.isEmpty()} )
+              "expressionValues": $utils.toJson($expValues),
+            #end
+          },
+
+          "condition": {
+            "expression": "attribute_exists(#id)",
+            "expressionNames": {
+              "#id": "id",
+            },
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+  DeleteEntryMutationResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: Schema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      TypeName: Mutation
+      FieldName: deleteEntry
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "DeleteItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
+          },
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+
   S3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
@@ -100,6 +275,7 @@ Resources:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
   S3BucketRule:
+    DependsOn: S3Bucket
     Type: AWS::Events::Rule
     Properties:
       Description: Rule to invoke ExifLambda when new media file is uploaded
@@ -124,7 +300,9 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt S3BucketRule.Arn
+
   ExifLambda:
+    DependsOn: ExifLambdaExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
@@ -136,7 +314,7 @@ Resources:
       Description: Invoke a function during stack creation.
       Environment:
         Variables:
-          TABLE_NAME: !Ref DynamoDBTable
+          TABLE_NAME: !Ref MetaTable
   ExifLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -170,7 +348,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem
-                Resource: !GetAtt DynamoDBTable.Arn
+                Resource: !GetAtt MetaTable.Arn
 
 Outputs:
   ApiId:
