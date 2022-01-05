@@ -6,7 +6,7 @@
     "deploy": "scripts/deploy.sh",
     "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp",
     "codegen": "graphql-codegen --config codegen.yml",
-    "start": "dotenv ts-node src/lambda/exif/exif.local.ts"
+    "start": "dotenv ts-node src/lambda/fs/index.ts"
   },
   "dependencies": {
     "@middy/core": "^2.5.3",
