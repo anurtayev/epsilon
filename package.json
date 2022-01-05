@@ -6,6 +6,7 @@
     "deploy": "scripts/deploy.sh",
     "install:sharp:linux": "SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux sharp",
     "codegen": "graphql-codegen --config codegen.yml",
+    "test": "jest",
     "start": "dotenv ts-node src/lambda/fs/index.ts"
   },
   "dependencies": {
@@ -20,6 +21,7 @@
     "@graphql-codegen/typescript": "2.4.1",
     "@graphql-codegen/typescript-resolvers": "2.4.2",
     "@types/aws-lambda": "^8.10.71",
+    "@types/jest": "^27.4.0",
     "@types/node": "^14.14.25",
     "dotenv-cli": "^4.1.1",
     "eslint": "^8.6.0",
