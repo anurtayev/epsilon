@@ -7,7 +7,10 @@ import { put } from "../../lib/dynamodb";
 import { extractDateInformationFromFolderName } from "./dateFromFolderName";
 import { exifrExtract } from "./exifrExtract";
 
-const ALLOWED_EXTENSIONS = [".jpeg", ".jpg"];
+const cleanseAndPutIntoArray = (exifData: object = {}) =>
+  Reflect.ownKeys(exifData)
+    .map((key) => [key, exifData[key]])
+    .filter((e) => e.every(Boolean));
 
 export const handler = async (event) => {
   info(JSON.stringify(event, null, 2));
@@ -20,8 +23,8 @@ export const handler = async (event) => {
   } = event;
   info("key:", key, "bucket:", bucket);
 
-  const ext = extname(key).toLowerCase();
-  if (!ALLOWED_EXTENSIONS.includes(ext)) return;
+  const ext = extname(key).toLowerCase().slice(1);
+  if (!process.env.ALLOWED_EXTENSIONS.split("|").includes(ext)) return;
 
   let exif: object;
 
@@ -40,7 +43,7 @@ export const handler = async (event) => {
 
   info("exif:", exif);
   if (exif) {
-    const meta = { id: key, attributes: exif };
+    const meta = { id: key, attributes: cleanseAndPutIntoArray(exif) };
     await put(meta);
     info("created meta data entry:", JSON.stringify(meta, null, 2));
   }

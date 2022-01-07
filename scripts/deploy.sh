@@ -34,6 +34,7 @@ then
     --parameters \
       ParameterKey=Timestamp,ParameterValue=${timestamp} \
       ParameterKey=DeploymentBucketName,ParameterValue=$S3_DEPLOYMENT_BUCKET \
+      ParameterKey=AllowedExtensions,ParameterValue=$ALLOWED_EXTENSIONS \
   || exit 1
 else
   aws cloudformation create-stack \
@@ -43,6 +44,7 @@ else
     --parameters \
       ParameterKey=Timestamp,ParameterValue=${timestamp} \
       ParameterKey=DeploymentBucketName,ParameterValue=$S3_DEPLOYMENT_BUCKET \
+      ParameterKey=AllowedExtensions,ParameterValue=$ALLOWED_EXTENSIONS \
   || exit 1
 fi
 

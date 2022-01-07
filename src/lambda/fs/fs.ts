@@ -1,10 +1,9 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
+import { extname } from "path";
 
 import { listObjectsV2 } from "../../lib/s3";
 import { QueryListFolderArgs, EntryConnection } from "../../lib/graphqlTypes";
-
-const inputBucket = process.env.MEDIA_BUCKET;
 
 export const handler: AppSyncResolverHandler<
   QueryListFolderArgs,
@@ -13,7 +12,7 @@ export const handler: AppSyncResolverHandler<
   info(JSON.stringify({ id, nextToken }, null, 2));
 
   let res = await listObjectsV2({
-    bucket: inputBucket,
+    bucket: process.env.MEDIA_BUCKET,
     continuationToken: nextToken,
     folder: id,
   });
@@ -21,9 +20,13 @@ export const handler: AppSyncResolverHandler<
   info(JSON.stringify(res, null, 2));
 
   return {
-    items: res.Contents.map((element) => ({ id: element.Key })).concat(
-      res.CommonPrefixes.map((element) => ({ id: element.Prefix }))
-    ),
+    items: res.Contents.map((element) => ({ id: element.Key }))
+      .filter(({ id }) =>
+        process.env.ALLOWED_EXTENSIONS.split("|").includes(
+          extname(id).toLowerCase().slice(1)
+        )
+      )
+      .concat(res.CommonPrefixes.map((element) => ({ id: element.Prefix }))),
     nextToken: res.NextContinuationToken,
   };
 };

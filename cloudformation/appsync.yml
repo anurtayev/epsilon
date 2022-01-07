@@ -12,6 +12,11 @@ Parameters:
     Type: String
     MinLength: 1
     MaxLength: 100
+  AllowedExtensions:
+    Description: AllowedExtensions
+    Type: String
+    MinLength: 1
+    MaxLength: 100
 
 Resources:
   MetaTable:
@@ -318,6 +323,7 @@ Resources:
       Environment:
         Variables:
           TABLE_NAME: !Ref MetaTable
+          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
   FSLambda:
     DependsOn: LambdaExecutionRole
     Type: AWS::Lambda::Function
@@ -331,6 +337,7 @@ Resources:
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
+          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
