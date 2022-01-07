@@ -1,4 +1,4 @@
-import { GraphQLResolveInfo } from 'graphql';
+import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -12,16 +12,15 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-};
-
-export type CreateEntryInput = {
-  attributes?: InputMaybe<Array<Array<Scalars['String']>>>;
-  id: Scalars['String'];
-  tags?: InputMaybe<Array<Scalars['String']>>;
-};
-
-export type DeleteEntryInput = {
-  id: Scalars['String'];
+  AWSDate: any;
+  AWSDateTime: any;
+  AWSEmail: any;
+  AWSIPAddress: any;
+  AWSJSON: any;
+  AWSPhone: any;
+  AWSTime: any;
+  AWSTimestamp: any;
+  AWSURL: any;
 };
 
 export type Entry = {
@@ -33,143 +32,19 @@ export type Entry = {
 
 export type EntryConnection = {
   __typename?: 'EntryConnection';
-  items?: Maybe<Array<Maybe<Entry>>>;
+  items: Array<Entry>;
   nextToken?: Maybe<Scalars['String']>;
-};
-
-export type Mutation = {
-  __typename?: 'Mutation';
-  createEntry?: Maybe<Entry>;
-  deleteEntry?: Maybe<Entry>;
-  updateEntry?: Maybe<Entry>;
-};
-
-
-export type MutationCreateEntryArgs = {
-  input: CreateEntryInput;
-};
-
-
-export type MutationDeleteEntryArgs = {
-  input: DeleteEntryInput;
-};
-
-
-export type MutationUpdateEntryArgs = {
-  input: UpdateEntryInput;
 };
 
 export type Query = {
   __typename?: 'Query';
-  getEntry?: Maybe<Entry>;
-  listEntries?: Maybe<EntryConnection>;
+  listFolder?: Maybe<EntryConnection>;
 };
 
 
-export type QueryGetEntryArgs = {
-  id: Scalars['String'];
-};
-
-
-export type QueryListEntriesArgs = {
-  filter?: InputMaybe<TableEntryFilterInput>;
-  limit?: InputMaybe<Scalars['Int']>;
+export type QueryListFolderArgs = {
+  id?: InputMaybe<Scalars['String']>;
   nextToken?: InputMaybe<Scalars['String']>;
-};
-
-export type Subscription = {
-  __typename?: 'Subscription';
-  onCreateEntry?: Maybe<Entry>;
-  onDeleteEntry?: Maybe<Entry>;
-  onUpdateEntry?: Maybe<Entry>;
-};
-
-
-export type SubscriptionOnCreateEntryArgs = {
-  attributes?: InputMaybe<Array<Array<Scalars['String']>>>;
-  id?: InputMaybe<Scalars['String']>;
-  tags?: InputMaybe<Array<Scalars['String']>>;
-};
-
-
-export type SubscriptionOnDeleteEntryArgs = {
-  attributes?: InputMaybe<Array<Array<Scalars['String']>>>;
-  id?: InputMaybe<Scalars['String']>;
-  tags?: InputMaybe<Array<Scalars['String']>>;
-};
-
-
-export type SubscriptionOnUpdateEntryArgs = {
-  attributes?: InputMaybe<Array<Array<Scalars['String']>>>;
-  id?: InputMaybe<Scalars['String']>;
-  tags?: InputMaybe<Array<Scalars['String']>>;
-};
-
-export type TableBooleanFilterInput = {
-  eq?: InputMaybe<Scalars['Boolean']>;
-  ne?: InputMaybe<Scalars['Boolean']>;
-};
-
-export type TableEntryFilterInput = {
-  attributes?: InputMaybe<TableStringFilterInput>;
-  id?: InputMaybe<TableStringFilterInput>;
-  tags?: InputMaybe<TableStringFilterInput>;
-};
-
-export type TableFloatFilterInput = {
-  between?: InputMaybe<Array<InputMaybe<Scalars['Float']>>>;
-  contains?: InputMaybe<Scalars['Float']>;
-  eq?: InputMaybe<Scalars['Float']>;
-  ge?: InputMaybe<Scalars['Float']>;
-  gt?: InputMaybe<Scalars['Float']>;
-  le?: InputMaybe<Scalars['Float']>;
-  lt?: InputMaybe<Scalars['Float']>;
-  ne?: InputMaybe<Scalars['Float']>;
-  notContains?: InputMaybe<Scalars['Float']>;
-};
-
-export type TableIdFilterInput = {
-  beginsWith?: InputMaybe<Scalars['ID']>;
-  between?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
-  contains?: InputMaybe<Scalars['ID']>;
-  eq?: InputMaybe<Scalars['ID']>;
-  ge?: InputMaybe<Scalars['ID']>;
-  gt?: InputMaybe<Scalars['ID']>;
-  le?: InputMaybe<Scalars['ID']>;
-  lt?: InputMaybe<Scalars['ID']>;
-  ne?: InputMaybe<Scalars['ID']>;
-  notContains?: InputMaybe<Scalars['ID']>;
-};
-
-export type TableIntFilterInput = {
-  between?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  contains?: InputMaybe<Scalars['Int']>;
-  eq?: InputMaybe<Scalars['Int']>;
-  ge?: InputMaybe<Scalars['Int']>;
-  gt?: InputMaybe<Scalars['Int']>;
-  le?: InputMaybe<Scalars['Int']>;
-  lt?: InputMaybe<Scalars['Int']>;
-  ne?: InputMaybe<Scalars['Int']>;
-  notContains?: InputMaybe<Scalars['Int']>;
-};
-
-export type TableStringFilterInput = {
-  beginsWith?: InputMaybe<Scalars['String']>;
-  between?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  contains?: InputMaybe<Scalars['String']>;
-  eq?: InputMaybe<Scalars['String']>;
-  ge?: InputMaybe<Scalars['String']>;
-  gt?: InputMaybe<Scalars['String']>;
-  le?: InputMaybe<Scalars['String']>;
-  lt?: InputMaybe<Scalars['String']>;
-  ne?: InputMaybe<Scalars['String']>;
-  notContains?: InputMaybe<Scalars['String']>;
-};
-
-export type UpdateEntryInput = {
-  attributes?: InputMaybe<Array<Array<Scalars['String']>>>;
-  id: Scalars['String'];
-  tags?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -241,49 +116,75 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  AWSDate: ResolverTypeWrapper<Scalars['AWSDate']>;
+  AWSDateTime: ResolverTypeWrapper<Scalars['AWSDateTime']>;
+  AWSEmail: ResolverTypeWrapper<Scalars['AWSEmail']>;
+  AWSIPAddress: ResolverTypeWrapper<Scalars['AWSIPAddress']>;
+  AWSJSON: ResolverTypeWrapper<Scalars['AWSJSON']>;
+  AWSPhone: ResolverTypeWrapper<Scalars['AWSPhone']>;
+  AWSTime: ResolverTypeWrapper<Scalars['AWSTime']>;
+  AWSTimestamp: ResolverTypeWrapper<Scalars['AWSTimestamp']>;
+  AWSURL: ResolverTypeWrapper<Scalars['AWSURL']>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  CreateEntryInput: CreateEntryInput;
-  DeleteEntryInput: DeleteEntryInput;
   Entry: ResolverTypeWrapper<Entry>;
   EntryConnection: ResolverTypeWrapper<EntryConnection>;
-  Float: ResolverTypeWrapper<Scalars['Float']>;
-  ID: ResolverTypeWrapper<Scalars['ID']>;
-  Int: ResolverTypeWrapper<Scalars['Int']>;
-  Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']>;
-  Subscription: ResolverTypeWrapper<{}>;
-  TableBooleanFilterInput: TableBooleanFilterInput;
-  TableEntryFilterInput: TableEntryFilterInput;
-  TableFloatFilterInput: TableFloatFilterInput;
-  TableIDFilterInput: TableIdFilterInput;
-  TableIntFilterInput: TableIntFilterInput;
-  TableStringFilterInput: TableStringFilterInput;
-  UpdateEntryInput: UpdateEntryInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  AWSDate: Scalars['AWSDate'];
+  AWSDateTime: Scalars['AWSDateTime'];
+  AWSEmail: Scalars['AWSEmail'];
+  AWSIPAddress: Scalars['AWSIPAddress'];
+  AWSJSON: Scalars['AWSJSON'];
+  AWSPhone: Scalars['AWSPhone'];
+  AWSTime: Scalars['AWSTime'];
+  AWSTimestamp: Scalars['AWSTimestamp'];
+  AWSURL: Scalars['AWSURL'];
   Boolean: Scalars['Boolean'];
-  CreateEntryInput: CreateEntryInput;
-  DeleteEntryInput: DeleteEntryInput;
   Entry: Entry;
   EntryConnection: EntryConnection;
-  Float: Scalars['Float'];
-  ID: Scalars['ID'];
-  Int: Scalars['Int'];
-  Mutation: {};
   Query: {};
   String: Scalars['String'];
-  Subscription: {};
-  TableBooleanFilterInput: TableBooleanFilterInput;
-  TableEntryFilterInput: TableEntryFilterInput;
-  TableFloatFilterInput: TableFloatFilterInput;
-  TableIDFilterInput: TableIdFilterInput;
-  TableIntFilterInput: TableIntFilterInput;
-  TableStringFilterInput: TableStringFilterInput;
-  UpdateEntryInput: UpdateEntryInput;
 };
+
+export interface AwsDateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSDate'], any> {
+  name: 'AWSDate';
+}
+
+export interface AwsDateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSDateTime'], any> {
+  name: 'AWSDateTime';
+}
+
+export interface AwsEmailScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSEmail'], any> {
+  name: 'AWSEmail';
+}
+
+export interface AwsipAddressScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSIPAddress'], any> {
+  name: 'AWSIPAddress';
+}
+
+export interface AwsjsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSJSON'], any> {
+  name: 'AWSJSON';
+}
+
+export interface AwsPhoneScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSPhone'], any> {
+  name: 'AWSPhone';
+}
+
+export interface AwsTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSTime'], any> {
+  name: 'AWSTime';
+}
+
+export interface AwsTimestampScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSTimestamp'], any> {
+  name: 'AWSTimestamp';
+}
+
+export interface AwsurlScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSURL'], any> {
+  name: 'AWSURL';
+}
 
 export type EntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Entry'] = ResolversParentTypes['Entry']> = {
   attributes?: Resolver<Maybe<Array<Array<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -293,33 +194,27 @@ export type EntryResolvers<ContextType = any, ParentType extends ResolversParent
 };
 
 export type EntryConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntryConnection'] = ResolversParentTypes['EntryConnection']> = {
-  items?: Resolver<Maybe<Array<Maybe<ResolversTypes['Entry']>>>, ParentType, ContextType>;
+  items?: Resolver<Array<ResolversTypes['Entry']>, ParentType, ContextType>;
   nextToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createEntry?: Resolver<Maybe<ResolversTypes['Entry']>, ParentType, ContextType, RequireFields<MutationCreateEntryArgs, 'input'>>;
-  deleteEntry?: Resolver<Maybe<ResolversTypes['Entry']>, ParentType, ContextType, RequireFields<MutationDeleteEntryArgs, 'input'>>;
-  updateEntry?: Resolver<Maybe<ResolversTypes['Entry']>, ParentType, ContextType, RequireFields<MutationUpdateEntryArgs, 'input'>>;
-};
-
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
-  getEntry?: Resolver<Maybe<ResolversTypes['Entry']>, ParentType, ContextType, RequireFields<QueryGetEntryArgs, 'id'>>;
-  listEntries?: Resolver<Maybe<ResolversTypes['EntryConnection']>, ParentType, ContextType, RequireFields<QueryListEntriesArgs, never>>;
-};
-
-export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
-  onCreateEntry?: SubscriptionResolver<Maybe<ResolversTypes['Entry']>, "onCreateEntry", ParentType, ContextType, RequireFields<SubscriptionOnCreateEntryArgs, never>>;
-  onDeleteEntry?: SubscriptionResolver<Maybe<ResolversTypes['Entry']>, "onDeleteEntry", ParentType, ContextType, RequireFields<SubscriptionOnDeleteEntryArgs, never>>;
-  onUpdateEntry?: SubscriptionResolver<Maybe<ResolversTypes['Entry']>, "onUpdateEntry", ParentType, ContextType, RequireFields<SubscriptionOnUpdateEntryArgs, never>>;
+  listFolder?: Resolver<Maybe<ResolversTypes['EntryConnection']>, ParentType, ContextType, RequireFields<QueryListFolderArgs, never>>;
 };
 
 export type Resolvers<ContextType = any> = {
+  AWSDate?: GraphQLScalarType;
+  AWSDateTime?: GraphQLScalarType;
+  AWSEmail?: GraphQLScalarType;
+  AWSIPAddress?: GraphQLScalarType;
+  AWSJSON?: GraphQLScalarType;
+  AWSPhone?: GraphQLScalarType;
+  AWSTime?: GraphQLScalarType;
+  AWSTimestamp?: GraphQLScalarType;
+  AWSURL?: GraphQLScalarType;
   Entry?: EntryResolvers<ContextType>;
   EntryConnection?: EntryConnectionResolvers<ContextType>;
-  Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
-  Subscription?: SubscriptionResolvers<ContextType>;
 };
 

@@ -80,7 +80,11 @@ Resources:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt Api.ApiId
-      Name: !Join ["_", [!Join ["_", !Split ["-",!Sub "${AWS::StackName}"]], "datasource"]]
+      Name:
+        !Join [
+          "_",
+          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "datasource"],
+        ]
       Description: "The Notes Table AppSync Data Source"
       Type: AMAZON_DYNAMODB
       ServiceRoleArn: !GetAtt DynamoDBRole.Arn
@@ -302,20 +306,32 @@ Resources:
       SourceArn: !GetAtt S3BucketRule.Arn
 
   ExifLambda:
-    DependsOn: ExifLambdaExecutionRole
+    DependsOn: LambdaExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
-      Role: !GetAtt ExifLambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRole.Arn
       Handler: build/lambda/exif/exif.handler
       Code:
         S3Bucket: !Ref DeploymentBucketName
         S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Description: Invoke a function during stack creation.
       Environment:
         Variables:
           TABLE_NAME: !Ref MetaTable
-  ExifLambdaExecutionRole:
+  FSLambda:
+    DependsOn: LambdaExecutionRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs14.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Handler: build/lambda/fs/fs.handler
+      Code:
+        S3Bucket: !Ref DeploymentBucketName
+        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !Ref S3Bucket
+  LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -339,12 +355,13 @@ Resources:
                 Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
-                  - s3:GetObject
-                Resource: !Join 
-                  - "/"
-                  - 
-                    - !GetAtt S3Bucket.Arn
-                    - "*"
+                  - s3:*
+                Resource:
+                  - !GetAtt S3Bucket.Arn
+                  - !Join
+                    - "/"
+                    - - !GetAtt S3Bucket.Arn
+                      - "*"
               - Effect: Allow
                 Action:
                   - dynamodb:PutItem

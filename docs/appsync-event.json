@@ -1,0 +1,58 @@
+{
+    "arguments": {
+        "id": "mn,b,b",
+        "nextToken": "*$HJKHVV"
+    },
+    "identity": null,
+    "source": null,
+    "request": {
+        "headers": {
+            "x-forwarded-for": "76.69.25.143, 64.252.143.92",
+            "sec-ch-ua-mobile": "?0",
+            "cloudfront-viewer-country": "CA",
+            "cloudfront-is-tablet-viewer": "false",
+            "x-amzn-requestid": "b0a69001-1283-4f33-ab76-08c055ae5212",
+            "via": "2.0 bf13ed7c57d4b1b35300a3c885cd7afd.cloudfront.net (CloudFront)",
+            "cloudfront-forwarded-proto": "https",
+            "origin": "https://console.aws.amazon.com",
+            "content-length": "212",
+            "x-forwarded-proto": "https",
+            "host": "zo64nyttuffhnlvsnup7epqfbe.appsync-api.us-east-1.amazonaws.com",
+            "accept-language": "en-US,en;q=0.9,ar;q=0.8",
+            "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+            "cloudfront-is-mobile-viewer": "false",
+            "accept": "application/json, text/plain, */*",
+            "cloudfront-is-smarttv-viewer": "false",
+            "accept-encoding": "gzip, deflate, br",
+            "referer": "https://console.aws.amazon.com/",
+            "x-api-key": "da2-ja3afukx6jdllja5z5fpuevf5e",
+            "content-type": "application/json",
+            "sec-fetch-mode": "cors",
+            "x-amzn-trace-id": "Root=1-61d7b5bb-5b014959251a9b7c2d87c2d4",
+            "x-amz-cf-id": "gReJIFLTgT3QJSUHQk3oWcu1bQjnYyoDLSzU2yE-UTSY0yZ_QpU15A==",
+            "sec-fetch-dest": "empty",
+            "x-amz-user-agent": "AWS-Console-AppSync/",
+            "sec-ch-ua-platform": "\"macOS\"",
+            "cloudfront-is-desktop-viewer": "true",
+            "sec-fetch-site": "cross-site",
+            "sec-ch-ua": "\" Not A;Brand\";v=\"99\", \"Chromium\";v=\"96\", \"Google Chrome\";v=\"96\"",
+            "x-forwarded-port": "443"
+        },
+        "domainName": null
+    },
+    "prev": null,
+    "info": {
+        "fieldName": "listFolder",
+        "selectionSetGraphQL": "{\n  items {\n    attributes\n    id\n    tags\n  }\n  nextToken\n}",
+        "selectionSetList": [
+            "items",
+            "items/attributes",
+            "items/id",
+            "items/tags",
+            "nextToken"
+        ],
+        "parentTypeName": "Query",
+        "variables": {}
+    },
+    "stash": {}
+}
