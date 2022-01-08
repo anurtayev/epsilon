@@ -30,10 +30,39 @@ Resources:
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
+
+  Api:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name: !Sub ${AWS::StackName}-appsync
+      AuthenticationType: API_KEY
+  ApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+  AppsyncSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema.graphql
+  MetaDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      Name:
+        !Join [
+          "_",
+          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "meta_datasource"],
+        ]
+      Description: "The Notes Table AppSync Data Source"
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref MetaTable
+        AwsRegion: !Sub ${AWS::Region}
   DynamoDBRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub ${AWS::StackName}-dynamodb-role
       ManagedPolicyArns:
         - Ref: AppSyncDynamoDBPolicy
       AssumeRolePolicyDocument:
@@ -50,7 +79,6 @@ Resources:
   AppSyncDynamoDBPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: Managed policy to allow AWS AppSync to access the tables created by this template.
       Path: /appsync/
       PolicyDocument:
         Version: 2012-10-17
@@ -66,209 +94,90 @@ Resources:
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
             Resource: !Join ["", [!GetAtt MetaTable.Arn, "*"]]
-
-  Api:
-    Type: AWS::AppSync::GraphQLApi
-    Properties:
-      Name: !Sub ${AWS::StackName}-appsync
-      AuthenticationType: API_KEY
-  ApiKey:
-    Type: AWS::AppSync::ApiKey
-    Properties:
-      ApiId: !GetAtt Api.ApiId
-  Schema:
-    Type: AWS::AppSync::GraphQLSchema
-    Properties:
-      ApiId: !GetAtt Api.ApiId
-      DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema.graphql
-  MetaDataSource:
+  FileSystemLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt Api.ApiId
       Name:
         !Join [
           "_",
-          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "datasource"],
+          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "file_system_datasource"],
         ]
-      Description: "The Notes Table AppSync Data Source"
-      Type: AMAZON_DYNAMODB
-      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
-      DynamoDBConfig:
-        TableName: !Ref MetaTable
-        AwsRegion: !Sub ${AWS::Region}
-  GetEntryQueryResolver:
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt FileSystemLambdaAppsyncDataSourceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt FileSystemLambda.Arn
+  FileSystemLambdaAppsyncDataSourceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - !Ref FileSystemLambdaAppsyncDataSourceRolePolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - appsync.amazonaws.com
+  FileSystemLambdaAppsyncDataSourceRolePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Path: /appsync/
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - lambda:invokeFunction
+            Resource:
+              - !GetAtt FileSystemLambda.Arn
+              - !Join [":", [!GetAtt FileSystemLambda.Arn, "*"]]
+  ListFolderQueryResolver:
     Type: "AWS::AppSync::Resolver"
-    DependsOn: Schema
+    DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt Api.ApiId
       TypeName: Query
-      FieldName: getEntry
+      FieldName: listFolder
+      DataSourceName: !GetAtt FileSystemLambdaAppsyncDataSource.Name
+  AttributesEntryQueryResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId: !GetAtt Api.ApiId
+      TypeName: Entry
+      FieldName: attributes
       DataSourceName: !GetAtt MetaDataSource.Name
       RequestMappingTemplate: |
         {
           "version": "2017-02-28",
           "operation": "GetItem",
           "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id),
+            "id": $util.dynamodb.toDynamoDBJson($ctx.source.id),
           },
         }
       ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  ListEntriesQueryResolver:
+        $util.toJson($context.result.attributes)
+  TagsEntryQueryResolver:
     Type: "AWS::AppSync::Resolver"
-    DependsOn: Schema
+    DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt Api.ApiId
-      TypeName: Query
-      FieldName: listEntries
+      TypeName: Entry
+      FieldName: tags
       DataSourceName: !GetAtt MetaDataSource.Name
       RequestMappingTemplate: |
         {
           "version": "2017-02-28",
-          "operation": "Scan",
-          "filter": #if($context.args.filter) $util.transform.toDynamoDBFilterExpression($ctx.args.filter) #else null #end,
-          "limit": $util.defaultIfNull($ctx.args.limit, 20),
-          "nextToken": $util.toJson($util.defaultIfNullOrEmpty($ctx.args.nextToken, null)),
-        }
-      ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  CreateEntryMutationResolver:
-    Type: "AWS::AppSync::Resolver"
-    DependsOn: Schema
-    Properties:
-      ApiId: !GetAtt Api.ApiId
-      TypeName: Mutation
-      FieldName: createEntry
-      DataSourceName: !GetAtt MetaDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version": "2017-02-28",
-          "operation": "PutItem",
+          "operation": "GetItem",
           "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
-          },
-          "attributeValues": $util.dynamodb.toMapValuesJson($ctx.args.input),
-          "condition": {
-            "expression": "attribute_not_exists(#id)",
-            "expressionNames": {
-              "#id": "id",
-            },
+            "id": $util.dynamodb.toDynamoDBJson($ctx.source.id),
           },
         }
       ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  UpdateEntryMutationResolver:
-    Type: "AWS::AppSync::Resolver"
-    DependsOn: Schema
-    Properties:
-      ApiId: !GetAtt Api.ApiId
-      TypeName: Mutation
-      FieldName: updateEntry
-      DataSourceName: !GetAtt MetaDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version": "2017-02-28",
-          "operation": "UpdateItem",
-          "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
-          },
-
-          ## Set up some space to keep track of things we're updating **
-          #set( $expNames  = {} )
-          #set( $expValues = {} )
-          #set( $expSet = {} )
-          #set( $expAdd = {} )
-          #set( $expRemove = [] )
-
-          ## Iterate through each argument, skipping keys **
-          #foreach( $entry in $util.map.copyAndRemoveAllKeys($ctx.args.input, ["id"]).entrySet() )
-            #if( $util.isNull($entry.value) )
-              ## If the argument is set to "null", then remove that attribute from the item in DynamoDB **
-
-              #set( $discard = ${expRemove.add("#${entry.key}")} )
-              $!{expNames.put("#${entry.key}", "${entry.key}")}
-            #else
-              ## Otherwise set (or update) the attribute on the item in DynamoDB **
-
-              $!{expSet.put("#${entry.key}", ":${entry.key}")}
-              $!{expNames.put("#${entry.key}", "${entry.key}")}
-              $!{expValues.put(":${entry.key}", $util.dynamodb.toDynamoDB($entry.value))}
-            #end
-          #end
-
-          ## Start building the update expression, starting with attributes we're going to SET **
-          #set( $expression = "" )
-          #if( !${expSet.isEmpty()} )
-            #set( $expression = "SET" )
-            #foreach( $entry in $expSet.entrySet() )
-              #set( $expression = "${expression} ${entry.key} = ${entry.value}" )
-              #if ( $foreach.hasNext )
-                #set( $expression = "${expression}," )
-              #end
-            #end
-          #end
-
-          ## Continue building the update expression, adding attributes we're going to ADD **
-          #if( !${expAdd.isEmpty()} )
-            #set( $expression = "${expression} ADD" )
-            #foreach( $entry in $expAdd.entrySet() )
-              #set( $expression = "${expression} ${entry.key} ${entry.value}" )
-              #if ( $foreach.hasNext )
-                #set( $expression = "${expression}," )
-              #end
-            #end
-          #end
-
-          ## Continue building the update expression, adding attributes we're going to REMOVE **
-          #if( !${expRemove.isEmpty()} )
-            #set( $expression = "${expression} REMOVE" )
-
-            #foreach( $entry in $expRemove )
-              #set( $expression = "${expression} ${entry}" )
-              #if ( $foreach.hasNext )
-                #set( $expression = "${expression}," )
-              #end
-            #end
-          #end
-
-          ## Finally, write the update expression into the document, along with any expressionNames and expressionValues **
-          "update": {
-            "expression": "${expression}",
-            #if( !${expNames.isEmpty()} )
-              "expressionNames": $utils.toJson($expNames),
-            #end
-            #if( !${expValues.isEmpty()} )
-              "expressionValues": $utils.toJson($expValues),
-            #end
-          },
-
-          "condition": {
-            "expression": "attribute_exists(#id)",
-            "expressionNames": {
-              "#id": "id",
-            },
-          }
-        }
-      ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  DeleteEntryMutationResolver:
-    Type: "AWS::AppSync::Resolver"
-    DependsOn: Schema
-    Properties:
-      ApiId: !GetAtt Api.ApiId
-      TypeName: Mutation
-      FieldName: deleteEntry
-      DataSourceName: !GetAtt MetaDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version": "2017-02-28",
-          "operation": "DeleteItem",
-          "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.input.id),
-          },
-        }
-      ResponseMappingTemplate: |
-        $util.toJson($context.result)
+        $util.toJson($context.result.tags)
 
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -324,7 +233,7 @@ Resources:
         Variables:
           TABLE_NAME: !Ref MetaTable
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
-  FSLambda:
+  FileSystemLambda:
     DependsOn: LambdaExecutionRole
     Type: AWS::Lambda::Function
     Properties:
