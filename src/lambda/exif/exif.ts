@@ -1,6 +1,6 @@
 import { error, info } from "console";
-import { extname } from "path";
 
+import { isKeyExtensionAllowed } from "../../lib/util";
 import { getObject } from "../../lib/s3";
 import { put } from "../../lib/dynamodb";
 
@@ -23,8 +23,7 @@ export const handler = async (event) => {
   } = event;
   info("key:", key, "bucket:", bucket);
 
-  const ext = extname(key).toLowerCase().slice(1);
-  if (!process.env.ALLOWED_EXTENSIONS.split("|").includes(ext)) return;
+  if (!isKeyExtensionAllowed(key)) return;
 
   let exif: object;
 

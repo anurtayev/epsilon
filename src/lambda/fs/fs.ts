@@ -1,7 +1,7 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
-import { extname } from "path";
 
+import { isKeyExtensionAllowed } from "../../lib/util";
 import { listObjectsV2 } from "../../lib/s3";
 import { QueryListFolderArgs, EntryConnection } from "../../lib/graphqlTypes";
 
@@ -21,11 +21,7 @@ export const handler: AppSyncResolverHandler<
 
   return {
     items: res.Contents.map((element) => ({ id: element.Key }))
-      .filter(({ id }) =>
-        process.env.ALLOWED_EXTENSIONS.split("|").includes(
-          extname(id).toLowerCase().slice(1)
-        )
-      )
+      .filter(({ id }) => isKeyExtensionAllowed(id))
       .concat(res.CommonPrefixes.map((element) => ({ id: element.Prefix }))),
     nextToken: res.NextContinuationToken,
   };
