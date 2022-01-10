@@ -16,3 +16,8 @@ type EntryConnection {
 type Query {
   listFolder(id: String, nextToken: String): EntryConnection
 }
+
+input MetaDataInput {
+  tags: [String!]
+  attributes: [[String!]!]
+}

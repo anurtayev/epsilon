@@ -1,11 +1,6 @@
-const AWS = require("aws-sdk");
-const sharp = require("sharp");
-const assert = require("assert");
-
-const S3 = new AWS.S3({
-  region: process.env.AWS_REGION,
-  apiVersion: "2006-03-01",
-});
+import { AppSyncResolverHandler } from "aws-lambda";
+import sharp from "sharp";
+import assert from "assert";
 
 const bucketName = process.env.INPUT_S3_BUCKET;
 assert(bucketName, "Bucket name environment variable is required");
@@ -26,7 +21,7 @@ const getParams = (event) => {
   return { imageKey, width: Number(width), height: Number(height) };
 };
 
-module.exports.handler = async (event, context) => {
+export const handler = async (event, context) => {
   console.log({ event, context });
 
   const { imageKey, width, height } = getParams(event);

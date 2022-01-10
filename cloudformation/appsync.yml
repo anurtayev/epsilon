@@ -22,7 +22,7 @@ Resources:
   MetaTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-table
+      TableName: !Sub ${AWS::StackName}-meta-table
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: "id"
@@ -247,6 +247,19 @@ Resources:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+  ResizerLambda:
+    DependsOn: LambdaExecutionRole
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs14.x
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Handler: build/lambda/resizer/resizer.handler
+      Code:
+        S3Bucket: !Ref DeploymentBucketName
+        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !Ref S3Bucket
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -282,6 +295,11 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt MetaTable.Arn
+  CloudFront:
+    Type: AWS::CloudFront::Distribution
+    Properties: 
+      DistributionConfig: 
+        DistributionConfig
 
 Outputs:
   ApiId:
