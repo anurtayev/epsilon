@@ -1,23 +1,49 @@
 ﻿schema {
   query: Query
+  mutation: Mutation
 }
 
-type Entry {
-  attributes: [[String!]!]
+type MetaData {
   id: String!
+  attributes: [[String!]!]
   tags: [String!]
 }
 
-type EntryConnection {
-  items: [Entry!]!
+interface Entry {
+  id: String!
+}
+
+type FileEntry implements Entry {
+  id: String!
+  size: Int!
+  extension: String!
+}
+
+type FolderEntry implements Entry {
+  id: String!
+}
+
+type FolderConnection {
+  items: [Entry!]
   nextToken: String
 }
 
 type Query {
-  listFolder(id: String, nextToken: String): EntryConnection
+  listFolder(id: String!, nextToken: String): FolderConnection
+  getMeta(id: String!): MetaData
 }
 
-input MetaDataInput {
-  tags: [String!]
+type Mutation {
+  updateAttributes(id: String!, attributesInput: AttributesInput!): MetaData
+  deleteAttributes(id: String!): MetaData
+  updateTags(id: String!, tagsInput: TagsInput!): MetaData
+  deleteTags(id: String!): MetaData
+}
+
+input AttributesInput {
   attributes: [[String!]!]
+}
+
+input TagsInput {
+  tags: [String!]
 }

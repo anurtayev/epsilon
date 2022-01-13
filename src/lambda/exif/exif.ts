@@ -1,6 +1,6 @@
 import { error, info } from "console";
 
-import { isKeyExtensionAllowed } from "../../lib/util";
+import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
 import { getObject } from "../../lib/s3";
 import { put } from "../../lib/dynamodb";
 
@@ -23,7 +23,7 @@ export const handler = async (event) => {
   } = event;
   info("key:", key, "bucket:", bucket);
 
-  if (!isKeyExtensionAllowed(key)) return;
+  if (!isKeyExtensionAllowed(getExtension(key))) return;
 
   let exif: object;
 

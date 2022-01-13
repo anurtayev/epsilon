@@ -1,6 +1,7 @@
 import { AppSyncResolverHandler } from "aws-lambda";
 import sharp from "sharp";
 import assert from "assert";
+import { getObject } from "../../lib/s3";
 
 const bucketName = process.env.INPUT_S3_BUCKET;
 assert(bucketName, "Bucket name environment variable is required");
@@ -21,17 +22,20 @@ const getParams = (event) => {
   return { imageKey, width: Number(width), height: Number(height) };
 };
 
-export const handler = async (event, context) => {
+export const handler: AppSyncResolverHandler<object, object> = async (
+  event,
+  context
+) => {
   console.log({ event, context });
 
   const { imageKey, width, height } = getParams(event);
 
   console.log({ imageKey, width, height });
 
-  const { Body: imgBuffer } = await S3.getObject({
-    Bucket: bucketName,
-    Key: imageKey,
-  }).promise();
+  const { Body: imgBuffer } = await getObject({
+    bucket: bucketName,
+    key: imageKey,
+  });
 
   return {
     statusCode: 200,

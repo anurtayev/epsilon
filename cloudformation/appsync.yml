@@ -31,24 +31,27 @@ Resources:
         - AttributeName: "id"
           KeyType: "HASH"
 
-  Api:
+  AppsyncApi:
     Type: AWS::AppSync::GraphQLApi
     Properties:
       Name: !Sub ${AWS::StackName}-appsync
       AuthenticationType: API_KEY
   ApiKey:
     Type: AWS::AppSync::ApiKey
+    DependsOn: AppsyncApi
     Properties:
-      ApiId: !GetAtt Api.ApiId
+      ApiId: !GetAtt AppsyncApi.ApiId
   AppsyncSchema:
     Type: AWS::AppSync::GraphQLSchema
+    DependsOn: AppsyncApi
     Properties:
-      ApiId: !GetAtt Api.ApiId
-      DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema.graphql
+      ApiId: !GetAtt AppsyncApi.ApiId
+      DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema_${Timestamp}.graphql
   MetaDataSource:
     Type: AWS::AppSync::DataSource
+    DependsOn: AppsyncApi
     Properties:
-      ApiId: !GetAtt Api.ApiId
+      ApiId: !GetAtt AppsyncApi.ApiId
       Name:
         !Join [
           "_",
@@ -94,24 +97,25 @@ Resources:
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
             Resource: !Join ["", [!GetAtt MetaTable.Arn, "*"]]
-  FileSystemLambdaAppsyncDataSource:
+  ListFolderLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
+    DependsOn: ListFolderLambdaAppsyncDataSourceRole
     Properties:
-      ApiId: !GetAtt Api.ApiId
+      ApiId: !GetAtt AppsyncApi.ApiId
       Name:
         !Join [
           "_",
-          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "file_system_datasource"],
+          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "list_folder_datasource"],
         ]
       Type: AWS_LAMBDA
-      ServiceRoleArn: !GetAtt FileSystemLambdaAppsyncDataSourceRole.Arn
+      ServiceRoleArn: !GetAtt ListFolderLambdaAppsyncDataSourceRole.Arn
       LambdaConfig:
-        LambdaFunctionArn: !GetAtt FileSystemLambda.Arn
-  FileSystemLambdaAppsyncDataSourceRole:
+        LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
+  ListFolderLambdaAppsyncDataSourceRole:
     Type: AWS::IAM::Role
     Properties:
       ManagedPolicyArns:
-        - !Ref FileSystemLambdaAppsyncDataSourceRolePolicy
+        - !Ref ListFolderLambdaAppsyncDataSourceRolePolicy
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -121,7 +125,7 @@ Resources:
             Principal:
               Service:
                 - appsync.amazonaws.com
-  FileSystemLambdaAppsyncDataSourceRolePolicy:
+  ListFolderLambdaAppsyncDataSourceRolePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Path: /appsync/
@@ -132,52 +136,124 @@ Resources:
             Action:
               - lambda:invokeFunction
             Resource:
-              - !GetAtt FileSystemLambda.Arn
-              - !Join [":", [!GetAtt FileSystemLambda.Arn, "*"]]
+              - !GetAtt ListFolderLambda.Arn
+              - !Join [":", [!GetAtt ListFolderLambda.Arn, "*"]]
   ListFolderQueryResolver:
     Type: "AWS::AppSync::Resolver"
     DependsOn: AppsyncSchema
     Properties:
-      ApiId: !GetAtt Api.ApiId
+      ApiId: !GetAtt AppsyncApi.ApiId
       TypeName: Query
       FieldName: listFolder
-      DataSourceName: !GetAtt FileSystemLambdaAppsyncDataSource.Name
-  AttributesEntryQueryResolver:
+      DataSourceName: !GetAtt ListFolderLambdaAppsyncDataSource.Name
+  GetMetaQueryResolver:
     Type: "AWS::AppSync::Resolver"
     DependsOn: AppsyncSchema
     Properties:
-      ApiId: !GetAtt Api.ApiId
-      TypeName: Entry
-      FieldName: attributes
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Query
+      FieldName: getMeta
       DataSourceName: !GetAtt MetaDataSource.Name
       RequestMappingTemplate: |
         {
           "version": "2017-02-28",
           "operation": "GetItem",
           "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.source.id),
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
           },
         }
       ResponseMappingTemplate: |
-        $util.toJson($context.result.attributes)
-  TagsEntryQueryResolver:
+        $util.toJson($context.result)
+  UpdateAttributesMutationResolver:
     Type: "AWS::AppSync::Resolver"
     DependsOn: AppsyncSchema
     Properties:
-      ApiId: !GetAtt Api.ApiId
-      TypeName: Entry
-      FieldName: tags
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Mutation
+      FieldName: updateAttributes
       DataSourceName: !GetAtt MetaDataSource.Name
       RequestMappingTemplate: |
         {
           "version": "2017-02-28",
-          "operation": "GetItem",
+          "operation": "UpdateItem",
           "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.source.id),
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
           },
+          "update": {
+            "expression": "SET attributes = :attributes",
+            "expressionValues": {
+              ":attributes" : $util.dynamodb.toDynamoDBJson($ctx.args.attributesInput.attributes)
+            }
+          }
         }
       ResponseMappingTemplate: |
-        $util.toJson($context.result.tags)
+        $util.toJson($context.result)
+  DeleteAttributesMutationResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Mutation
+      FieldName: deleteAttributes
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "UpdateItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
+          },
+          "update": {
+            "expression": "REMOVE attributes"
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+  UpdateTagsMutationResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Mutation
+      FieldName: updateTags
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "UpdateItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
+          },
+          "update": {
+            "expression": "SET tags = :tags",
+            "expressionValues": {
+              ":tags" : $util.dynamodb.toDynamoDBJson($ctx.args.tagsInput.tags)
+            }
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
+  DeleteTagsMutationResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Mutation
+      FieldName: deleteTags
+      DataSourceName: !GetAtt MetaDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version": "2017-02-28",
+          "operation": "UpdateItem",
+          "key": {
+            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
+          },
+          "update": {
+            "expression": "REMOVE tags"
+          }
+        }
+      ResponseMappingTemplate: |
+        $util.toJson($context.result)
 
   S3Bucket:
     Type: AWS::S3::Bucket
@@ -233,13 +309,13 @@ Resources:
         Variables:
           TABLE_NAME: !Ref MetaTable
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
-  FileSystemLambda:
+  ListFolderLambda:
     DependsOn: LambdaExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
       Role: !GetAtt LambdaExecutionRole.Arn
-      Handler: build/lambda/fs/fs.handler
+      Handler: build/lambda/fs/listFolder.handler
       Code:
         S3Bucket: !Ref DeploymentBucketName
         S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
@@ -295,16 +371,11 @@ Resources:
                 Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt MetaTable.Arn
-  CloudFront:
-    Type: AWS::CloudFront::Distribution
-    Properties: 
-      DistributionConfig: 
-        DistributionConfig
 
 Outputs:
   ApiId:
-    Value: !GetAtt Api.ApiId
+    Value: !GetAtt AppsyncApi.ApiId
   Arn:
-    Value: !GetAtt Api.Arn
+    Value: !GetAtt AppsyncApi.Arn
   GraphQLUrl:
-    Value: !GetAtt Api.GraphQLUrl
+    Value: !GetAtt AppsyncApi.GraphQLUrl
