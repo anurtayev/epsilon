@@ -1,47 +1,41 @@
-import { AppSyncResolverHandler } from "aws-lambda";
+import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from "aws-lambda";
 import sharp from "sharp";
 import assert from "assert";
 import { getObject } from "../../lib/s3";
 
-const bucketName = process.env.INPUT_S3_BUCKET;
+const bucketName = process.env.MEDIA_BUCKET;
 assert(bucketName, "Bucket name environment variable is required");
 
-const getParams = (event) => {
-  const { rawPath, queryStringParameters } = event;
+const getParams = (event: APIGatewayProxyEventV2) => {
+  const { queryStringParameters } = event;
+  const { width, height, key } = queryStringParameters;
   assert(
-    queryStringParameters,
-    "Height and width query string parameters are required"
-  );
-  const imageKey = rawPath.slice(9);
-  const { width, height } = queryStringParameters;
-  assert(
-    width && height,
+    width && height && key,
     "Height and width query string parameters are required"
   );
 
-  return { imageKey, width: Number(width), height: Number(height) };
+  return { key, width: Number(width), height: Number(height) };
 };
 
-export const handler: AppSyncResolverHandler<object, object> = async (
-  event,
-  context
-) => {
+export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
   console.log({ event, context });
 
-  const { imageKey, width, height } = getParams(event);
+  const { key, width, height } = getParams(event);
 
-  console.log({ imageKey, width, height });
+  console.log({ key, width, height });
 
   const { Body: imgBuffer } = await getObject({
     bucket: bucketName,
-    key: imageKey,
+    key: key,
   });
 
   return {
     statusCode: 200,
     isBase64Encoded: true,
-    body: (await sharp(imgBuffer).resize(width, height).toBuffer()).toString(
-      "base64"
-    ),
+    body: (
+      await sharp(imgBuffer as Buffer)
+        .resize(width, height)
+        .toBuffer()
+    ).toString("base64"),
   };
 };

@@ -12,6 +12,7 @@
     "start": "dotenv ts-node src/lambda/fs/index.ts"
   },
   "dependencies": {
+    "@types/sharp": "^0.29.5",
     "aws-sdk": "^2.991.0",
     "dotenv-safe": "^8.2.0",
     "exifr": "^7.1.3",
