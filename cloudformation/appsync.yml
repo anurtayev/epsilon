@@ -296,11 +296,11 @@ Resources:
       SourceArn: !GetAtt S3BucketRule.Arn
 
   ExifLambda:
-    DependsOn: LambdaExecutionRole
+    DependsOn: AllLambdasExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt AllLambdasExecutionRole.Arn
       Handler: build/lambda/exif/exif.handler
       Code:
         S3Bucket: !Ref DeploymentBucketName
@@ -309,12 +309,19 @@ Resources:
         Variables:
           TABLE_NAME: !Ref MetaTable
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+  ExifLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: ExifLambda
+    Properties: 
+      RetentionInDays: 14
+      LogGroupName: !Join ["", ["/aws/lambda/", !Ref ExifLambda]]
+
   ListFolderLambda:
-    DependsOn: LambdaExecutionRole
+    DependsOn: AllLambdasExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt AllLambdasExecutionRole.Arn
       Handler: build/lambda/fs/listFolder.handler
       Code:
         S3Bucket: !Ref DeploymentBucketName
@@ -323,20 +330,35 @@ Resources:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+  ListFolderLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: ListFolderLambda
+    Properties: 
+      RetentionInDays: 14
+      LogGroupName: !Join ["", ["/aws/lambda/", !Ref ListFolderLambda]]
+
   ResizerLambda:
-    DependsOn: LambdaExecutionRole
+    DependsOn: AllLambdasExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt AllLambdasExecutionRole.Arn
       Handler: build/lambda/resizer/resizer.handler
+      Timeout: 10
       Code:
         S3Bucket: !Ref DeploymentBucketName
         S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
-  LambdaExecutionRole:
+  ResizerLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: ResizerLambda
+    Properties: 
+      RetentionInDays: 14
+      LogGroupName: !Join ["", ["/aws/lambda/", !Ref ResizerLambda]]
+
+  AllLambdasExecutionRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:

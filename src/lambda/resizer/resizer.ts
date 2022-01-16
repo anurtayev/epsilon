@@ -1,6 +1,6 @@
 import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from "aws-lambda";
-import sharp from "sharp";
-import assert from "assert";
+import * as sharp from "sharp";
+import { strict as assert } from "assert";
 import { getObject } from "../../lib/s3";
 
 const bucketName = process.env.MEDIA_BUCKET;
