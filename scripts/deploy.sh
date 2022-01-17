@@ -10,7 +10,7 @@ echo "Timestamp: $timestamp"
 stackName=${PROJECT}-${NODE_ENV}
 echo "StackName: $stackName"
 
-aws s3 sync cloudformation s3://$S3_DEPLOYMENT_BUCKET/cloudformation || exit 1
+aws s3 sync cloudformation s3://$S3_DEPLOYMENT_BUCKET/cloudformation --delete || exit 1
 aws s3 mv s3://$S3_DEPLOYMENT_BUCKET/cloudformation/schema.graphql s3://$S3_DEPLOYMENT_BUCKET/cloudformation/schema_${timestamp}.graphql || exit 1
 aws cloudformation validate-template \
   --template-url https://$S3_DEPLOYMENT_BUCKET.s3.amazonaws.com/cloudformation/appsync.yml \

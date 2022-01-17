@@ -16,7 +16,6 @@ const sleep = async (interval) =>
   });
 
 const finishedStatuses = [
-  "CREATE_IN_PROGRESS",
   "CREATE_FAILED",
   "CREATE_COMPLETE",
   "ROLLBACK_FAILED",
@@ -42,7 +41,9 @@ const run = async () => {
     process.stdout.write(".");
     await sleep(2000);
   }
-  console.log("\n");
+  console.log(
+    `\n${stackName} deployment has finished with ${stackStatus} status`
+  );
   console.timeEnd(timerName);
 };
 

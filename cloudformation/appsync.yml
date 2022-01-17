@@ -394,6 +394,69 @@ Resources:
                   - dynamodb:PutItem
                 Resource: !GetAtt MetaTable.Arn
 
+  HttpApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-api
+      ProtocolType: HTTP
+  ResizerLambdaRoute:
+    Type: AWS::ApiGatewayV2::Route
+    DependsOn: ResizerLambdaIntegration
+    Properties:
+      ApiId: !Ref HttpApi
+      RouteKey: GET /resizer
+      Target: !Join [/, [integrations, !Ref ResizerLambdaIntegration]]
+  ResizerLambdaIntegration:
+    Type: 'AWS::ApiGatewayV2::Integration'
+    Properties:
+      ApiId: !Ref HttpApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        !Join
+          - ""
+          -
+            - "arn:"
+            - !Ref AWS::Partition
+            - ":apigateway:"
+            - !Ref AWS::Region
+            - ":lambda:path/2015-03-31/functions/"
+            - !GetAtt ResizerLambda.Arn
+            - "/invocations"
+      IntegrationMethod: POST
+      PayloadFormatVersion: '2.0'     
+  DefaultStage:
+    Type: 'AWS::ApiGatewayV2::Stage'
+    Properties:
+      StageName: $default
+      AutoDeploy: true
+      ApiId: !Ref HttpApi
+  HttpApiLambdaResourcePolicy:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      Action: lambda:InvokeFunction
+      FunctionName:
+        !Join
+          - ":"
+          -
+            - "arn:aws:lambda"
+            - !Ref AWS::Region
+            - !Ref AWS::AccountId
+            - "function"
+            - !Ref ResizerLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn:
+        !Join
+          - ":"
+          -
+            - arn:aws:execute-api
+            - !Ref AWS::Region
+            - !Ref AWS::AccountId
+            - !Join
+              - ""
+              -
+                - !Ref HttpApi
+                - "/*/*/resizer"
+
 Outputs:
   ApiId:
     Value: !GetAtt AppsyncApi.ApiId
