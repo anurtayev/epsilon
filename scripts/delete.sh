@@ -16,6 +16,6 @@ do
   sleep 2
   printf "."
 done
-printf "\n$stackName has been deleted"
+printf "\n$stackName has been deleted\n"
 aws s3 rb s3://$stackName-media --force
-printf "\nBucket $stackName-media has been deleted"
+printf "Bucket $stackName-media has been deleted\n"
