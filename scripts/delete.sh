@@ -17,3 +17,5 @@ do
   printf "."
 done
 printf "\n$stackName has been deleted"
+aws s3 rb s3://$stackName-media --force
+printf "\nBucket $stackName-media has been deleted"

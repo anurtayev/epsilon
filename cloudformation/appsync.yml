@@ -294,6 +294,24 @@ Resources:
       Action: "lambda:InvokeFunction"
       Principal: "events.amazonaws.com"
       SourceArn: !GetAtt S3BucketRule.Arn
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Join
+              - ''
+              -
+                - 'arn:aws:s3:::'
+                - !Ref S3Bucket
+                - /*
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
 
   ExifLambda:
     DependsOn: AllLambdasExecutionRole
@@ -456,6 +474,23 @@ Resources:
               -
                 - !Ref HttpApi
                 - "/*/*/resizer"
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: CloudFrontOriginAccessIdentity
+    Properties: 
+      DistributionConfig: 
+        Enabled: true
+        Origins:
+          - Id: !Sub "${AWS::StackName}-media-bucket-origin"
+            DomainName: !GetAtt S3Bucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Ref CloudFrontOriginAccessIdentity
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties: 
+      CloudFrontOriginAccessIdentityConfig: 
+        Comment: OAI to access media bucket
 
 Outputs:
   ApiId:
