@@ -568,7 +568,7 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties: 
       CloudFrontOriginAccessIdentityConfig: 
-        Comment: OAI to access media bucket
+        Comment: !Sub ${AWS::StackName}-media-origin-access-identity
 
 Outputs:
   CloudFrontDistributionUrl:
