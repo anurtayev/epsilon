@@ -47,3 +47,14 @@ input AttributesInput {
 input TagsInput {
   tags: [String!]
 }
+
+type Tag {
+  id: String!
+  fileEntryIds: [String!]
+}
+
+type Attribute {
+  id: String!
+  value: String!
+  fileEntryIds: [String!]
+}

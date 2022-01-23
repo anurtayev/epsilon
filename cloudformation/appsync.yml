@@ -30,6 +30,8 @@ Resources:
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
 
   AppsyncApi:
     Type: AWS::AppSync::GraphQLApi
@@ -55,7 +57,10 @@ Resources:
       Name:
         !Join [
           "_",
-          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "meta_datasource"],
+          [
+            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
+            "meta_datasource",
+          ],
         ]
       Description: "The Notes Table AppSync Data Source"
       Type: AMAZON_DYNAMODB
@@ -82,7 +87,6 @@ Resources:
   AppSyncDynamoDBPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Path: /appsync/
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -90,7 +94,6 @@ Resources:
             Action:
               - dynamodb:GetItem
               - dynamodb:PutItem
-              - dynamodb:DeleteItem
               - dynamodb:UpdateItem
               - dynamodb:Query
               - dynamodb:Scan
@@ -105,7 +108,10 @@ Resources:
       Name:
         !Join [
           "_",
-          [!Join ["_", !Split ["-", !Sub "${AWS::StackName}"]], "list_folder_datasource"],
+          [
+            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
+            "list_folder_datasource",
+          ],
         ]
       Type: AWS_LAMBDA
       ServiceRoleArn: !GetAtt ListFolderLambdaAppsyncDataSourceRole.Arn
@@ -128,7 +134,6 @@ Resources:
   ListFolderLambdaAppsyncDataSourceRolePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Path: /appsync/
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -296,18 +301,17 @@ Resources:
       SourceArn: !GetAtt S3BucketRule.Arn
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
-    Properties: 
+    Properties:
       Bucket: !Ref S3Bucket
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Action:
-              - 's3:GetObject'
+              - "s3:GetObject"
             Effect: Allow
             Resource: !Join
-              - ''
-              -
-                - 'arn:aws:s3:::'
+              - ""
+              - - "arn:aws:s3:::"
                 - !Ref S3Bucket
                 - /*
             Principal:
@@ -330,7 +334,7 @@ Resources:
   ExifLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     DependsOn: ExifLambda
-    Properties: 
+    Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref ExifLambda]]
 
@@ -351,7 +355,7 @@ Resources:
   ListFolderLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     DependsOn: ListFolderLambda
-    Properties: 
+    Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref ListFolderLambda]]
 
@@ -372,7 +376,7 @@ Resources:
   ResizerLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     DependsOn: ResizerLambda
-    Properties: 
+    Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref ResizerLambda]]
 
@@ -388,9 +392,8 @@ Resources:
                 - lambda.amazonaws.com
             Action:
               - sts:AssumeRole
-      Path: "/"
       Policies:
-        - PolicyName: root
+        - PolicyName: !Sub ${AWS::StackName}-all-lambdas-role
           PolicyDocument:
             Version: "2012-10-17"
             Statement:
@@ -400,7 +403,8 @@ Resources:
                 Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
-                  - s3:*
+                  - s3:ListObjectsV2
+                  - s3:GetObject
                 Resource:
                   - !GetAtt S3Bucket.Arn
                   - !Join
@@ -425,55 +429,48 @@ Resources:
       RouteKey: GET /resizer
       Target: !Join [/, [integrations, !Ref ResizerLambdaIntegration]]
   ResizerLambdaIntegration:
-    Type: 'AWS::ApiGatewayV2::Integration'
+    Type: AWS::ApiGatewayV2::Integration
     Properties:
       ApiId: !Ref HttpApi
       IntegrationType: AWS_PROXY
-      IntegrationUri:
-        !Join
-          - ""
-          -
-            - "arn:"
-            - !Ref AWS::Partition
-            - ":apigateway:"
-            - !Ref AWS::Region
-            - ":lambda:path/2015-03-31/functions/"
-            - !GetAtt ResizerLambda.Arn
-            - "/invocations"
+      IntegrationUri: !Join
+        - ""
+        - - "arn:"
+          - !Ref AWS::Partition
+          - ":apigateway:"
+          - !Ref AWS::Region
+          - ":lambda:path/2015-03-31/functions/"
+          - !GetAtt ResizerLambda.Arn
+          - "/invocations"
       IntegrationMethod: POST
-      PayloadFormatVersion: '2.0'     
+      PayloadFormatVersion: "2.0"
   DefaultStage:
-    Type: 'AWS::ApiGatewayV2::Stage'
+    Type: AWS::ApiGatewayV2::Stage
     Properties:
       StageName: $default
       AutoDeploy: true
       ApiId: !Ref HttpApi
   HttpApiLambdaResourcePolicy:
     Type: AWS::Lambda::Permission
-    Properties: 
+    Properties:
       Action: lambda:InvokeFunction
-      FunctionName:
-        !Join
-          - ":"
-          -
-            - "arn:aws:lambda"
-            - !Ref AWS::Region
-            - !Ref AWS::AccountId
-            - "function"
-            - !Ref ResizerLambda
+      FunctionName: !Join
+        - ":"
+        - - "arn:aws:lambda"
+          - !Ref AWS::Region
+          - !Ref AWS::AccountId
+          - "function"
+          - !Ref ResizerLambda
       Principal: apigateway.amazonaws.com
-      SourceArn:
-        !Join
-          - ":"
-          -
-            - arn:aws:execute-api
-            - !Ref AWS::Region
-            - !Ref AWS::AccountId
-            - !Join
-              - ""
-              -
-                - !Ref HttpApi
-                - "/*/*/resizer"
+      SourceArn: !Join
+        - ":"
+        - - arn:aws:execute-api
+          - !Ref AWS::Region
+          - !Ref AWS::AccountId
+          - !Join
+            - ""
+            - - !Ref HttpApi
+              - "/*/*/resizer"
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
@@ -482,8 +479,8 @@ Resources:
       - AppsyncApi
       - S3Bucket
       - HttpApi
-    Properties: 
-      DistributionConfig: 
+    Properties:
+      DistributionConfig:
         Enabled: true
         Origins:
           - Id: !GetAtt S3Bucket.DomainName
@@ -496,8 +493,7 @@ Resources:
           - Id: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             DomainName: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             OriginCustomHeaders:
-              -
-                HeaderName: x-api-key
+              - HeaderName: x-api-key
                 HeaderValue: !GetAtt ApiKey.ApiKey
             CustomOriginConfig:
               HTTPSPort: 443
@@ -520,8 +516,7 @@ Resources:
           ViewerProtocolPolicy: https-only
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
         CacheBehaviors:
-          -
-            AllowedMethods:
+          - AllowedMethods:
               - GET
               - HEAD
               - OPTIONS
@@ -531,33 +526,34 @@ Resources:
               - DELETE
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
             PathPattern: /graphql
-            TargetOriginId: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
+            TargetOriginId:
+              !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
-          -
-            AllowedMethods:
+          - AllowedMethods:
               - GET
               - HEAD
             CachePolicyId: !GetAtt ResizerCachePolicy.Id
             PathPattern: /resizer
-            TargetOriginId: !Select [2, !Split ["/", !GetAtt HttpApi.ApiEndpoint]]
+            TargetOriginId:
+              !Select [2, !Split ["/", !GetAtt HttpApi.ApiEndpoint]]
             ViewerProtocolPolicy: https-only
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy
-    Properties: 
-      CachePolicyConfig: 
+    Properties:
+      CachePolicyConfig:
         DefaultTTL: 86400
         MaxTTL: 31536000
         MinTTL: 1
         Name: !Sub ${AWS::StackName}-resizer-cache-policy
-        ParametersInCacheKeyAndForwardedToOrigin: 
-          CookiesConfig: 
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
             CookieBehavior: none
           EnableAcceptEncodingBrotli: false
           EnableAcceptEncodingGzip: false
-          HeadersConfig: 
+          HeadersConfig:
             HeaderBehavior: none
-          QueryStringsConfig: 
+          QueryStringsConfig:
             QueryStringBehavior: whitelist
             QueryStrings:
               - width
@@ -566,9 +562,63 @@ Resources:
 
   CloudFrontOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-    Properties: 
-      CloudFrontOriginAccessIdentityConfig: 
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${AWS::StackName}-media-origin-access-identity
+
+  DynamoStreamProcessingLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-dynamodb-stream-processing-lambda-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:*
+                Resource: arn:aws:logs:*:*:*
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:ListStreams
+                  - dynamodb:ListShards
+                Resource: !GetAtt MetaTable.StreamArn
+
+  DynamoStreamProcessingLambdaEventSourceMapping:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      EventSourceArn: !GetAtt MetaTable.StreamArn
+      FunctionName: !Ref DynamoStreamProcessingLambda
+      StartingPosition: TRIM_HORIZON
+
+  DynamoStreamProcessingLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs14.x
+      Role: !GetAtt DynamoStreamProcessingLambdaRole.Arn
+      Handler: build/lambda/dbstream/index.handler
+      Timeout: 10
+      Code:
+        S3Bucket: !Ref DeploymentBucketName
+        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
+  DynamoStreamProcessingLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: DynamoStreamProcessingLambda
+    Properties:
+      RetentionInDays: 14
+      LogGroupName:
+        !Join ["", ["/aws/lambda/", !Ref DynamoStreamProcessingLambda]]
 
 Outputs:
   CloudFrontDistributionUrl:
