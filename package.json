@@ -9,7 +9,8 @@
     "codegen:downloadSchema": "dotenv -- bash -c 'aws appsync get-introspection-schema --api-id $APPSYNC_API_ID --format SDL cloudformation/schema.graphql'",
     "codegen:run": "graphql-codegen --config codegen.yml",
     "s3:sync": "aws s3 sync s3://nurtai-pics-test s3://epsilon-development-media",
-    "test": "jest",
+    "test": "jest --testPathPattern=src",
+    "test:watch": "jest --watch --testPathPattern=src",
     "start": "dotenv ts-node src/lambda/fs/index.ts"
   },
   "dependencies": {
@@ -17,8 +18,6 @@
     "sharp": "^0.29.3"
   },
   "devDependencies": {
-    "dotenv-safe": "^8.2.0",
-    "aws-sdk": "^2.991.0",
     "@graphql-codegen/cli": "^2.3.1",
     "@graphql-codegen/introspection": "2.1.0",
     "@graphql-codegen/typescript": "2.4.1",
@@ -27,12 +26,19 @@
     "@types/jest": "^27.4.0",
     "@types/node": "^14.14.25",
     "@types/sharp": "^0.29.5",
+    "aws-sdk": "^2.991.0",
     "dotenv-cli": "^4.1.1",
+    "dotenv-safe": "^8.2.0",
     "eslint": "^8.6.0",
+    "graphql": "^16.2.0",
     "jest": "^27.4.7",
     "prettier": "^2.4.1",
+    "ts-jest": "^27.1.3",
     "ts-node": "^10.4.0",
-    "graphql": "^16.2.0",
     "typescript": "^4.5.2"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
   }
 }

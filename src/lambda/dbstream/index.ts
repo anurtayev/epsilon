@@ -1,6 +1,8 @@
 import { DynamoDBStreamHandler } from "aws-lambda";
-// import { strict as assert } from "assert";
 
-export const handler: DynamoDBStreamHandler = (event, context) => {
-  console.log({ event, context });
+import { metaKeeper } from "./metaKeeper";
+
+export const handler: DynamoDBStreamHandler = (event) => {
+  console.log(JSON.stringify(event, null, 2));
+  metaKeeper(event);
 };

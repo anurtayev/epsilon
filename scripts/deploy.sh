@@ -26,6 +26,7 @@ mkdir deploy
 zip deploy/${stackName}-${timestamp}.zip build/* -r -q
 
 aws s3 sync deploy s3://$S3_DEPLOYMENT_BUCKET || exit 1
+rm -rf deploy
 
 if aws cloudformation describe-stacks --stack-name ${stackName} > /dev/null
 then

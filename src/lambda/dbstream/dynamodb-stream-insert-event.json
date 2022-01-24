@@ -1,0 +1,112 @@
+{
+    "Records": [
+        {
+            "eventID": "c94eb5583d85261e02ce08cc5afd58f6",
+            "eventName": "INSERT",
+            "eventVersion": "1.1",
+            "eventSource": "aws:dynamodb",
+            "awsRegion": "us-east-1",
+            "dynamodb": {
+                "ApproximateCreationDateTime": 1642954942,
+                "Keys": {
+                    "id": {
+                        "S": "media/honda1.jpg"
+                    }
+                },
+                "NewImage": {
+                    "attributes": {
+                        "L": [
+                            {
+                                "L": [
+                                    {
+                                        "S": "orientation"
+                                    },
+                                    {
+                                        "S": "Horizontal (normal)"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "dateCreated"
+                                    },
+                                    {
+                                        "S": "2021-10-05T18:27:23.000Z"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "width"
+                                    },
+                                    {
+                                        "N": "4032"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "height"
+                                    },
+                                    {
+                                        "N": "3024"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "latitude"
+                                    },
+                                    {
+                                        "N": "43.81960555555556"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "longitude"
+                                    },
+                                    {
+                                        "N": "-79.49740555555556"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "monthCreated"
+                                    },
+                                    {
+                                        "N": "10"
+                                    }
+                                ]
+                            },
+                            {
+                                "L": [
+                                    {
+                                        "S": "yearCreated"
+                                    },
+                                    {
+                                        "N": "2021"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "id": {
+                        "S": "media/honda1.jpg"
+                    }
+                },
+                "SequenceNumber": "1624400000000022259668791",
+                "SizeBytes": 243,
+                "StreamViewType": "NEW_AND_OLD_IMAGES"
+            },
+            "eventSourceARN": "arn:aws:dynamodb:us-east-1:416904185688:table/epsilon-development-meta-table/stream/2022-01-23T05:08:07.866"
+        }
+    ]
+}

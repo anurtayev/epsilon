@@ -1,4 +1,5 @@
 import { error, info } from "console";
+import { EventBridgeHandler } from "aws-lambda";
 
 import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
 import { getObject } from "../../lib/s3";
@@ -12,7 +13,9 @@ const cleanseAndPutIntoArray = (exifData: object = {}) =>
     .map((key) => [key, exifData[key]])
     .filter((e) => e.every(Boolean));
 
-export const handler = async (event) => {
+export const handler: EventBridgeHandler<"Object Created", any, void> = async (
+  event
+) => {
   info(JSON.stringify(event, null, 2));
 
   const {
