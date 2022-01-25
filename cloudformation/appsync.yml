@@ -22,16 +22,72 @@ Resources:
   MetaTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-meta-table
+      TableName: !Sub ${AWS::StackName}-meta
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
+        - AttributeName: id
+          AttributeType: S
       KeySchema:
-        - AttributeName: "id"
-          KeyType: "HASH"
+        - AttributeName: id
+          KeyType: HASH
       StreamSpecification:
         StreamViewType: NEW_AND_OLD_IMAGES
+
+  TagsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-tags
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: tag
+          AttributeType: S
+      KeySchema:
+        - AttributeName: tag
+          KeyType: HASH
+
+  TagsFilesRelationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-tags-files-relations
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: tag
+          AttributeType: S
+        - AttributeName: fileId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: tag
+          KeyType: HASH
+        - AttributeName: fileId
+          KeyType: RANGE
+
+  AttributesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-attributes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: attribute
+          AttributeType: S
+      KeySchema:
+        - AttributeName: attribute
+          KeyType: HASH
+
+  AttributesValuesFilesRelationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-attributes-values-files-relations
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: attributeValue
+          AttributeType: S
+        - AttributeName: fileId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: attributeValue
+          KeyType: HASH
+        - AttributeName: fileId
+          KeyType: RANGE
 
   AppsyncApi:
     Type: AWS::AppSync::GraphQLApi
