@@ -1,1 +1,1 @@
-export { put } from "./dynamo";
+export { put } from "./put";

@@ -8,20 +8,21 @@ import putAttributes from "./putAttributes";
 import putAttributesFilesRelationships from "./putAttributesFilesRelationships";
 import processDeletedAttributes from "./processDeletedAttributes";
 
-export const handler: DynamoDBStreamHandler = (event) => {
+export const handler: DynamoDBStreamHandler = async (event) => {
   console.log(JSON.stringify(event, null, 2));
   const extractedMetaArray = extractMeta(event);
 
-  extractedMetaArray.forEach((extractedMeta) => {
-    const { id, tags, deletedTags, attributes, deletedAttributes } =
-      extractedMeta;
+  await Promise.all(
+    extractedMetaArray
+      .map(({ id, tags, deletedTags, attributes, deletedAttributes }) => [
+        putTags(tags),
+        putTagsFilesRelationships({ id, tags }),
+        processDeletedTags({ id, deletedTags }),
 
-    tags && putTags(tags);
-    tags && putTagsFilesRelationships({ id, tags });
-    deletedTags && processDeletedTags({ id, deletedTags });
-
-    attributes && putAttributes(attributes);
-    attributes && putAttributesFilesRelationships({ id, attributes });
-    deletedAttributes && processDeletedAttributes({ id, deletedAttributes });
-  });
+        putAttributes(attributes),
+        putAttributesFilesRelationships({ id, attributes }),
+        processDeletedAttributes({ id, deletedAttributes }),
+      ])
+      .flat(2)
+  );
 };

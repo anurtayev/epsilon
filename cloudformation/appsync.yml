@@ -396,7 +396,7 @@ Resources:
         S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
       Environment:
         Variables:
-          TABLE_NAME: !Ref MetaTable
+          META_TABLE: !Ref MetaTable
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
   ExifLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -679,6 +679,13 @@ Resources:
       Code:
         S3Bucket: !Ref DeploymentBucketName
         S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
+      Environment:
+        Variables:
+          TAGS_TABLE: !Ref TagsTable
+          TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
+          ATTRIBUTES_TABLE: !Ref AttributesTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
+
   DynamoStreamProcessingLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     DependsOn: DynamoStreamProcessingLambda

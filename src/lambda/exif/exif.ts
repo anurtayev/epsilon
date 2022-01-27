@@ -46,7 +46,7 @@ export const handler: EventBridgeHandler<"Object Created", any, void> = async (
   info("exif:", exif);
   if (exif) {
     const meta = { id: key, attributes: cleanseAndPutIntoArray(exif) };
-    await put(meta);
+    await put({ payloadJson: meta, table: process.env.META_TABLE });
     info("created meta data entry:", JSON.stringify(meta, null, 2));
   }
 };
