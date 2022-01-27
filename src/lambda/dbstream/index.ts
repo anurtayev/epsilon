@@ -3,33 +3,25 @@ import { DynamoDBStreamHandler } from "aws-lambda";
 import { extractMeta } from "./extractMeta";
 import putTags from "./putTags";
 import putTagsFilesRelationships from "./putTagsFilesRelationships";
-import deleteTagsFilesRelationships from "./deleteTagsFilesRelationships";
+import processDeletedTags from "./processDeletedTags";
 import putAttributes from "./putAttributes";
-import putAttributesValuesFilesRelationships from "./putAttributesValuesFilesRelationships";
-import processDeletedAttributesValues from "./processDeletedAttributesValues";
+import putAttributesFilesRelationships from "./putAttributesFilesRelationships";
+import processDeletedAttributes from "./processDeletedAttributes";
 
 export const handler: DynamoDBStreamHandler = (event) => {
   console.log(JSON.stringify(event, null, 2));
   const extractedMetaArray = extractMeta(event);
 
   extractedMetaArray.forEach((extractedMeta) => {
-    const {
-      id,
-      tags,
-      deletedTags,
-      attributes,
-      attributesValues,
-      deletedAttributesValues,
-    } = extractedMeta;
+    const { id, tags, deletedTags, attributes, deletedAttributes } =
+      extractedMeta;
 
     tags && putTags(tags);
     tags && putTagsFilesRelationships({ id, tags });
-    deletedTags && deleteTagsFilesRelationships({ id, deletedTags });
+    deletedTags && processDeletedTags({ id, deletedTags });
 
     attributes && putAttributes(attributes);
-    attributes &&
-      putAttributesValuesFilesRelationships({ id, attributesValues });
-    deletedAttributesValues &&
-      processDeletedAttributesValues({ id, deletedAttributesValues });
+    attributes && putAttributesFilesRelationships({ id, attributes });
+    deletedAttributes && processDeletedAttributes({ id, deletedAttributes });
   });
 };

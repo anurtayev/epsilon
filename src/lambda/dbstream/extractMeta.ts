@@ -5,7 +5,7 @@ import { DynamoDBStreamEvent } from "aws-lambda";
  *
  * Attribute name and value must not contain # symbol. It is used to
  * concatenate and use them as a hash attribute of primary key for
- * attributes table.
+ * attributesValuesFilesRelationships table.
  *
  * DynamoDB tables:
  * - Tags
@@ -35,13 +35,9 @@ export const extractMeta = (event: DynamoDBStreamEvent): ExtractedMeta => {
       ...prev,
       {
         attributes: attributes.reduce(
-          (prev, { L: [{ S: attributeName }] }) => [...prev, attributeName],
-          []
-        ),
-        attributesValues: attributes.reduce(
-          (prev, { L: [{ S: attributeName }, valueObject] }) => [
+          (prev, { L: [{ S: name }, valueObject] }) => [
             ...prev,
-            `${attributeName}#${valueObject.S || valueObject.N}`,
+            { name, value: valueObject.S || valueObject.N },
           ],
           []
         ),
@@ -54,13 +50,19 @@ export const extractMeta = (event: DynamoDBStreamEvent): ExtractedMeta => {
   return retVal;
 };
 
-type ExtractedMeta = Array<{
+/**
+ *  AttributesFilesRelationships operations:
+ *  1. Create new attributeFileRelationship - key Attribute#Value,File
+ *  2. Delete deleted attributes for given file - key Attribute#Value,File
+ *  3. Check if attribute is related to other files - key Attribute,File
+ *  4. Search by attribute/value - key Attribute#Value, File
+ */
+export type ExtractedMeta = Array<{
   id: string;
 
   tags?: Array<string>;
   deletedTags?: Array<string>;
 
-  attributes?: Array<string>;
-  attributesValues?: Array<string>;
-  deletedAttributesValues?: Array<string>;
+  attributes?: Array<{ name: string; value: string }>;
+  deletedAttributes?: Array<{ name: string; value: string }>;
 }>;

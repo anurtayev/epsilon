@@ -45,20 +45,20 @@ Resources:
         - AttributeName: tag
           KeyType: HASH
 
-  TagsFilesRelationsTable:
+  TagsFilesRelationshipsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-tags-files-relations
+      TableName: !Sub ${AWS::StackName}-tags-files-relationships
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: tag
           AttributeType: S
-        - AttributeName: fileId
+        - AttributeName: id
           AttributeType: S
       KeySchema:
         - AttributeName: tag
           KeyType: HASH
-        - AttributeName: fileId
+        - AttributeName: id
           KeyType: RANGE
 
   AttributesTable:
@@ -73,21 +73,32 @@ Resources:
         - AttributeName: attribute
           KeyType: HASH
 
-  AttributesValuesFilesRelationsTable:
+  AttributesFilesRelationshipsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Sub ${AWS::StackName}-attributes-values-files-relations
+      TableName: !Sub ${AWS::StackName}-attributes-files-relationships
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
-        - AttributeName: attributeValue
+        - AttributeName: attribute
           AttributeType: S
-        - AttributeName: fileId
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: attributeValue
           AttributeType: S
       KeySchema:
         - AttributeName: attributeValue
           KeyType: HASH
-        - AttributeName: fileId
+        - AttributeName: id
           KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: !Sub ${AWS::StackName}-attributes-files-relationships-index
+          KeySchema:
+            - AttributeName: attribute
+              KeyType: HASH
+            - AttributeName: id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: KEYS_ONLY
 
   AppsyncApi:
     Type: AWS::AppSync::GraphQLApi
