@@ -11,7 +11,7 @@ export const handler: AppSyncResolverHandler<
 > = async ({ arguments: { id, nextToken } }) => {
   info(JSON.stringify({ id, nextToken }, null, 2));
 
-  let res = await listObjectsV2({
+  const res = await listObjectsV2({
     bucket: process.env.MEDIA_BUCKET,
     continuationToken: nextToken,
     folder: id,
