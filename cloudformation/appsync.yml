@@ -363,8 +363,8 @@ Resources:
     Properties:
       FunctionName:
         Ref: ExifLambda
-      Action: "lambda:InvokeFunction"
-      Principal: "events.amazonaws.com"
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
       SourceArn: !GetAtt S3BucketRule.Arn
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -373,16 +373,18 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action:
-              - "s3:GetObject"
+          - Action: s3:GetObject
             Effect: Allow
-            Resource: !Join
-              - ""
-              - - "arn:aws:s3:::"
-                - !Ref S3Bucket
-                - /*
+            Resource: !Sub ${S3Bucket.Arn}/*
             Principal:
               CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+          - Action: s3:ListBucket
+            Effect: Allow
+            Resource: !GetAtt S3Bucket.Arn
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: o-kvc3hucixa
 
   ExifLambda:
     DependsOn: AllLambdasExecutionRole
@@ -470,18 +472,14 @@ Resources:
                 Resource: arn:aws:logs:*:*:*
               - Effect: Allow
                 Action:
-                  - s3:ListObjectsV2
-                  - s3:GetObject
-                Resource:
-                  - !GetAtt S3Bucket.Arn
-                  - !Join
-                    - "/"
-                    - - !GetAtt S3Bucket.Arn
-                      - "*"
-              - Effect: Allow
-                Action:
                   - dynamodb:PutItem
                 Resource: !GetAtt MetaTable.Arn
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub ${S3Bucket.Arn}/*
+              - Effect: Allow
+                Action: s3:ListObjectsV2
+                Resource: !GetAtt S3Bucket.Arn
 
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
