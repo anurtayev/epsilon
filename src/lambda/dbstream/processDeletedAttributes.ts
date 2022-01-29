@@ -1,13 +1,49 @@
 import { ExtractedMeta } from "./extractMeta";
+import { documentClient } from "../../lib/awsClients";
 
 /**
- * 1. Delete all attributesValuesFilesRelationships.
- * 2. Check every attribute if it related to other files.
- * 3. If it is not, delete it from Attributes table.
+ * Deletes attribute-file relationship and if it is not related to
+ * other files deletes attribute from Attributes table.
  */
 export default ({
   id,
-  deletedAttributes,
-}: Pick<ExtractedMeta[number], "id" | "deletedAttributes">): void => {
-  console.log(id, deletedAttributes);
-};
+  deletedAttributes = [],
+}: Pick<ExtractedMeta[number], "id" | "deletedAttributes">) =>
+  deletedAttributes.map(async ({ name, value }) => {
+    // check if it is related to other files
+    const checkResult = await documentClient
+      .query({
+        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+        IndexName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX,
+        KeyConditionExpression: "attribute = :attribute",
+        ExpressionAttributeValues: {
+          ":attribute": { S: name },
+        },
+        Limit: 2,
+        Select: "COUNT",
+      })
+      .promise();
+
+    if (checkResult.Count === 1) {
+      // if it is not, delete it from Attributes table
+      await documentClient
+        .delete({
+          TableName: process.env.ATTRIBUTES_TABLE,
+          Key: {
+            attribute: name,
+          },
+        })
+        .promise();
+    }
+
+    // delete attribute-file relationship
+    await documentClient
+      .delete({
+        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+        Key: {
+          attributeValue: `${name}#${value}`,
+          id,
+        },
+      })
+      .promise();
+  });

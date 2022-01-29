@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from "aws-lambda";
 import * as sharp from "sharp";
 import { strict as assert } from "assert";
-import { getObject } from "../../lib/s3";
+import { s3 } from "../../lib/awsClients";
 
 const bucketName = process.env.MEDIA_BUCKET;
 assert(bucketName, "Bucket name environment variable is required");
@@ -24,10 +24,12 @@ export const handler: APIGatewayProxyHandlerV2 = async (event, context) => {
 
   console.log({ key, width, height });
 
-  const { Body: imgBuffer } = await getObject({
-    bucket: bucketName,
-    key: key,
-  });
+  const { Body: imgBuffer } = await s3
+    .getObject({
+      Bucket: bucketName,
+      Key: key,
+    })
+    .promise();
 
   return {
     statusCode: 200,

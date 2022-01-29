@@ -2,8 +2,7 @@ import { error, info } from "console";
 import { EventBridgeHandler } from "aws-lambda";
 
 import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
-import { getObject } from "../../lib/s3";
-import { put } from "../../lib/dynamodb";
+import { s3, documentClient } from "../../lib/awsClients";
 
 import { extractDateInformationFromFolderName } from "./dateFromFolderName";
 import { exifrExtract } from "./exifrExtract";
@@ -31,7 +30,8 @@ export const handler: EventBridgeHandler<"Object Created", any, void> = async (
   let exif: object;
 
   try {
-    const buf = (await getObject({ bucket, key })).Body;
+    const buf = (await s3.getObject({ Bucket: bucket, Key: key }).promise())
+      .Body;
     exif = await exifrExtract(buf);
     exif && info("exif source: file");
   } catch (e) {
@@ -46,7 +46,7 @@ export const handler: EventBridgeHandler<"Object Created", any, void> = async (
   info("exif:", exif);
   if (exif) {
     const meta = { id: key, attributes: cleanseAndPutIntoArray(exif) };
-    await put({ payloadJson: meta, table: process.env.META_TABLE });
+    await documentClient.put({ Item: meta, TableName: process.env.META_TABLE });
     info("created meta data entry:", JSON.stringify(meta, null, 2));
   }
 };
