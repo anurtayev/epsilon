@@ -659,6 +659,16 @@ Resources:
                   - dynamodb:ListStreams
                   - dynamodb:ListShards
                 Resource: !GetAtt MetaTable.StreamArn
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:DeleteItem
+                Resource:
+                  - !GetAtt TagsTable.Arn
+                  - !GetAtt TagsFilesRelationshipsTable.Arn
+                  - !GetAtt AttributesTable.Arn
+                  - !GetAtt AttributesFilesRelationshipsTable.Arn
 
   DynamoStreamProcessingLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping

@@ -1,4 +1,4 @@
-import { DynamoDBStreamEvent } from "aws-lambda";
+import { DynamoDBStreamEvent, AttributeValue } from "aws-lambda";
 
 /**
  * Processes INSERT, MODIFY and DELETE DynamoDB stream events.
@@ -15,10 +15,8 @@ import { DynamoDBStreamEvent } from "aws-lambda";
  *
  * @param event
  */
-export const extractMeta = (event: DynamoDBStreamEvent): ExtractedMeta => {
-  const { Records: records } = event;
-
-  const retVal = records.reduce(
+export const extractMeta = (event: DynamoDBStreamEvent): ExtractedMeta =>
+  event.Records.reduce(
     (
       prev,
       {
@@ -26,43 +24,91 @@ export const extractMeta = (event: DynamoDBStreamEvent): ExtractedMeta => {
           Keys: {
             id: { S: id },
           },
-          NewImage: {
-            attributes: { L: attributes },
-          },
+          NewImage,
+          OldImage,
         },
       }
     ) => [
       ...prev,
       {
-        attributes: attributes.reduce(
-          (prev, { L: [{ S: name }, valueObject] }) => [
-            ...prev,
-            { name, value: valueObject.S || valueObject.N },
-          ],
-          []
-        ),
         id,
+        ...(OldImage
+          ? {
+              deletedTags: calculateDeletedTags(
+                OldImage.tags?.L,
+                NewImage?.tags?.L
+              ),
+              deletedAttributes: calculateDeletedAttributes(
+                OldImage.attributes?.L,
+                NewImage?.attributes?.L
+              ),
+            }
+          : {}),
+        ...(NewImage
+          ? {
+              tags: extractTags(NewImage.tags?.L),
+              attributes: extractAttributes(NewImage.attributes?.L),
+            }
+          : {}),
       },
     ],
     [] as ExtractedMeta
   );
 
-  return retVal;
-};
+const calculateDeletedAttributes = (
+  oldAttributes: AttributeValue[],
+  newAttributes: AttributeValue[] | undefined
+): Set<valueObject> =>
+  new Set(
+    oldAttributes
+      .filter(
+        ({ L: [{ S: oldName }, oldVO] }) =>
+          !newAttributes?.find(
+            ({ L: [{ S: newName }, newVO] }) =>
+              oldName === newName &&
+              (oldVO.S || newVO.N) === (newVO.S || newVO.N)
+          )
+      )
+      .map(({ L: [{ S: oldName }, oldVO] }) => ({
+        name: oldName,
+        value: oldVO.S || oldVO.N,
+      }))
+  );
 
-/**
- *  AttributesFilesRelationships operations:
- *  1. Create new attributeFileRelationship - key Attribute#Value,File
- *  2. Delete deleted attributes for given file - key Attribute#Value,File
- *  3. Check if attribute is related to other files - key Attribute,File
- *  4. Search by attribute/value - key Attribute#Value, File
- */
+const calculateDeletedTags = (
+  oldTags: AttributeValue[],
+  newTags: AttributeValue[] | undefined
+): Set<string> =>
+  new Set(
+    oldTags
+      .filter(
+        ({ S: oldTag }) => !newTags?.find(({ S: newTag }) => oldTag === newTag)
+      )
+      .map(({ S: tag }) => tag)
+  );
+
+const extractTags = (tags: AttributeValue[]): Set<string> =>
+  new Set<string>(tags.reduce((prev, { S: tag }) => [...prev, tag], []));
+
+const extractAttributes = (attributes: AttributeValue[]): Set<valueObject> =>
+  new Set(
+    attributes.reduce(
+      (prev, { L: [{ S: name }, valueObject] }) => [
+        ...prev,
+        { name, value: valueObject.S || valueObject.N },
+      ],
+      []
+    )
+  );
+
+type valueObject = { name: string; value: string };
+
 export type ExtractedMeta = Array<{
   id: string;
 
-  tags?: Array<string>;
-  deletedTags?: Array<string>;
+  tags?: Set<string>;
+  deletedTags?: Set<string>;
 
-  attributes?: Array<{ name: string; value: string }>;
-  deletedAttributes?: Array<{ name: string; value: string }>;
+  attributes?: Set<valueObject>;
+  deletedAttributes?: Set<valueObject>;
 }>;
