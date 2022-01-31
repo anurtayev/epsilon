@@ -2,7 +2,7 @@ import { PromiseResult } from "aws-sdk/lib/request";
 import { PutItemOutput } from "aws-sdk/clients/dynamodb";
 import { AWSError } from "aws-sdk/lib/error";
 
-import { ExtractedMeta } from "./extractMeta";
+import { ExtractedMetaArray } from "./extractMeta";
 import { documentClient } from "../../lib/awsClients";
 
 /**
@@ -12,7 +12,7 @@ import { documentClient } from "../../lib/awsClients";
 export default ({
   id,
   attributes = [],
-}: Pick<ExtractedMeta[number], "id" | "attributes">): Promise<
+}: Pick<ExtractedMetaArray[number], "id" | "attributes">): Promise<
   PromiseResult<PutItemOutput, AWSError>
 >[] =>
   attributes.map(({ name: attribute, value }) =>

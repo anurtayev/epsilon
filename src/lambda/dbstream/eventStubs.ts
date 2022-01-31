@@ -1,4 +1,4 @@
-import { ExtractedMeta } from "./extractMeta";
+import { ExtractedMetaArray } from "./extractMeta";
 
 export const insertEvent = {
   Records: [
@@ -127,9 +127,9 @@ export const insertEvent = {
   ],
 };
 
-export const insertEventResult: ExtractedMeta = [
+export const insertEventResult: ExtractedMetaArray = [
   {
-    attributes: new Set([
+    attributes: [
       { name: "orientation", value: "Horizontal (normal)" },
       { name: "dateCreated", value: "2021-10-05T18:27:23.000Z" },
       { name: "width", value: "4032" },
@@ -138,9 +138,9 @@ export const insertEventResult: ExtractedMeta = [
       { name: "longitude", value: "-79.49740555555556" },
       { name: "monthCreated", value: "10" },
       { name: "yearCreated", value: "2021" },
-    ]),
+    ],
 
-    tags: new Set(["fav", "wicked", "randory"]),
+    tags: ["fav", "wicked", "randory"],
 
     id: "media/honda1.jpg",
   },
@@ -162,38 +162,24 @@ export const removeInsertEvent = {
           },
         },
         OldImage: {
-          attributes: {
+          tags: {
             L: [
               {
-                L: [
-                  {
-                    S: "orientation",
-                  },
-                  {
-                    S: "Horizontal (normal)",
-                  },
-                ],
+                S: "zentop",
               },
               {
-                L: [
-                  {
-                    S: "dateCreated",
-                  },
-                  {
-                    S: "2021-10-05T18:27:23.000Z",
-                  },
-                ],
+                S: "volchek",
               },
               {
-                L: [
-                  {
-                    S: "width",
-                  },
-                  {
-                    N: "4032",
-                  },
-                ],
+                S: "wicked",
               },
+              {
+                S: "randory",
+              },
+            ],
+          },
+          attributes: {
+            L: [
               {
                 L: [
                   {
@@ -271,6 +257,25 @@ export const removeInsertEvent = {
           },
         },
         NewImage: {
+          tags: {
+            L: [
+              {
+                S: "zentop",
+              },
+              {
+                S: "clitor",
+              },
+              {
+                S: "wicked",
+              },
+              {
+                S: "anus",
+              },
+              {
+                S: "lempich",
+              },
+            ],
+          },
           attributes: {
             L: [
               {
@@ -299,7 +304,7 @@ export const removeInsertEvent = {
                     S: "width",
                   },
                   {
-                    N: "4032",
+                    N: "4031",
                   },
                 ],
               },
@@ -309,14 +314,14 @@ export const removeInsertEvent = {
                     S: "height",
                   },
                   {
-                    N: "3024",
+                    N: "304",
                   },
                 ],
               },
               {
                 L: [
                   {
-                    S: "latitude",
+                    S: "newlatitude",
                   },
                   {
                     N: "43.81960555555556",
@@ -330,16 +335,6 @@ export const removeInsertEvent = {
                   },
                   {
                     N: "-79.49740555555556",
-                  },
-                ],
-              },
-              {
-                L: [
-                  {
-                    S: "monthCreated",
-                  },
-                  {
-                    N: "10",
                   },
                 ],
               },
@@ -368,6 +363,61 @@ export const removeInsertEvent = {
     },
   ],
 };
+
+export const removeInsertEventResult: ExtractedMetaArray = [
+  {
+    id: "media/honda1.jpg",
+    tags: ["clitor", "zentop", "wicked", "anus", "lempich"],
+    deletedTags: ["volchek", "randory"],
+
+    attributes: [
+      {
+        name: "orientation",
+        value: "Horizontal (normal)",
+      },
+      {
+        name: "dateCreated",
+        value: "2021-10-05T18:27:23.000Z",
+      },
+      {
+        name: "width",
+        value: "4031",
+      },
+      {
+        name: "height",
+        value: "304",
+      },
+      {
+        name: "newlatitude",
+        value: "43.81960555555556",
+      },
+      {
+        name: "longitude",
+        value: "-79.49740555555556",
+      },
+      {
+        name: "yearCreated",
+        value: "2021",
+      },
+    ],
+
+    deletedAttributes: [
+      {
+        name: "height",
+        value: "3024",
+      },
+      {
+        name: "latitude",
+        value: "43.81960555555556",
+      },
+
+      {
+        name: "monthCreated",
+        value: "10",
+      },
+    ],
+  },
+];
 
 export const modifyEvent = {
   Records: [
@@ -591,9 +641,9 @@ export const modifyEvent = {
   ],
 };
 
-export const modifyEventResult: ExtractedMeta = [
+export const modifyEventResult: ExtractedMetaArray = [
   {
-    attributes: new Set([
+    attributes: [
       { name: "dateCreated", value: "2021-10-05T18:27:23.000Z" },
       { name: "width", value: "4032" },
       { name: "height", value: "3024" },
@@ -601,14 +651,14 @@ export const modifyEventResult: ExtractedMeta = [
       { name: "monthCreated", value: "10" },
       { name: "yearCreated", value: "2021" },
       { name: "ozon", value: "20" },
-    ]),
-    deletedAttributes: new Set([
+    ],
+    deletedAttributes: [
       { name: "longitude", value: "-79.49740555555556" },
       { name: "orientation", value: "Horizontal (normal)" },
-    ]),
+    ],
 
-    tags: new Set(["wicked", "randory", "urchin"]),
-    deletedTags: new Set(["fav", "flavonoid"]),
+    tags: ["wicked", "randory", "urchin"],
+    deletedTags: ["fav", "flavonoid"],
 
     id: "media/honda1.jpg",
   },

@@ -1,4 +1,4 @@
-import { ExtractedMeta } from "./extractMeta";
+import { ExtractedMetaArray } from "./extractMeta";
 import { documentClient } from "../../lib/awsClients";
 
 /**
@@ -8,7 +8,7 @@ import { documentClient } from "../../lib/awsClients";
 export default ({
   id,
   deletedAttributes = [],
-}: Pick<ExtractedMeta[number], "id" | "deletedAttributes">) =>
+}: Pick<ExtractedMetaArray[number], "id" | "deletedAttributes">) =>
   deletedAttributes.map(async ({ name, value }) => {
     // check if it is related to other files
     const checkResult = await documentClient
