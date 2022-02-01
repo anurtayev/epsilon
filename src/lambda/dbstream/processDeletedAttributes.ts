@@ -17,7 +17,7 @@ export default ({
         IndexName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX,
         KeyConditionExpression: "#a = :attribute",
         ExpressionAttributeValues: {
-          ":attribute": { S: name },
+          ":attribute": name,
         },
         ExpressionAttributeNames: {
           "#a": "attribute",

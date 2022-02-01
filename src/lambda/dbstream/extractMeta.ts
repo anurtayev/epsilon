@@ -63,7 +63,7 @@ export const extractMeta = ({
           processedId.push(id);
         }
         break;
-      case "MODIFY":
+      case EventName.MODIFY:
         mappedEventRecords.push(reduceMeta(id, NewImage, OldImage));
         break;
       default:

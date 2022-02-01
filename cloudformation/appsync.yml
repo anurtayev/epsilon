@@ -670,6 +670,11 @@ Resources:
                   - !GetAtt TagsFilesRelationshipsTable.Arn
                   - !GetAtt AttributesTable.Arn
                   - !GetAtt AttributesFilesRelationshipsTable.Arn
+                  - !Join
+                    - ""
+                    - - !GetAtt AttributesFilesRelationshipsTable.Arn
+                      - /index/
+                      - !Sub ${AWS::StackName}-attributes-files-relationships-index
 
   DynamoStreamProcessingLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
@@ -694,6 +699,7 @@ Resources:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
           ATTRIBUTES_TABLE: !Ref AttributesTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
 
   DynamoStreamProcessingLambdaLogGroup:
     Type: AWS::Logs::LogGroup
