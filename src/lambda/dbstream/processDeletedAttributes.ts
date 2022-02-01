@@ -15,9 +15,12 @@ export default ({
       .query({
         TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
         IndexName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX,
-        KeyConditionExpression: "attribute = :attribute",
+        KeyConditionExpression: "#a = :attribute",
         ExpressionAttributeValues: {
           ":attribute": { S: name },
+        },
+        ExpressionAttributeNames: {
+          "#a": "attribute",
         },
         Limit: 2,
         Select: "COUNT",
