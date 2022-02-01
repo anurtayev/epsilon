@@ -478,7 +478,7 @@ Resources:
                 Action: s3:GetObject
                 Resource: !Sub ${S3Bucket.Arn}/*
               - Effect: Allow
-                Action: s3:ListObjectsV2
+                Action: s3:ListBucket
                 Resource: !GetAtt S3Bucket.Arn
 
   HttpApi:

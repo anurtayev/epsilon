@@ -80,17 +80,30 @@ const reduceMeta = (id: string, NewImage: Image, OldImage: Image) => ({
   id,
   ...(OldImage
     ? {
-        deletedTags: calculateDeletedTags(OldImage.tags?.L, NewImage?.tags?.L),
-        deletedAttributes: calculateDeletedAttributes(
-          OldImage.attributes?.L,
-          NewImage?.attributes?.L
-        ),
+        ...(OldImage.tags?.L
+          ? {
+              deletedTags: calculateDeletedTags(
+                OldImage.tags?.L,
+                NewImage?.tags?.L
+              ),
+            }
+          : {}),
+        ...(OldImage.attributes?.L
+          ? {
+              deletedAttributes: calculateDeletedAttributes(
+                OldImage.attributes?.L,
+                NewImage?.attributes?.L
+              ),
+            }
+          : {}),
       }
     : {}),
   ...(NewImage
     ? {
-        tags: extractTags(NewImage.tags?.L),
-        attributes: extractAttributes(NewImage.attributes?.L),
+        ...(NewImage.tags?.L ? { tags: extractTags(NewImage.tags.L) } : {}),
+        ...(NewImage.attributes?.L
+          ? { attributes: extractAttributes(NewImage.attributes?.L) }
+          : {}),
       }
     : {}),
 });

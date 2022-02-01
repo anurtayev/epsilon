@@ -4,25 +4,55 @@ import { extractMeta } from "./extractMeta";
 import { DynamoDBStreamEvent } from "aws-lambda";
 
 import {
-  insertEvent,
-  insertEventResult,
-  modifyEvent,
-  modifyEventResult,
+  insertEventWithAttributesOnly,
+  insertEventWithAttributesOnlyMeta,
+  insertEventWithTagsOnly,
+  insertEventWithTagsOnlyMeta,
+  insertEventWithTagsAndAttributes,
+  insertEventWithTagsAndAttributesMeta,
+  modifyEventWithTagsAndAttributes,
+  modifyEventWithTagsAndAttributesMeta,
   removeInsertEvent,
   removeInsertEventResult,
 } from "./eventStubs";
 
 describe("extractMeta", () => {
-  test("it should extract attributes correctly from INSERT event", () => {
+  test("should extract attributes and tags from INSERT event", () => {
     const [{ id: id1, attributes: attributes1, tags: tags1 }] = extractMeta(
-      insertEvent as DynamoDBStreamEvent
+      insertEventWithTagsAndAttributes as DynamoDBStreamEvent
     );
     const [{ id: id2, attributes: attributes2, tags: tags2 }] =
-      insertEventResult;
+      insertEventWithTagsAndAttributesMeta;
 
     expect(id1).toEqual(id2);
     expect(isEqual(new Set(tags1), new Set(tags2))).toEqual(true);
     expect(isEqual(new Set(attributes1), new Set(attributes2))).toEqual(true);
+  });
+
+  test("should extract attributes only from INSERT event", () => {
+    const [{ id: id1, attributes: attributes1, tags: tags1 }] = extractMeta(
+      insertEventWithAttributesOnly as DynamoDBStreamEvent
+    );
+    const [{ id: id2, attributes: attributes2, tags: tags2 }] =
+      insertEventWithAttributesOnlyMeta;
+
+    expect(id1).toEqual(id2);
+    expect(tags1).toEqual(tags2);
+    expect(tags1).toBeUndefined();
+    expect(isEqual(new Set(attributes1), new Set(attributes2))).toEqual(true);
+  });
+
+  test("should extract tags only from INSERT event", () => {
+    const [{ id: id1, attributes: attributes1, tags: tags1 }] = extractMeta(
+      insertEventWithTagsOnly as DynamoDBStreamEvent
+    );
+    const [{ id: id2, attributes: attributes2, tags: tags2 }] =
+      insertEventWithTagsOnlyMeta;
+
+    expect(id1).toEqual(id2);
+    expect(attributes1).toEqual(attributes2);
+    expect(attributes1).toBeUndefined();
+    expect(isEqual(new Set(tags1), new Set(tags2))).toEqual(true);
   });
 
   test("it should extract attributes correctly from MODIFY event", () => {
@@ -34,7 +64,7 @@ describe("extractMeta", () => {
         deletedAttributes: deletedAttributes1,
         deletedTags: deletedTags1,
       },
-    ] = extractMeta(modifyEvent as DynamoDBStreamEvent);
+    ] = extractMeta(modifyEventWithTagsAndAttributes as DynamoDBStreamEvent);
     const [
       {
         id: id2,
@@ -43,7 +73,7 @@ describe("extractMeta", () => {
         deletedAttributes: deletedAttributes2,
         deletedTags: deletedTags2,
       },
-    ] = modifyEventResult;
+    ] = modifyEventWithTagsAndAttributesMeta;
 
     expect(id1).toEqual(id2);
     expect(isEqual(new Set(tags1), new Set(tags2))).toEqual(true);

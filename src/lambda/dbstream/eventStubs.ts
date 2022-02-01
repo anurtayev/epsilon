@@ -1,6 +1,6 @@
 import { ExtractedMetaArray } from "./extractMeta";
 
-export const insertEvent = {
+export const insertEventWithTagsAndAttributes = {
   Records: [
     {
       eventID: "c94eb5583d85261e02ce08cc5afd58f6",
@@ -127,7 +127,7 @@ export const insertEvent = {
   ],
 };
 
-export const insertEventResult: ExtractedMetaArray = [
+export const insertEventWithTagsAndAttributesMeta: ExtractedMetaArray = [
   {
     attributes: [
       { name: "orientation", value: "Horizontal (normal)" },
@@ -141,6 +141,188 @@ export const insertEventResult: ExtractedMetaArray = [
     ],
 
     tags: ["fav", "wicked", "randory"],
+
+    id: "media/honda1.jpg",
+  },
+];
+
+export const insertEventWithTagsOnly = {
+  Records: [
+    {
+      eventID: "c94eb5583d85261e02ce08cc5afd58f6",
+      eventName: "INSERT",
+      eventVersion: "1.1",
+      eventSource: "aws:dynamodb",
+      awsRegion: "us-east-1",
+      dynamodb: {
+        ApproximateCreationDateTime: 1642954942,
+        Keys: {
+          id: {
+            S: "media/honda1.jpg",
+          },
+        },
+        NewImage: {
+          tags: {
+            L: [
+              {
+                S: "fav",
+              },
+              {
+                S: "wicked",
+              },
+              {
+                S: "randory",
+              },
+            ],
+          },
+          id: {
+            S: "media/honda1.jpg",
+          },
+        },
+        SequenceNumber: "1624400000000022259668791",
+        SizeBytes: 243,
+        StreamViewType: "NEW_AND_OLD_IMAGES",
+      },
+      eventSourceARN:
+        "arn:aws:dynamodb:us-east-1:416904185688:table/epsilon-development-meta-table/stream/2022-01-23T05:08:07.866",
+    },
+  ],
+};
+
+export const insertEventWithTagsOnlyMeta: ExtractedMetaArray = [
+  {
+    tags: ["fav", "wicked", "randory"],
+
+    id: "media/honda1.jpg",
+  },
+];
+
+export const insertEventWithAttributesOnly = {
+  Records: [
+    {
+      eventID: "c94eb5583d85261e02ce08cc5afd58f6",
+      eventName: "INSERT",
+      eventVersion: "1.1",
+      eventSource: "aws:dynamodb",
+      awsRegion: "us-east-1",
+      dynamodb: {
+        ApproximateCreationDateTime: 1642954942,
+        Keys: {
+          id: {
+            S: "media/honda1.jpg",
+          },
+        },
+        NewImage: {
+          attributes: {
+            L: [
+              {
+                L: [
+                  {
+                    S: "orientation",
+                  },
+                  {
+                    S: "Horizontal (normal)",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "dateCreated",
+                  },
+                  {
+                    S: "2021-10-05T18:27:23.000Z",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "width",
+                  },
+                  {
+                    N: "4032",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "height",
+                  },
+                  {
+                    N: "3024",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "latitude",
+                  },
+                  {
+                    N: "43.81960555555556",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "longitude",
+                  },
+                  {
+                    N: "-79.49740555555556",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "monthCreated",
+                  },
+                  {
+                    N: "10",
+                  },
+                ],
+              },
+              {
+                L: [
+                  {
+                    S: "yearCreated",
+                  },
+                  {
+                    N: "2021",
+                  },
+                ],
+              },
+            ],
+          },
+          id: {
+            S: "media/honda1.jpg",
+          },
+        },
+        SequenceNumber: "1624400000000022259668791",
+        SizeBytes: 243,
+        StreamViewType: "NEW_AND_OLD_IMAGES",
+      },
+      eventSourceARN:
+        "arn:aws:dynamodb:us-east-1:416904185688:table/epsilon-development-meta-table/stream/2022-01-23T05:08:07.866",
+    },
+  ],
+};
+
+export const insertEventWithAttributesOnlyMeta: ExtractedMetaArray = [
+  {
+    attributes: [
+      { name: "orientation", value: "Horizontal (normal)" },
+      { name: "dateCreated", value: "2021-10-05T18:27:23.000Z" },
+      { name: "width", value: "4032" },
+      { name: "height", value: "3024" },
+      { name: "latitude", value: "43.81960555555556" },
+      { name: "longitude", value: "-79.49740555555556" },
+      { name: "monthCreated", value: "10" },
+      { name: "yearCreated", value: "2021" },
+    ],
 
     id: "media/honda1.jpg",
   },
@@ -419,7 +601,7 @@ export const removeInsertEventResult: ExtractedMetaArray = [
   },
 ];
 
-export const modifyEvent = {
+export const modifyEventWithTagsAndAttributes = {
   Records: [
     {
       eventID: "637be7e709a18ce27f249226e0f6a644",
@@ -641,7 +823,7 @@ export const modifyEvent = {
   ],
 };
 
-export const modifyEventResult: ExtractedMetaArray = [
+export const modifyEventWithTagsAndAttributesMeta: ExtractedMetaArray = [
   {
     attributes: [
       { name: "dateCreated", value: "2021-10-05T18:27:23.000Z" },
