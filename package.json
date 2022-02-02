@@ -11,6 +11,7 @@
     "s3:sync": "aws s3 sync s3://nurtai-pics-test s3://epsilon-development-media",
     "test": "jest --testPathPattern=src",
     "test:watch": "jest --watch --testPathPattern=src",
+    "stack:describe": "dotenv node scripts/describe_stack.js",
     "start": "dotenv ts-node src/lambda/fs/index.ts",
     "prepare": "husky install",
     "lint": "eslint src"

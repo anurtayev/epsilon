@@ -712,3 +712,5 @@ Resources:
 Outputs:
   CloudFrontDistributionUrl:
     Value: !GetAtt CloudFrontDistribution.DomainName
+  AppsyncApiKey:
+    Value: !GetAtt ApiKey.ApiKey
