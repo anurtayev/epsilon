@@ -5,13 +5,13 @@
   "scripts": {
     "cf:deploy": "scripts/deploy.sh",
     "cf:delete": "scripts/delete.sh",
+    "cf:describe": "dotenv node scripts/describe_stack.js",
     "docker:prune": "docker system prune --volumes --force",
     "codegen:downloadSchema": "dotenv -- bash -c 'aws appsync get-introspection-schema --api-id $APPSYNC_API_ID --format SDL cloudformation/schema.graphql'",
     "codegen:run": "graphql-codegen --config codegen.yml",
     "s3:sync": "aws s3 sync s3://nurtai-pics-test s3://epsilon-development-media",
     "test": "jest --testPathPattern=src",
     "test:watch": "jest --watch --testPathPattern=src",
-    "stack:describe": "dotenv node scripts/describe_stack.js",
     "start": "dotenv ts-node src/lambda/fs/index.ts",
     "prepare": "husky install",
     "lint": "eslint src"

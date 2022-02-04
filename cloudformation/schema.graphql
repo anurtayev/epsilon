@@ -1,12 +1,10 @@
-﻿schema {
-  query: Query
-  mutation: Mutation
+﻿type AttributeConnection {
+  attributes: [String!]
+  nextToken: String
 }
 
-type MetaData {
-  id: String!
+input AttributesInput {
   attributes: [[String!]!]
-  tags: [String!]
 }
 
 interface Entry {
@@ -19,18 +17,19 @@ type FileEntry implements Entry {
   extension: String!
 }
 
-type FolderEntry implements Entry {
-  id: String!
-}
-
 type FolderConnection {
   items: [Entry!]
   nextToken: String
 }
 
-type Query {
-  listFolder(id: String!, nextToken: String): FolderConnection
-  getMeta(id: String!): MetaData
+type FolderEntry implements Entry {
+  id: String!
+}
+
+type MetaData {
+  id: String!
+  attributes: [[String!]!]
+  tags: [String!]
 }
 
 type Mutation {
@@ -40,21 +39,23 @@ type Mutation {
   deleteTags(id: String!): MetaData
 }
 
-input AttributesInput {
-  attributes: [[String!]!]
+type Query {
+  listFolder(id: String!, nextToken: String): FolderConnection
+  getMeta(id: String!): MetaData
+  getAttributes(nextToken: String): AttributeConnection
+  getTags(nextToken: String): TagConnection
+}
+
+type TagConnection {
+  tags: [String!]
+  nextToken: String
 }
 
 input TagsInput {
   tags: [String!]
 }
 
-type Tag {
-  id: String!
-  fileEntryIds: [String!]
-}
-
-type Attribute {
-  id: String!
-  value: String!
-  fileEntryIds: [String!]
+schema {
+  query: Query
+  mutation: Mutation
 }

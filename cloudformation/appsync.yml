@@ -107,18 +107,15 @@ Resources:
       AuthenticationType: API_KEY
   ApiKey:
     Type: AWS::AppSync::ApiKey
-    DependsOn: AppsyncApi
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
   AppsyncSchema:
     Type: AWS::AppSync::GraphQLSchema
-    DependsOn: AppsyncApi
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema_${Timestamp}.graphql
   MetaDataSource:
     Type: AWS::AppSync::DataSource
-    DependsOn: AppsyncApi
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       Name:
@@ -129,11 +126,44 @@ Resources:
             "meta_datasource",
           ],
         ]
-      Description: "The Notes Table AppSync Data Source"
       Type: AMAZON_DYNAMODB
       ServiceRoleArn: !GetAtt DynamoDBRole.Arn
       DynamoDBConfig:
         TableName: !Ref MetaTable
+        AwsRegion: !Sub ${AWS::Region}
+  AttributesDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      Name:
+        !Join [
+          "_",
+          [
+            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
+            "attributes_datasource",
+          ],
+        ]
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref AttributesTable
+        AwsRegion: !Sub ${AWS::Region}
+  TagsDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      Name:
+        !Join [
+          "_",
+          [
+            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
+            "tags_datasource",
+          ],
+        ]
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
+      DynamoDBConfig:
+        TableName: !Ref TagsTable
         AwsRegion: !Sub ${AWS::Region}
   DynamoDBRole:
     Type: AWS::IAM::Role
@@ -149,8 +179,6 @@ Resources:
             Principal:
               Service:
                 - appsync.amazonaws.com
-    DependsOn:
-      - AppSyncDynamoDBPolicy
   AppSyncDynamoDBPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -166,10 +194,12 @@ Resources:
               - dynamodb:Scan
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
-            Resource: !Join ["", [!GetAtt MetaTable.Arn, "*"]]
+            Resource:
+              - !Join ["", [!GetAtt MetaTable.Arn, "*"]]
+              - !Join ["", [!GetAtt AttributesTable.Arn, "*"]]
+              - !Join ["", [!GetAtt TagsTable.Arn, "*"]]
   ListFolderLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
-    DependsOn: ListFolderLambdaAppsyncDataSourceRole
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       Name:
@@ -212,7 +242,6 @@ Resources:
               - !Join [":", [!GetAtt ListFolderLambda.Arn, "*"]]
   ListFolderQueryResolver:
     Type: "AWS::AppSync::Resolver"
-    DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       TypeName: Query
@@ -236,6 +265,56 @@ Resources:
         }
       ResponseMappingTemplate: |
         $util.toJson($context.result)
+  GetAttributesQueryResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Query
+      FieldName: getAttributes
+      DataSourceName: !GetAtt AttributesDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version" : "2018-05-29",
+          "operation" : "Scan",
+          "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+        }
+      ResponseMappingTemplate: |
+        #set($attributesArray = [])
+
+        #foreach ($attributeItem in $ctx.result.items)
+          $util.qr($attributesArray.add($attributeItem.attribute))
+        #end
+
+        {
+          "attributes": $util.toJson($attributesArray),
+          "nextToken": $util.toJson($ctx.result.nextToken)
+        }
+  GetTagsQueryResolver:
+    Type: "AWS::AppSync::Resolver"
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Query
+      FieldName: getTags
+      DataSourceName: !GetAtt TagsDataSource.Name
+      RequestMappingTemplate: |
+        {
+          "version" : "2018-05-29",
+          "operation" : "Scan",
+          "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
+        }
+      ResponseMappingTemplate: |
+        #set($tagsArray = [])
+
+        #foreach ($tagItem in $ctx.result.items)
+          $util.qr($tagsArray.add($tagItem.tag))
+        #end
+
+        {
+          "tags": $util.toJson($tagsArray),
+          "nextToken": $util.toJson($ctx.result.nextToken)
+        }
   UpdateAttributesMutationResolver:
     Type: "AWS::AppSync::Resolver"
     DependsOn: AppsyncSchema
@@ -341,7 +420,6 @@ Resources:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
   S3BucketRule:
-    DependsOn: S3Bucket
     Type: AWS::Events::Rule
     Properties:
       Description: Rule to invoke ExifLambda when new media file is uploaded
@@ -387,7 +465,6 @@ Resources:
                 aws:PrincipalOrgID: o-kvc3hucixa
 
   ExifLambda:
-    DependsOn: AllLambdasExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
@@ -402,13 +479,11 @@ Resources:
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
   ExifLambdaLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: ExifLambda
     Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref ExifLambda]]
 
   ListFolderLambda:
-    DependsOn: AllLambdasExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
@@ -423,13 +498,11 @@ Resources:
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
   ListFolderLambdaLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: ListFolderLambda
     Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref ListFolderLambda]]
 
   ResizerLambda:
-    DependsOn: AllLambdasExecutionRole
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
@@ -444,7 +517,6 @@ Resources:
           MEDIA_BUCKET: !Ref S3Bucket
   ResizerLambdaLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: ResizerLambda
     Properties:
       RetentionInDays: 14
       LogGroupName: !Join ["", ["/aws/lambda/", !Ref ResizerLambda]]
@@ -488,7 +560,6 @@ Resources:
       ProtocolType: HTTP
   ResizerLambdaRoute:
     Type: AWS::ApiGatewayV2::Route
-    DependsOn: ResizerLambdaIntegration
     Properties:
       ApiId: !Ref HttpApi
       RouteKey: GET /resizer
@@ -539,11 +610,6 @@ Resources:
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
-    DependsOn:
-      - CloudFrontOriginAccessIdentity
-      - AppsyncApi
-      - S3Bucket
-      - HttpApi
     Properties:
       DistributionConfig:
         Enabled: true
@@ -703,7 +769,6 @@ Resources:
 
   DynamoStreamProcessingLambdaLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: DynamoStreamProcessingLambda
     Properties:
       RetentionInDays: 14
       LogGroupName:
