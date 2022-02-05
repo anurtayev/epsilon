@@ -315,96 +315,55 @@ Resources:
           "tags": $util.toJson($tagsArray),
           "nextToken": $util.toJson($ctx.result.nextToken)
         }
-  UpdateAttributesMutationResolver:
+  UpdateMetaDataMutationResolver:
     Type: "AWS::AppSync::Resolver"
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       TypeName: Mutation
-      FieldName: updateAttributes
+      FieldName: updateMetaData
       DataSourceName: !GetAtt MetaDataSource.Name
       RequestMappingTemplate: |
         {
-          "version": "2017-02-28",
-          "operation": "UpdateItem",
+          "version": "2018-05-29",
           "key": {
             "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
           },
+        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+          "operation": "DeleteItem"
+        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
+          "operation": "UpdateItem",
           "update": {
-            "expression": "SET attributes = :attributes",
+            "expression": "SET attributes = :attributes, tags = :tags",
             "expressionValues": {
-              ":attributes" : $util.dynamodb.toDynamoDBJson($ctx.args.attributesInput.attributes)
+              ":attributes": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes),
+              ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        }
-      ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  DeleteAttributesMutationResolver:
-    Type: "AWS::AppSync::Resolver"
-    DependsOn: AppsyncSchema
-    Properties:
-      ApiId: !GetAtt AppsyncApi.ApiId
-      TypeName: Mutation
-      FieldName: deleteAttributes
-      DataSourceName: !GetAtt MetaDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version": "2017-02-28",
+        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
-          "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
-          },
           "update": {
-            "expression": "REMOVE attributes"
-          }
-        }
-      ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  UpdateTagsMutationResolver:
-    Type: "AWS::AppSync::Resolver"
-    DependsOn: AppsyncSchema
-    Properties:
-      ApiId: !GetAtt AppsyncApi.ApiId
-      TypeName: Mutation
-      FieldName: updateTags
-      DataSourceName: !GetAtt MetaDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version": "2017-02-28",
-          "operation": "UpdateItem",
-          "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
-          },
-          "update": {
-            "expression": "SET tags = :tags",
+            "expression": "SET attributes = :attributes REMOVE tags",
             "expressionValues": {
-              ":tags" : $util.dynamodb.toDynamoDBJson($ctx.args.tagsInput.tags)
+              ":attributes": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes)
             }
           }
-        }
-      ResponseMappingTemplate: |
-        $util.toJson($context.result)
-  DeleteTagsMutationResolver:
-    Type: "AWS::AppSync::Resolver"
-    DependsOn: AppsyncSchema
-    Properties:
-      ApiId: !GetAtt AppsyncApi.ApiId
-      TypeName: Mutation
-      FieldName: deleteTags
-      DataSourceName: !GetAtt MetaDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version": "2017-02-28",
+        #elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
           "operation": "UpdateItem",
-          "key": {
-            "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
-          },
           "update": {
-            "expression": "REMOVE tags"
+            "expression": "SET tags = :tags REMOVE attributes",
+            "expressionValues": {
+              ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
+            }
           }
+        #end
         }
       ResponseMappingTemplate: |
-        $util.toJson($context.result)
+        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+          null
+        #else
+          $util.toJson($context.result)
+        #end
 
   S3Bucket:
     Type: AWS::S3::Bucket

@@ -1,10 +1,11 @@
-﻿type AttributeConnection {
+﻿type AttributesConnection {
   attributes: [String!]
   nextToken: String
 }
 
-input AttributesInput {
+input MetaDataInput {
   attributes: [[String!]!]
+  tags: [String!]
 }
 
 interface Entry {
@@ -33,26 +34,19 @@ type MetaData {
 }
 
 type Mutation {
-  updateAttributes(id: String!, attributesInput: AttributesInput!): MetaData
-  deleteAttributes(id: String!): MetaData
-  updateTags(id: String!, tagsInput: TagsInput!): MetaData
-  deleteTags(id: String!): MetaData
+  updateMetaData(id: String!, metaDataInput: MetaDataInput): MetaData
 }
 
 type Query {
   listFolder(id: String!, nextToken: String): FolderConnection
   getMeta(id: String!): MetaData
-  getAttributes(nextToken: String): AttributeConnection
-  getTags(nextToken: String): TagConnection
+  getAttributes(nextToken: String): AttributesConnection
+  getTags(nextToken: String): TagsConnection
 }
 
-type TagConnection {
+type TagsConnection {
   tags: [String!]
   nextToken: String
-}
-
-input TagsInput {
-  tags: [String!]
 }
 
 schema {
