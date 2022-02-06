@@ -8,7 +8,7 @@ import { QueryListFolderArgs, FolderConnection } from "../../lib/graphqlTypes";
 export const handler: AppSyncResolverHandler<
   QueryListFolderArgs,
   FolderConnection
-> = async ({ arguments: { id, nextToken } }) => {
+> = async ({ arguments: { id, nextToken, pageSize } }) => {
   info(JSON.stringify({ id, nextToken }, null, 2));
 
   const res = await s3
@@ -18,6 +18,7 @@ export const handler: AppSyncResolverHandler<
       Delimiter: "/",
       ...(nextToken ? { ContinuationToken: nextToken } : {}),
       ...(id ? { Prefix: id } : {}),
+      ...(pageSize ? { MaxKeys: pageSize } : {}),
     })
     .promise();
 
@@ -25,15 +26,15 @@ export const handler: AppSyncResolverHandler<
 
   return {
     items: [
-      ...res.Contents.map((element) => ({
-        id: element.Key,
-        size: element.Size,
-        extension: getExtension(element.Key),
-        __typename: "FileEntry",
-      })).filter(({ id }) => isKeyExtensionAllowed(getExtension(id))),
-      ...res.CommonPrefixes.map((element) => ({
-        id: element.Prefix,
-        __typename: "FolderEntry",
+      ...res.Contents.filter(({ Key: id }) =>
+        isKeyExtensionAllowed(getExtension(id))
+      ).map(({ Key: id }) => ({
+        id,
+        __typename: "Entry",
+      })),
+      ...res.CommonPrefixes.map(({ Prefix: id }) => ({
+        id,
+        __typename: "Entry",
       })),
     ],
     nextToken: res.NextContinuationToken,

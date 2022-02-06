@@ -12,19 +12,9 @@ interface Entry {
   id: String!
 }
 
-type FileEntry implements Entry {
-  id: String!
-  size: Int!
-  extension: String!
-}
-
 type FolderConnection {
   items: [Entry!]
   nextToken: String
-}
-
-type FolderEntry implements Entry {
-  id: String!
 }
 
 type MetaData {
@@ -38,10 +28,31 @@ type Mutation {
 }
 
 type Query {
-  listFolder(id: String!, nextToken: String): FolderConnection
+  listFolder(id: String, nextToken: String, pageSize: Int): FolderConnection
   getMeta(id: String!): MetaData
   getAttributes(nextToken: String): AttributesConnection
   getTags(nextToken: String): TagsConnection
+  search(
+    searchInput: SearchInput!
+    nextToken: String
+    pageSize: Int
+  ): FolderConnection
+}
+
+input SearchInput {
+  tagsFilter: [String!]
+  attributesFilter: [[String!]!]
+  attributesSorter: [SortTerm!]
+}
+
+enum SortOrder {
+  ASC
+  DESC
+}
+
+input SortTerm {
+  attribute: String!
+  sortOrder: SortOrder!
 }
 
 type TagsConnection {

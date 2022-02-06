@@ -4,7 +4,7 @@ import { EventBridgeHandler } from "aws-lambda";
 import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
 import { s3, documentClient } from "../../lib/awsClients";
 
-import { extractDateInformationFromFolderName } from "./dateFromFolderName";
+import extractMetaFromKey from "./extractMetaFromKey";
 import { exifrExtract } from "./exifrExtract";
 
 const cleanseAndPutIntoArray = (exifData: object = {}) =>
@@ -12,40 +12,48 @@ const cleanseAndPutIntoArray = (exifData: object = {}) =>
     .map((key) => [key, exifData[key]])
     .filter((e) => e.every(Boolean));
 
-export const handler: EventBridgeHandler<"Object Created", any, void> = async (
-  event
-) => {
+export const handler: EventBridgeHandler<
+  "Object Created",
+  {
+    version: string;
+    bucket: { name: string };
+    object: { key: string; size: number; etag: string; sequencer: string };
+    "request-id": string;
+    requester: string;
+    "source-ip-address": string;
+    reason: string;
+  },
+  void
+> = async (event) => {
   info(JSON.stringify(event, null, 2));
 
   const {
     detail: {
-      object: { key },
+      object: { key, size },
       bucket: { name: bucket },
     },
   } = event;
   info("key:", key, "bucket:", bucket);
 
-  if (!isKeyExtensionAllowed(getExtension(key))) return;
+  const extension = getExtension(key);
+  if (!isKeyExtensionAllowed(extension)) return;
 
-  let exif: object;
-
+  let exifMeta: object;
   try {
     const buf = (await s3.getObject({ Bucket: bucket, Key: key }).promise())
       .Body;
-    exif = await exifrExtract(buf);
-    exif && info("exif source: file");
+    exifMeta = cleanseAndPutIntoArray(await exifrExtract(buf));
   } catch (e) {
     error(e);
   }
 
-  if (!exif) {
-    exif = await extractDateInformationFromFolderName(key);
-    exif && info("exif source: folder name");
-  }
+  const keyMeta = extractMetaFromKey(key);
 
-  info("exif:", exif);
-  if (exif) {
-    const meta = { id: key, attributes: cleanseAndPutIntoArray(exif) };
+  if (exifMeta) {
+    const meta = {
+      id: key,
+      attributes: { ...keyMeta, ...exifMeta, size, extension },
+    };
     await documentClient
       .put({ Item: meta, TableName: process.env.META_TABLE })
       .promise();

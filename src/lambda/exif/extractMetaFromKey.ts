@@ -1,5 +1,5 @@
-export async function extractDateInformationFromFolderName(key) {
-  let meta;
+export default (key: string) => {
+  let meta: object;
 
   const SUBSTRING_ANSI_DATES_BEGIN_WITH = "20";
   const idParts = key.split(".");
@@ -8,9 +8,9 @@ export async function extractDateInformationFromFolderName(key) {
     idParts[0].length === 8
   ) {
     const dateCreatedBin = new Date(
-      idParts[0].substring(0, 4),
+      Number(idParts[0].substring(0, 4)),
       Number(idParts[0].substring(4, 6)) - 1 || 1,
-      idParts[0].substring(6) || 1
+      Number(idParts[0].substring(6)) || 1
     );
 
     meta = {
@@ -21,4 +21,4 @@ export async function extractDateInformationFromFolderName(key) {
   }
 
   return meta;
-}
+};

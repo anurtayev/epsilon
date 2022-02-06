@@ -23,26 +23,20 @@ export type Scalars = {
   AWSURL: string;
 };
 
-export type Entry = {
-  id: Scalars['String'];
+export type AttributesConnection = {
+  __typename?: 'AttributesConnection';
+  attributes?: Maybe<Array<Scalars['String']>>;
+  nextToken?: Maybe<Scalars['String']>;
 };
 
-export type FileEntry = Entry & {
-  __typename?: 'FileEntry';
-  extension: Scalars['String'];
+export type Entry = {
   id: Scalars['String'];
-  size: Scalars['Int'];
 };
 
 export type FolderConnection = {
   __typename?: 'FolderConnection';
   items?: Maybe<Array<Entry>>;
   nextToken?: Maybe<Scalars['String']>;
-};
-
-export type FolderEntry = Entry & {
-  __typename?: 'FolderEntry';
-  id: Scalars['String'];
 };
 
 export type MetaData = {
@@ -59,19 +53,27 @@ export type MetaDataInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  setMeta?: Maybe<MetaData>;
+  updateMetaData?: Maybe<MetaData>;
 };
 
 
-export type MutationSetMetaArgs = {
+export type MutationUpdateMetaDataArgs = {
   id: Scalars['String'];
-  meta?: InputMaybe<MetaDataInput>;
+  metaDataInput?: InputMaybe<MetaDataInput>;
 };
 
 export type Query = {
   __typename?: 'Query';
+  getAttributes?: Maybe<AttributesConnection>;
   getMeta?: Maybe<MetaData>;
+  getTags?: Maybe<TagsConnection>;
   listFolder?: Maybe<FolderConnection>;
+  search?: Maybe<FolderConnection>;
+};
+
+
+export type QueryGetAttributesArgs = {
+  nextToken?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -80,9 +82,44 @@ export type QueryGetMetaArgs = {
 };
 
 
-export type QueryListFolderArgs = {
-  id: Scalars['String'];
+export type QueryGetTagsArgs = {
   nextToken?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryListFolderArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  nextToken?: InputMaybe<Scalars['String']>;
+  pageSize?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QuerySearchArgs = {
+  nextToken?: InputMaybe<Scalars['String']>;
+  pageSize?: InputMaybe<Scalars['Int']>;
+  searchInput: SearchInput;
+};
+
+export type SearchInput = {
+  attributesFilter?: InputMaybe<Array<Array<Scalars['String']>>>;
+  attributesSorter?: InputMaybe<Array<SortTerm>>;
+  tagsFilter?: InputMaybe<Array<Scalars['String']>>;
+};
+
+export enum SortOrder {
+  Asc = 'ASC',
+  Desc = 'DESC'
+}
+
+export type SortTerm = {
+  attribute: Scalars['String'];
+  sortOrder: SortOrder;
+};
+
+export type TagsConnection = {
+  __typename?: 'TagsConnection';
+  nextToken?: Maybe<Scalars['String']>;
+  tags?: Maybe<Array<Scalars['String']>>;
 };
 
 
@@ -163,17 +200,20 @@ export type ResolversTypes = {
   AWSTime: ResolverTypeWrapper<Scalars['AWSTime']>;
   AWSTimestamp: ResolverTypeWrapper<Scalars['AWSTimestamp']>;
   AWSURL: ResolverTypeWrapper<Scalars['AWSURL']>;
+  AttributesConnection: ResolverTypeWrapper<AttributesConnection>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  Entry: ResolversTypes['FileEntry'] | ResolversTypes['FolderEntry'];
-  FileEntry: ResolverTypeWrapper<FileEntry>;
+  Entry: never;
   FolderConnection: ResolverTypeWrapper<FolderConnection>;
-  FolderEntry: ResolverTypeWrapper<FolderEntry>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   MetaData: ResolverTypeWrapper<MetaData>;
   MetaDataInput: MetaDataInput;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
+  SearchInput: SearchInput;
+  SortOrder: SortOrder;
+  SortTerm: SortTerm;
   String: ResolverTypeWrapper<Scalars['String']>;
+  TagsConnection: ResolverTypeWrapper<TagsConnection>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -187,17 +227,19 @@ export type ResolversParentTypes = {
   AWSTime: Scalars['AWSTime'];
   AWSTimestamp: Scalars['AWSTimestamp'];
   AWSURL: Scalars['AWSURL'];
+  AttributesConnection: AttributesConnection;
   Boolean: Scalars['Boolean'];
-  Entry: ResolversParentTypes['FileEntry'] | ResolversParentTypes['FolderEntry'];
-  FileEntry: FileEntry;
+  Entry: never;
   FolderConnection: FolderConnection;
-  FolderEntry: FolderEntry;
   Int: Scalars['Int'];
   MetaData: MetaData;
   MetaDataInput: MetaDataInput;
   Mutation: {};
   Query: {};
+  SearchInput: SearchInput;
+  SortTerm: SortTerm;
   String: Scalars['String'];
+  TagsConnection: TagsConnection;
 };
 
 export interface AwsDateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['AWSDate'], any> {
@@ -236,26 +278,20 @@ export interface AwsurlScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
   name: 'AWSURL';
 }
 
-export type EntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Entry'] = ResolversParentTypes['Entry']> = {
-  __resolveType: TypeResolveFn<'FileEntry' | 'FolderEntry', ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+export type AttributesConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributesConnection'] = ResolversParentTypes['AttributesConnection']> = {
+  attributes?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  nextToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type FileEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['FileEntry'] = ResolversParentTypes['FileEntry']> = {
-  extension?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+export type EntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Entry'] = ResolversParentTypes['Entry']> = {
+  __resolveType: TypeResolveFn<null, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  size?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type FolderConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FolderConnection'] = ResolversParentTypes['FolderConnection']> = {
   items?: Resolver<Maybe<Array<ResolversTypes['Entry']>>, ParentType, ContextType>;
   nextToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type FolderEntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['FolderEntry'] = ResolversParentTypes['FolderEntry']> = {
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -267,12 +303,21 @@ export type MetaDataResolvers<ContextType = any, ParentType extends ResolversPar
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  setMeta?: Resolver<Maybe<ResolversTypes['MetaData']>, ParentType, ContextType, RequireFields<MutationSetMetaArgs, 'id'>>;
+  updateMetaData?: Resolver<Maybe<ResolversTypes['MetaData']>, ParentType, ContextType, RequireFields<MutationUpdateMetaDataArgs, 'id'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  getAttributes?: Resolver<Maybe<ResolversTypes['AttributesConnection']>, ParentType, ContextType, RequireFields<QueryGetAttributesArgs, never>>;
   getMeta?: Resolver<Maybe<ResolversTypes['MetaData']>, ParentType, ContextType, RequireFields<QueryGetMetaArgs, 'id'>>;
-  listFolder?: Resolver<Maybe<ResolversTypes['FolderConnection']>, ParentType, ContextType, RequireFields<QueryListFolderArgs, 'id'>>;
+  getTags?: Resolver<Maybe<ResolversTypes['TagsConnection']>, ParentType, ContextType, RequireFields<QueryGetTagsArgs, never>>;
+  listFolder?: Resolver<Maybe<ResolversTypes['FolderConnection']>, ParentType, ContextType, RequireFields<QueryListFolderArgs, never>>;
+  search?: Resolver<Maybe<ResolversTypes['FolderConnection']>, ParentType, ContextType, RequireFields<QuerySearchArgs, 'searchInput'>>;
+};
+
+export type TagsConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['TagsConnection'] = ResolversParentTypes['TagsConnection']> = {
+  nextToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  tags?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
@@ -285,12 +330,12 @@ export type Resolvers<ContextType = any> = {
   AWSTime?: GraphQLScalarType;
   AWSTimestamp?: GraphQLScalarType;
   AWSURL?: GraphQLScalarType;
+  AttributesConnection?: AttributesConnectionResolvers<ContextType>;
   Entry?: EntryResolvers<ContextType>;
-  FileEntry?: FileEntryResolvers<ContextType>;
   FolderConnection?: FolderConnectionResolvers<ContextType>;
-  FolderEntry?: FolderEntryResolvers<ContextType>;
   MetaData?: MetaDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  TagsConnection?: TagsConnectionResolvers<ContextType>;
 };
 
