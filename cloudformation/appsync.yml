@@ -423,6 +423,29 @@ Resources:
               StringEquals:
                 aws:PrincipalOrgID: o-kvc3hucixa
 
+  SearchLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Runtime: nodejs14.x
+      Role: !GetAtt AllLambdasExecutionRole.Arn
+      Handler: build/lambda/search/search.handler
+      Timeout: 10
+      Code:
+        S3Bucket: !Ref DeploymentBucketName
+        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
+      Environment:
+        Variables:
+          TAGS_TABLE: !Ref TagsTable
+          TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
+          ATTRIBUTES_TABLE: !Ref AttributesTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
+  SearchLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      RetentionInDays: 14
+      LogGroupName: !Join ["", ["/aws/lambda/", !Ref SearchLambda]]
+
   ExifLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -484,7 +507,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Principal:
@@ -495,7 +518,7 @@ Resources:
       Policies:
         - PolicyName: !Sub ${AWS::StackName}-all-lambdas-role
           PolicyDocument:
-            Version: "2012-10-17"
+            Version: 2012-10-17
             Statement:
               - Effect: Allow
                 Action:
@@ -511,6 +534,30 @@ Resources:
               - Effect: Allow
                 Action: s3:ListBucket
                 Resource: !GetAtt S3Bucket.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:ListStreams
+                  - dynamodb:ListShards
+                Resource: !GetAtt MetaTable.StreamArn
+              - Effect: Allow
+                Action:
+                  - dynamodb:PutItem
+                  - dynamodb:GetItem
+                  - dynamodb:DeleteItem
+                  - dynamodb:Query
+                Resource:
+                  - !GetAtt TagsTable.Arn
+                  - !GetAtt TagsFilesRelationshipsTable.Arn
+                  - !GetAtt AttributesTable.Arn
+                  - !GetAtt AttributesFilesRelationshipsTable.Arn
+                  - !Join
+                    - ""
+                    - - !GetAtt AttributesFilesRelationshipsTable.Arn
+                      - /index/
+                      - !Sub ${AWS::StackName}-attributes-files-relationships-index
 
   HttpApi:
     Type: AWS::ApiGatewayV2::Api
@@ -656,51 +703,6 @@ Resources:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${AWS::StackName}-media-origin-access-identity
 
-  DynamoStreamProcessingLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-      Policies:
-        - PolicyName: !Sub ${AWS::StackName}-dynamodb-stream-processing-lambda-policy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:*
-                Resource: arn:aws:logs:*:*:*
-              - Effect: Allow
-                Action:
-                  - dynamodb:DescribeStream
-                  - dynamodb:GetRecords
-                  - dynamodb:GetShardIterator
-                  - dynamodb:ListStreams
-                  - dynamodb:ListShards
-                Resource: !GetAtt MetaTable.StreamArn
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                  - dynamodb:GetItem
-                  - dynamodb:DeleteItem
-                  - dynamodb:Query
-                Resource:
-                  - !GetAtt TagsTable.Arn
-                  - !GetAtt TagsFilesRelationshipsTable.Arn
-                  - !GetAtt AttributesTable.Arn
-                  - !GetAtt AttributesFilesRelationshipsTable.Arn
-                  - !Join
-                    - ""
-                    - - !GetAtt AttributesFilesRelationshipsTable.Arn
-                      - /index/
-                      - !Sub ${AWS::StackName}-attributes-files-relationships-index
-
   DynamoStreamProcessingLambdaEventSourceMapping:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
@@ -712,7 +714,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Runtime: nodejs14.x
-      Role: !GetAtt DynamoStreamProcessingLambdaRole.Arn
+      Role: !GetAtt AllLambdasExecutionRole.Arn
       Handler: build/lambda/dbstream/index.handler
       Timeout: 10
       Code:

@@ -4,13 +4,17 @@ import { documentClient } from "../../lib/awsClients";
 /**
  * Deletes attribute-file relationship and if it is not related to
  * other files deletes attribute from Attributes table.
+ *
+ * Attribute is related to other files if total more than one
+ * relationship exists.
  */
 export default ({
   id,
   deletedAttributes = [],
 }: Pick<ExtractedMetaArray[number], "id" | "deletedAttributes">) =>
   deletedAttributes.map(async ({ name, value }) => {
-    // check if it is related to other files
+    // check if more than one relationship exists
+    // then attribute is related to other files
     const checkResult = await documentClient
       .query({
         TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
