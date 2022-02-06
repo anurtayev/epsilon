@@ -17,18 +17,26 @@ export const handler: AppSyncResolverHandler<
   info({ attributesSorter, attributesFilter, tagsFilter, nextToken, pageSize });
 
   let result: FolderConnection;
+  let arr;
 
   // get all tags-files relationships
-  const checkResult = await documentClient
-    .query({
-      TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
-      KeyConditionExpression: "tag = :tag",
-      ExpressionAttributeValues: {
-        ":tag": name,
-      },
-      Select: "ALL_ATTRIBUTES",
-    })
-    .promise();
+  for (const tag of tagsFilter) {
+    const { Items: items } = await documentClient
+      .query({
+        TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
+        KeyConditionExpression: "tag = :tag",
+        ExpressionAttributeValues: {
+          ":tag": tag,
+        },
+        Select: "ALL_ATTRIBUTES",
+      })
+      .promise();
+
+    if (!arr) {
+      arr = items;
+      console.log("==> arr", arr);
+    }
+  }
 
   // get all attributes-files relationships
 

@@ -198,23 +198,26 @@ Resources:
               - !Join ["", [!GetAtt MetaTable.Arn, "*"]]
               - !Join ["", [!GetAtt AttributesTable.Arn, "*"]]
               - !Join ["", [!GetAtt TagsTable.Arn, "*"]]
+  SearchLambdaAppsyncDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      Name: !Join ["_", [!Join ["_", !Split ["-", !Ref SearchLambda]], "ds"]]
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
   ListFolderLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       Name:
-        !Join [
-          "_",
-          [
-            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
-            "list_folder_datasource",
-          ],
-        ]
+        !Join ["_", [!Join ["_", !Split ["-", !Ref ListFolderLambda]], "ds"]]
       Type: AWS_LAMBDA
-      ServiceRoleArn: !GetAtt ListFolderLambdaAppsyncDataSourceRole.Arn
+      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
       LambdaConfig:
         LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
-  ListFolderLambdaAppsyncDataSourceRole:
+  LambdaAppsyncDataSourceRole:
     Type: AWS::IAM::Role
     Properties:
       ManagedPolicyArns:
@@ -239,7 +242,7 @@ Resources:
               - lambda:invokeFunction
             Resource:
               - !GetAtt ListFolderLambda.Arn
-              - !Join [":", [!GetAtt ListFolderLambda.Arn, "*"]]
+              - !GetAtt SearchLambda.Arn
   ListFolderQueryResolver:
     Type: "AWS::AppSync::Resolver"
     Properties:
@@ -435,9 +438,7 @@ Resources:
         S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
       Environment:
         Variables:
-          TAGS_TABLE: !Ref TagsTable
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
-          ATTRIBUTES_TABLE: !Ref AttributesTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
   SearchLambdaLogGroup:
