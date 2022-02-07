@@ -9,7 +9,7 @@ export const handler: AppSyncResolverHandler<
   QueryListFolderArgs,
   FolderConnection
 > = async ({ arguments: { id, nextToken, pageSize } }) => {
-  info(JSON.stringify({ id, nextToken }, null, 2));
+  info({ id, nextToken, pageSize });
 
   const res = await s3
     .listObjectsV2({
@@ -22,7 +22,7 @@ export const handler: AppSyncResolverHandler<
     })
     .promise();
 
-  info(JSON.stringify(res, null, 2));
+  info(res);
 
   return {
     items: [

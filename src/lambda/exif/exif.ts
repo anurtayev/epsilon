@@ -42,7 +42,7 @@ export const handler: EventBridgeHandler<
   try {
     const buf = (await s3.getObject({ Bucket: bucket, Key: key }).promise())
       .Body;
-    exifMeta = cleanseAndPutIntoArray(await exifrExtract(buf));
+    exifMeta = await exifrExtract(buf);
   } catch (e) {
     error(e);
   }
@@ -52,7 +52,14 @@ export const handler: EventBridgeHandler<
   if (exifMeta) {
     const meta = {
       id: key,
-      attributes: { ...keyMeta, ...exifMeta, size, extension },
+      attributes: [
+        cleanseAndPutIntoArray({
+          ...keyMeta,
+          ...exifMeta,
+        }),
+        ["size", String(size)],
+        ["extension", extension],
+      ],
     };
     await documentClient
       .put({ Item: meta, TableName: process.env.META_TABLE })

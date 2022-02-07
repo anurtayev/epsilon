@@ -244,14 +244,21 @@ Resources:
               - !GetAtt ListFolderLambda.Arn
               - !GetAtt SearchLambda.Arn
   ListFolderQueryResolver:
-    Type: "AWS::AppSync::Resolver"
+    Type: AWS::AppSync::Resolver
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       TypeName: Query
       FieldName: listFolder
       DataSourceName: !GetAtt ListFolderLambdaAppsyncDataSource.Name
+  SearchQueryResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      TypeName: Query
+      FieldName: search
+      DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
   GetMetaQueryResolver:
-    Type: "AWS::AppSync::Resolver"
+    Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
@@ -269,7 +276,7 @@ Resources:
       ResponseMappingTemplate: |
         $util.toJson($context.result)
   GetAttributesQueryResolver:
-    Type: "AWS::AppSync::Resolver"
+    Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
@@ -294,7 +301,7 @@ Resources:
           "nextToken": $util.toJson($ctx.result.nextToken)
         }
   GetTagsQueryResolver:
-    Type: "AWS::AppSync::Resolver"
+    Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
@@ -319,7 +326,7 @@ Resources:
           "nextToken": $util.toJson($ctx.result.nextToken)
         }
   UpdateMetaDataMutationResolver:
-    Type: "AWS::AppSync::Resolver"
+    Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
