@@ -41,5 +41,10 @@ export const handler: AppSyncResolverHandler<
 
   // trim to pageSize
 
-  return { items: arr.map((attributeMap) => attributeMap.id) };
+  console.log("==> ", arr);
+
+  return {
+    __typename: "FolderConnection",
+    items: arr.map(({ id }) => ({ __typename: "Entry", id })),
+  };
 };
