@@ -1,5 +1,6 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
+import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 import { documentClient } from "../../lib/awsClients";
 import { QuerySearchArgs, FolderConnection } from "../../lib/graphqlTypes";
@@ -16,26 +17,22 @@ export const handler: AppSyncResolverHandler<
 }) => {
   info({ attributesSorter, attributesFilter, tagsFilter, nextToken, pageSize });
 
-  let result: FolderConnection;
-  let arr;
+  let arr: DocumentClient.ItemList;
 
   // get all tags-files relationships
-  for (const tag of tagsFilter) {
+  for (const [attribute, value] of attributesFilter) {
     const { Items: items } = await documentClient
       .query({
-        TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
-        KeyConditionExpression: "tag = :tag",
+        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+        KeyConditionExpression: "attributeValue = :attributeValue",
         ExpressionAttributeValues: {
-          ":tag": tag,
+          ":attributeValue": `${attribute}#${value}`,
         },
         Select: "ALL_ATTRIBUTES",
       })
       .promise();
 
-    if (!arr) {
-      arr = items;
-      console.log("==> arr", arr);
-    }
+    arr = items;
   }
 
   // get all attributes-files relationships
@@ -44,5 +41,5 @@ export const handler: AppSyncResolverHandler<
 
   // trim to pageSize
 
-  return result;
+  return { items: arr.map((attributeMap) => attributeMap.id) };
 };

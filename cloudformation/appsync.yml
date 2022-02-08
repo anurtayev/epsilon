@@ -206,7 +206,7 @@ Resources:
       Type: AWS_LAMBDA
       ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
       LambdaConfig:
-        LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
+        LambdaFunctionArn: !GetAtt SearchLambda.Arn
   ListFolderLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -447,7 +447,6 @@ Resources:
         Variables:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
-          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
   SearchLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
