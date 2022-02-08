@@ -14,14 +14,20 @@ export async function exifrExtract(mediaFileBuf) {
     } = exifrData;
 
     return {
-      orientation,
-      dateCreated: dateCreated && dateCreated.toISOString(),
-      width,
-      height,
-      latitude,
-      longitude,
-      monthCreated: dateCreated && dateCreated.getMonth() + 1,
-      yearCreated: dateCreated && dateCreated.getFullYear(),
+      ...(orientation ? { orientation } : {}),
+      ...(dateCreated
+        ? { dateCreated: dateCreated && dateCreated.toISOString() }
+        : {}),
+      ...(width ? { width } : {}),
+      ...(height ? { height } : {}),
+      ...(latitude ? { latitude } : {}),
+      ...(longitude ? { longitude } : {}),
+      ...(dateCreated
+        ? { monthCreated: dateCreated && dateCreated.getMonth() + 1 }
+        : {}),
+      ...(dateCreated
+        ? { yearCreated: dateCreated && dateCreated.getFullYear() }
+        : {}),
     };
   }
 }

@@ -152,7 +152,7 @@
         "possibleTypes": null
       },
       {
-        "kind": "INTERFACE",
+        "kind": "OBJECT",
         "name": "Entry",
         "description": null,
         "fields": [
@@ -176,7 +176,7 @@
         "inputFields": null,
         "interfaces": [],
         "enumValues": null,
-        "possibleTypes": []
+        "possibleTypes": null
       },
       {
         "kind": "OBJECT",
@@ -194,7 +194,7 @@
                 "kind": "NON_NULL",
                 "name": null,
                 "ofType": {
-                  "kind": "INTERFACE",
+                  "kind": "OBJECT",
                   "name": "Entry",
                   "ofType": null
                 }

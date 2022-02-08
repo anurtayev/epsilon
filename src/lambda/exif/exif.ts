@@ -9,8 +9,8 @@ import { exifrExtract } from "./exifrExtract";
 
 const cleanseAndPutIntoArray = (exifData: object = {}) =>
   Reflect.ownKeys(exifData)
-    .map((key) => [key, String(exifData[key])])
-    .filter((e) => e.every(Boolean));
+    .filter((key) => Boolean(exifData[key]))
+    .map((key) => [key, String(exifData[key])]);
 
 export const handler: EventBridgeHandler<
   "Object Created",
@@ -33,9 +33,9 @@ export const handler: EventBridgeHandler<
       bucket: { name: bucket },
     },
   } = event;
+  const extension = getExtension(key);
   info("key:", key, "bucket:", bucket);
 
-  const extension = getExtension(key);
   if (!isKeyExtensionAllowed(extension)) return;
 
   let exifMeta: object;
@@ -47,21 +47,17 @@ export const handler: EventBridgeHandler<
     error(e);
   }
 
-  const keyMeta = extractMetaFromKey(key);
-
-  if (exifMeta) {
-    const meta = {
-      id: key,
-      attributes: cleanseAndPutIntoArray({
-        ...keyMeta,
-        ...exifMeta,
-        size,
-        extension,
-      }),
-    };
-    await documentClient
-      .put({ Item: meta, TableName: process.env.META_TABLE })
-      .promise();
-    info("created meta data entry:", JSON.stringify(meta, null, 2));
-  }
+  const meta = {
+    id: key,
+    attributes: cleanseAndPutIntoArray({
+      ...extractMetaFromKey(key),
+      ...exifMeta,
+      size,
+      extension,
+    }),
+  };
+  await documentClient
+    .put({ Item: meta, TableName: process.env.META_TABLE })
+    .promise();
+  info("created meta data entry:", JSON.stringify(meta, null, 2));
 };

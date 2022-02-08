@@ -8,7 +8,7 @@ input MetaDataInput {
   tags: [String!]
 }
 
-interface Entry {
+type Entry {
   id: String!
 }
 

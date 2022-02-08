@@ -30,6 +30,7 @@ export type AttributesConnection = {
 };
 
 export type Entry = {
+  __typename?: 'Entry';
   id: Scalars['String'];
 };
 
@@ -202,7 +203,7 @@ export type ResolversTypes = {
   AWSURL: ResolverTypeWrapper<Scalars['AWSURL']>;
   AttributesConnection: ResolverTypeWrapper<AttributesConnection>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  Entry: never;
+  Entry: ResolverTypeWrapper<Entry>;
   FolderConnection: ResolverTypeWrapper<FolderConnection>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   MetaData: ResolverTypeWrapper<MetaData>;
@@ -229,7 +230,7 @@ export type ResolversParentTypes = {
   AWSURL: Scalars['AWSURL'];
   AttributesConnection: AttributesConnection;
   Boolean: Scalars['Boolean'];
-  Entry: never;
+  Entry: Entry;
   FolderConnection: FolderConnection;
   Int: Scalars['Int'];
   MetaData: MetaData;
@@ -285,8 +286,8 @@ export type AttributesConnectionResolvers<ContextType = any, ParentType extends 
 };
 
 export type EntryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Entry'] = ResolversParentTypes['Entry']> = {
-  __resolveType: TypeResolveFn<null, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type FolderConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['FolderConnection'] = ResolversParentTypes['FolderConnection']> = {

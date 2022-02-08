@@ -25,16 +25,15 @@ export const handler: AppSyncResolverHandler<
   info(res);
 
   return {
+    __typename: "FolderConnection",
     items: [
       ...res.Contents.filter(({ Key: id }) =>
         isKeyExtensionAllowed(getExtension(id))
       ).map(({ Key: id }) => ({
         id,
-        __typename: "Entry",
       })),
       ...res.CommonPrefixes.map(({ Prefix: id }) => ({
         id,
-        __typename: "Entry",
       })),
     ],
     nextToken: res.NextContinuationToken,
