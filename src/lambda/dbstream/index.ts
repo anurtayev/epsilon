@@ -11,6 +11,7 @@ import processDeletedAttributes from "./processDeletedAttributes";
 export const handler: DynamoDBStreamHandler = async (event) => {
   console.log(JSON.stringify(event, null, 2));
   const extractedMetaArray = extractMeta(event);
+  console.log(JSON.stringify(extractedMetaArray, null, 2));
 
   await Promise.all(
     extractedMetaArray

@@ -9,7 +9,7 @@ import { exifrExtract } from "./exifrExtract";
 
 const cleanseAndPutIntoArray = (exifData: object = {}) =>
   Reflect.ownKeys(exifData)
-    .map((key) => [key, exifData[key]])
+    .map((key) => [key, String(exifData[key])])
     .filter((e) => e.every(Boolean));
 
 export const handler: EventBridgeHandler<
@@ -52,14 +52,12 @@ export const handler: EventBridgeHandler<
   if (exifMeta) {
     const meta = {
       id: key,
-      attributes: [
-        cleanseAndPutIntoArray({
-          ...keyMeta,
-          ...exifMeta,
-        }),
-        ["size", String(size)],
-        ["extension", extension],
-      ],
+      attributes: cleanseAndPutIntoArray({
+        ...keyMeta,
+        ...exifMeta,
+        size,
+        extension,
+      }),
     };
     await documentClient
       .put({ Item: meta, TableName: process.env.META_TABLE })
