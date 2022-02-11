@@ -447,6 +447,7 @@ Resources:
         Variables:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
+          META_TABLE: !Ref MetaTable
   SearchLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:

@@ -1,9 +1,10 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
-import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
 import { documentClient } from "../../lib/awsClients";
 import { QuerySearchArgs, FolderConnection } from "../../lib/graphqlTypes";
+import mergeSearchArrays from "./mergeSearchArrays";
+import { ArrayOfEntries, Attributes } from "./types";
 
 export const handler: AppSyncResolverHandler<
   QuerySearchArgs,
@@ -17,9 +18,9 @@ export const handler: AppSyncResolverHandler<
 }) => {
   info({ attributesSorter, attributesFilter, tagsFilter, nextToken, pageSize });
 
-  let arr: DocumentClient.ItemList;
+  let foundEntries: ArrayOfEntries;
 
-  // get all tags-files relationships
+  // get all attributes-files relationships
   for (const [attribute, value] of attributesFilter) {
     const { Items: items } = await documentClient
       .query({
@@ -31,20 +32,48 @@ export const handler: AppSyncResolverHandler<
         Select: "ALL_ATTRIBUTES",
       })
       .promise();
-
-    arr = items;
+    foundEntries = mergeSearchArrays(items, foundEntries);
   }
 
-  // get all attributes-files relationships
+  // get all tags-files relationships
+  for (const tag of tagsFilter) {
+    const { Items: items } = await documentClient
+      .query({
+        TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
+        KeyConditionExpression: "tag = :tag",
+        ExpressionAttributeValues: {
+          ":tag": tag,
+        },
+        Select: "ALL_ATTRIBUTES",
+      })
+      .promise();
+    foundEntries = mergeSearchArrays(items, foundEntries);
+  }
+
+  // get attributes metadata
+  // eslint-disable-next-line
+  const responses: Attributes = (
+    await Promise.all(
+      foundEntries.map(({ id }) =>
+        documentClient
+          .query({
+            TableName: process.env.META_TABLE,
+            KeyConditionExpression: "id = :id",
+            ExpressionAttributeValues: {
+              ":id": id,
+            },
+            Select: "ALL_ATTRIBUTES",
+          })
+          .promise()
+      )
+    )
+  ).map(({ Items: items }) => items[0].attributes);
 
   // sort and skip to nextToken
-
   // trim to pageSize
-
-  console.log("==> ", arr);
 
   return {
     __typename: "FolderConnection",
-    items: arr.map(({ id }) => ({ __typename: "Entry", id })),
+    items: foundEntries.map(({ id }) => ({ __typename: "Entry", id })),
   };
 };
