@@ -5,12 +5,7 @@ import { documentClient } from "../../lib/awsClients";
 import { QuerySearchArgs, FolderConnection } from "../../lib/graphqlTypes";
 import mergeSearchArrays from "./mergeSearchArrays";
 import findTokenIndex from "./findTokenIndex";
-import {
-  ArrayOfEntries,
-  Entries,
-  EntriesWithAttributes,
-  TokenSearchResult,
-} from "./types";
+import { Entries, EntriesWithAttributes, TokenSearchResult } from "./types";
 import sort, { stripper } from "./sort";
 
 export const handler: AppSyncResolverHandler<
@@ -29,7 +24,7 @@ export const handler: AppSyncResolverHandler<
 }) => {
   info({ attributesSorter, attributesFilter, tagsFilter, nextToken, pageSize });
 
-  let foundEntries: ArrayOfEntries;
+  let foundEntries: Entries;
 
   // get all attributes-files relationships
   for (const [attribute, value] of attributesFilter) {
@@ -64,7 +59,7 @@ export const handler: AppSyncResolverHandler<
   // get attributes metadata
   const responses: EntriesWithAttributes = (
     await Promise.all(
-      foundEntries.map(({ id }) =>
+      foundEntries.map((id) =>
         documentClient
           .query({
             TableName: process.env.META_TABLE,
@@ -78,7 +73,7 @@ export const handler: AppSyncResolverHandler<
       )
     )
   ).map(({ Items: items }) => ({
-    entry: { id: items[0].id },
+    id: items[0].id,
     attributes: items[0].attributes,
   }));
 

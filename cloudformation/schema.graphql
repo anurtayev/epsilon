@@ -8,12 +8,8 @@ input MetaDataInput {
   tags: [String!]
 }
 
-type Entry {
-  id: String!
-}
-
 type FolderConnection {
-  items: [Entry!]
+  items: [String!]
   nextToken: String
 }
 

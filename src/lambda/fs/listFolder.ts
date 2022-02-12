@@ -28,12 +28,8 @@ export const handler: AppSyncResolverHandler<
     items: [
       ...res.Contents.filter(({ Key: id }) =>
         isKeyExtensionAllowed(getExtension(id))
-      ).map(({ Key: id }) => ({
-        id,
-      })),
-      ...res.CommonPrefixes.map(({ Prefix: id }) => ({
-        id,
-      })),
+      ).map(({ Key: id }) => id),
+      ...res.CommonPrefixes.map(({ Prefix: id }) => id),
     ],
     nextToken: res.NextContinuationToken,
   };

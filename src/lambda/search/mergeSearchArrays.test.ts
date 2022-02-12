@@ -1,9 +1,7 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
-import { isEqual } from "lodash";
-
 import mergeSearchArrays from "./mergeSearchArrays";
-import { Entry } from "../../lib/graphqlTypes";
+import { Entries } from "./types";
 
 describe("mergeSearchArrays", () => {
   test("should run correctly when currentArray is a subset of inputArray", () => {
@@ -29,29 +27,12 @@ describe("mergeSearchArrays", () => {
         attributeValue: "monthCreated#6",
       },
     ];
-    const currentArray: Array<Entry> = [
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli1.jpg",
-      },
-    ];
-    const expectedArray: Array<Entry> = [
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli1.jpg",
-      },
-    ];
+    const currentArray: Entries = ["media/heli2.jpg", "media/heli1.jpg"];
+    const resultArray: Entries = mergeSearchArrays(inputArray, currentArray);
 
-    expect(
-      isEqual(
-        new Set(mergeSearchArrays(inputArray, currentArray)),
-        new Set(expectedArray)
-      )
-    ).toBe(true);
+    expect(resultArray).toContain("media/heli2.jpg");
+    expect(resultArray).toContain("media/heli1.jpg");
+    expect(resultArray.length).toBe(2);
   });
 
   test("should run correctly when currentArray is a superset of inputArray", () => {
@@ -67,32 +48,14 @@ describe("mergeSearchArrays", () => {
         attributeValue: "monthCreated#6",
       },
     ];
-    const currentArray: Array<Entry> = [
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli1.jpg",
-      },
-      {
-        id: "media/heli4.jpg",
-      },
+    const currentArray: Entries = [
+      "media/heli2.jpg",
+      "media/heli1.jpg",
+      "media/heli4.jpg",
     ];
-    const expectedArray: Array<Entry> = [
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli4.jpg",
-      },
-    ];
+    const expectedArray: Entries = ["media/heli2.jpg", "media/heli4.jpg"];
 
-    expect(
-      isEqual(
-        new Set(mergeSearchArrays(inputArray, currentArray)),
-        new Set(expectedArray)
-      )
-    ).toBe(true);
+    expect(mergeSearchArrays(inputArray, currentArray)).toEqual(expectedArray);
   });
 
   test("should run correctly when currentArray and inputArray intersect", () => {
@@ -118,35 +81,15 @@ describe("mergeSearchArrays", () => {
         attributeValue: "monthCreated#6",
       },
     ];
-    const currentArray: Array<Entry> = [
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli1.jpg",
-      },
-      {
-        id: "media/heli3.jpg",
-      },
-      {
-        id: "media/heli4.jpg",
-      },
+    const currentArray: Entries = [
+      "media/heli2.jpg",
+      "media/heli1.jpg",
+      "media/heli3.jpg",
+      "media/heli4.jpg",
     ];
-    const expectedArray: Array<Entry> = [
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli4.jpg",
-      },
-    ];
+    const expectedArray: Entries = ["media/heli2.jpg", "media/heli4.jpg"];
 
-    expect(
-      isEqual(
-        new Set(mergeSearchArrays(inputArray, currentArray)),
-        new Set(expectedArray)
-      )
-    ).toBe(true);
+    expect(mergeSearchArrays(inputArray, currentArray)).toEqual(expectedArray);
   });
 
   test("should run correctly when currentArray is undefined", () => {
@@ -172,26 +115,12 @@ describe("mergeSearchArrays", () => {
         attributeValue: "monthCreated#6",
       },
     ];
-    const expectedArray: Array<Entry> = [
-      {
-        id: "media/heli3.jpg",
-      },
-      {
-        id: "media/heli2.jpg",
-      },
-      {
-        id: "media/heli4.jpg",
-      },
-      {
-        id: "media/heli1.jpg",
-      },
-    ];
+    const expectedArray: Entries = mergeSearchArrays(inputArray, undefined);
 
-    expect(
-      isEqual(
-        new Set(mergeSearchArrays(inputArray, undefined)),
-        new Set(expectedArray)
-      )
-    ).toBe(true);
+    expect(expectedArray).toContain("media/heli3.jpg");
+    expect(expectedArray).toContain("media/heli2.jpg");
+    expect(expectedArray).toContain("media/heli4.jpg");
+    expect(expectedArray).toContain("media/heli1.jpg");
+    expect(expectedArray.length).toBe(4);
   });
 });

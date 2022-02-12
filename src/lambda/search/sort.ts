@@ -54,7 +54,7 @@ export const sorter = (
 
 export const stripper = (
   entriesWithAttributes: EntriesWithAttributes
-): Entries => entriesWithAttributes.map(({ entry }) => entry);
+): Entries => entriesWithAttributes.map(({ id }) => id);
 
 export const splitter = (
   sortResult: SortResult,

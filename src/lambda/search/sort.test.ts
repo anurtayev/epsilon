@@ -6,9 +6,7 @@ describe("sort", () => {
   test("should sort correctly", () => {
     const inputArray: EntriesWithAttributes = [
       {
-        entry: {
-          id: "id1",
-        },
+        id: "id1",
         attributes: [
           ["a1", "v1"],
           ["a2", "v22"],
@@ -16,9 +14,7 @@ describe("sort", () => {
         ],
       },
       {
-        entry: {
-          id: "id2",
-        },
+        id: "id2",
         attributes: [
           ["a1", "v2"],
           ["a2", "nofig"],
@@ -26,9 +22,7 @@ describe("sort", () => {
         ],
       },
       {
-        entry: {
-          id: "id3",
-        },
+        id: "id3",
         attributes: [
           ["a1", "v1"],
           ["a2", "v23"],
@@ -36,9 +30,7 @@ describe("sort", () => {
         ],
       },
       {
-        entry: {
-          id: "id4",
-        },
+        id: "id4",
         attributes: [
           ["a1", "v1"],
           ["a2", "v21"],
@@ -49,9 +41,7 @@ describe("sort", () => {
 
     const expectedArray: EntriesWithAttributes = [
       {
-        entry: {
-          id: "id4",
-        },
+        id: "id4",
         attributes: [
           ["a1", "v1"],
           ["a2", "v21"],
@@ -59,9 +49,7 @@ describe("sort", () => {
         ],
       },
       {
-        entry: {
-          id: "id1",
-        },
+        id: "id1",
         attributes: [
           ["a1", "v1"],
           ["a2", "v22"],
@@ -69,9 +57,7 @@ describe("sort", () => {
         ],
       },
       {
-        entry: {
-          id: "id3",
-        },
+        id: "id3",
         attributes: [
           ["a1", "v1"],
           ["a2", "v23"],
@@ -79,9 +65,7 @@ describe("sort", () => {
         ],
       },
       {
-        entry: {
-          id: "id2",
-        },
+        id: "id2",
         attributes: [
           ["a1", "v2"],
           ["a2", "nofig"],
@@ -121,9 +105,7 @@ describe("sorter", () => {
   test("should sort correctly", () => {
     const inputArray: EntriesWithAttributes = [
       {
-        entry: {
-          id: "id1",
-        },
+        id: "id1",
         attributes: [
           ["a1", "v1"],
           ["a2", "v22"],
@@ -131,9 +113,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id2",
-        },
+        id: "id2",
         attributes: [
           ["a1", "v2"],
           ["a2", "nofig"],
@@ -141,9 +121,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id3",
-        },
+        id: "id3",
         attributes: [
           ["a1", "v3"],
           ["a2", "v23"],
@@ -151,9 +129,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id4",
-        },
+        id: "id4",
         attributes: [
           ["a1", "v4"],
           ["a2", "v21"],
@@ -163,9 +139,7 @@ describe("sorter", () => {
     ];
     const expectedArray_a1: EntriesWithAttributes = [
       {
-        entry: {
-          id: "id1",
-        },
+        id: "id1",
         attributes: [
           ["a1", "v1"],
           ["a2", "v22"],
@@ -173,9 +147,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id2",
-        },
+        id: "id2",
         attributes: [
           ["a1", "v2"],
           ["a2", "nofig"],
@@ -183,9 +155,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id3",
-        },
+        id: "id3",
         attributes: [
           ["a1", "v3"],
           ["a2", "v23"],
@@ -193,9 +163,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id4",
-        },
+        id: "id4",
         attributes: [
           ["a1", "v4"],
           ["a2", "v21"],
@@ -206,9 +174,7 @@ describe("sorter", () => {
 
     const expectedArray_a2: EntriesWithAttributes = [
       {
-        entry: {
-          id: "id2",
-        },
+        id: "id2",
         attributes: [
           ["a1", "v2"],
           ["a2", "nofig"],
@@ -216,9 +182,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id4",
-        },
+        id: "id4",
         attributes: [
           ["a1", "v4"],
           ["a2", "v21"],
@@ -226,9 +190,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id1",
-        },
+        id: "id1",
         attributes: [
           ["a1", "v1"],
           ["a2", "v22"],
@@ -236,9 +198,7 @@ describe("sorter", () => {
         ],
       },
       {
-        entry: {
-          id: "id3",
-        },
+        id: "id3",
         attributes: [
           ["a1", "v3"],
           ["a2", "v23"],
@@ -262,9 +222,7 @@ describe("stripper", () => {
   test("should return correct value", () => {
     const inputArray: EntriesWithAttributes = [
       {
-        entry: {
-          id: "id1",
-        },
+        id: "id1",
         attributes: [
           ["a1", "v1"],
           ["a2", "v22"],
@@ -272,9 +230,7 @@ describe("stripper", () => {
         ],
       },
       {
-        entry: {
-          id: "id2",
-        },
+        id: "id2",
         attributes: [
           ["a1", "v2"],
           ["a2", "nofig"],
@@ -282,9 +238,7 @@ describe("stripper", () => {
         ],
       },
       {
-        entry: {
-          id: "id3",
-        },
+        id: "id3",
         attributes: [
           ["a1", "v3"],
           ["a2", "v23"],
@@ -292,9 +246,7 @@ describe("stripper", () => {
         ],
       },
       {
-        entry: {
-          id: "id4",
-        },
+        id: "id4",
         attributes: [
           ["a1", "v4"],
           ["a2", "v21"],
@@ -303,20 +255,7 @@ describe("stripper", () => {
       },
     ];
 
-    expect(stripper(inputArray)).toEqual([
-      {
-        id: "id1",
-      },
-      {
-        id: "id2",
-      },
-      {
-        id: "id3",
-      },
-      {
-        id: "id4",
-      },
-    ]);
+    expect(stripper(inputArray)).toEqual(["id1", "id2", "id3", "id4"]);
   });
 });
 
@@ -325,9 +264,7 @@ describe("splitter", () => {
     const inputArray: SortResult = [
       [
         {
-          entry: {
-            id: "id1",
-          },
+          id: "id1",
           attributes: [
             ["a1", "v1"],
             ["a2", "v22"],
@@ -335,9 +272,7 @@ describe("splitter", () => {
           ],
         },
         {
-          entry: {
-            id: "id2",
-          },
+          id: "id2",
           attributes: [
             ["a1", "v2"],
             ["a2", "nofig"],
@@ -345,9 +280,7 @@ describe("splitter", () => {
           ],
         },
         {
-          entry: {
-            id: "id3",
-          },
+          id: "id3",
           attributes: [
             ["a1", "v3"],
             ["a2", "v23"],
@@ -355,9 +288,7 @@ describe("splitter", () => {
           ],
         },
         {
-          entry: {
-            id: "id4",
-          },
+          id: "id4",
           attributes: [
             ["a1", "v4"],
             ["a2", "v21"],
@@ -370,9 +301,7 @@ describe("splitter", () => {
     const expectedArray: SortResult = [
       [
         {
-          entry: {
-            id: "id1",
-          },
+          id: "id1",
           attributes: [
             ["a1", "v1"],
             ["a2", "v22"],
@@ -382,9 +311,7 @@ describe("splitter", () => {
       ],
       [
         {
-          entry: {
-            id: "id2",
-          },
+          id: "id2",
           attributes: [
             ["a1", "v2"],
             ["a2", "nofig"],
@@ -394,9 +321,7 @@ describe("splitter", () => {
       ],
       [
         {
-          entry: {
-            id: "id3",
-          },
+          id: "id3",
           attributes: [
             ["a1", "v3"],
             ["a2", "v23"],
@@ -406,9 +331,7 @@ describe("splitter", () => {
       ],
       [
         {
-          entry: {
-            id: "id4",
-          },
+          id: "id4",
           attributes: [
             ["a1", "v4"],
             ["a2", "v21"],

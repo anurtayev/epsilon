@@ -1,15 +1,15 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
-import { Entry } from "../../lib/graphqlTypes";
+import { Entries } from "./types";
 
 export default function (
   inputArray: DocumentClient.ItemList,
-  currentArray: Array<Entry> | undefined
-): Array<Entry> {
+  currentArray: Entries | undefined
+): Entries {
   return currentArray
     ? inputArray
         .filter(({ id: incomingId }) =>
-          currentArray.some(({ id: currentId }) => incomingId === currentId)
+          currentArray.some((id) => incomingId === id)
         )
-        .map(({ id }) => ({ id }))
-    : inputArray.map(({ id }) => ({ id }));
+        .map(({ id }) => id)
+    : inputArray.map(({ id }) => id);
 }
