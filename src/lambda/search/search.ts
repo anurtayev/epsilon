@@ -56,6 +56,8 @@ export const handler: AppSyncResolverHandler<
     foundEntries = mergeSearchArrays(items, foundEntries);
   }
 
+  if (!foundEntries) return { items: null, nextToken: null };
+
   // get attributes metadata
   const responses: EntriesWithAttributes = (
     await Promise.all(
