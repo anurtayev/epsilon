@@ -4,7 +4,14 @@ import { AppSyncResolverHandler } from "aws-lambda";
 import { documentClient } from "../../lib/awsClients";
 import { QuerySearchArgs, FolderConnection } from "../../lib/graphqlTypes";
 import mergeSearchArrays from "./mergeSearchArrays";
-import { ArrayOfEntries, Attributes } from "./types";
+import findTokenIndex from "./findTokenIndex";
+import {
+  ArrayOfEntries,
+  Entries,
+  EntriesWithAttributes,
+  TokenSearchResult,
+} from "./types";
+import sort from "./sort";
 
 export const handler: AppSyncResolverHandler<
   QuerySearchArgs,
@@ -51,7 +58,7 @@ export const handler: AppSyncResolverHandler<
   }
 
   // get attributes metadata
-  const responses: Attributes = (
+  const responses: EntriesWithAttributes = (
     await Promise.all(
       foundEntries.map(({ id }) =>
         documentClient
@@ -66,12 +73,24 @@ export const handler: AppSyncResolverHandler<
           .promise()
       )
     )
-  ).map(({ Items: items }) => items[0].attributes);
+  ).map(({ Items: items }) => ({
+    entry: { id: items[0].id },
+    attributes: items[0].attributes,
+  }));
 
-  // sort and skip to nextToken
-  // trim to pageSize
+  // sort and skip to nextToken and trim to pageSize
+  const sortedEntries: Entries = sort(responses, attributesSorter);
 
+  // calculate next token
+  const { startingIndex, newNextToken }: TokenSearchResult = findTokenIndex(
+    sortedEntries,
+    pageSize,
+    nextToken
+  );
+
+  // skip to nextToken and trim to pageSize
   return {
-    items: foundEntries.map(({ id }) => ({ id })),
+    items: sortedEntries.slice(startingIndex, pageSize),
+    nextToken: newNextToken,
   };
 };

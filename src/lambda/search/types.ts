@@ -21,3 +21,5 @@ export type ArrayOfEntries = FolderConnection["items"];
 export type SortResult = Array<EntriesWithAttributes>;
 
 export type Entries = Array<Entry>;
+
+export type TokenSearchResult = { startingIndex: number; newNextToken: string };

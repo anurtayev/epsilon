@@ -28,14 +28,18 @@ type Mutation {
 }
 
 type Query {
-  listFolder(id: String, nextToken: String, pageSize: Int): FolderConnection
+  listFolder(
+    id: String
+    nextToken: String
+    pageSize: Int = 100
+  ): FolderConnection
   getMeta(id: String!): MetaData
   getAttributes(nextToken: String): AttributesConnection
   getTags(nextToken: String): TagsConnection
   search(
     searchInput: SearchInput!
     nextToken: String
-    pageSize: Int
+    pageSize: Int = 100
   ): FolderConnection
 }
 
