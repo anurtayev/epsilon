@@ -31,21 +31,17 @@ describe("mergeSearchArrays", () => {
     ];
     const currentArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli1.jpg",
       },
     ];
     const expectedArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli1.jpg",
       },
     ];
@@ -73,25 +69,20 @@ describe("mergeSearchArrays", () => {
     ];
     const currentArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli1.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli4.jpg",
       },
     ];
     const expectedArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli4.jpg",
       },
     ];
@@ -129,29 +120,23 @@ describe("mergeSearchArrays", () => {
     ];
     const currentArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli1.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli3.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli4.jpg",
       },
     ];
     const expectedArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli4.jpg",
       },
     ];
@@ -189,19 +174,15 @@ describe("mergeSearchArrays", () => {
     ];
     const expectedArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "media/heli3.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli2.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli4.jpg",
       },
       {
-        __typename: "Entry",
         id: "media/heli1.jpg",
       },
     ];

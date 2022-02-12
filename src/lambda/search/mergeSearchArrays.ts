@@ -10,6 +10,6 @@ export default function (
         .filter(({ id: incomingId }) =>
           currentArray.some(({ id: currentId }) => incomingId === currentId)
         )
-        .map(({ id }) => ({ __typename: "Entry", id }))
-    : inputArray.map(({ id }) => ({ __typename: "Entry", id }));
+        .map(({ id }) => ({ id }))
+    : inputArray.map(({ id }) => ({ id }));
 }

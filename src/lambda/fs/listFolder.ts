@@ -25,7 +25,6 @@ export const handler: AppSyncResolverHandler<
   info(res);
 
   return {
-    __typename: "FolderConnection",
     items: [
       ...res.Contents.filter(({ Key: id }) =>
         isKeyExtensionAllowed(getExtension(id))

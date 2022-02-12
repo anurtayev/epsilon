@@ -9,7 +9,6 @@ describe("sort", () => {
     const inputArray: EntriesWithAttributes = [
       {
         entry: {
-          __typename: "Entry",
           id: "id1",
         },
         attributes: [
@@ -20,7 +19,6 @@ describe("sort", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id2",
         },
         attributes: [
@@ -31,7 +29,6 @@ describe("sort", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id3",
         },
         attributes: [
@@ -42,7 +39,6 @@ describe("sort", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id4",
         },
         attributes: [
@@ -54,19 +50,15 @@ describe("sort", () => {
     ];
     const expectedArray: Array<Entry> = [
       {
-        __typename: "Entry",
         id: "id4",
       },
       {
-        __typename: "Entry",
         id: "id1",
       },
       {
-        __typename: "Entry",
         id: "id3",
       },
       {
-        __typename: "Entry",
         id: "id2",
       },
     ];
@@ -105,7 +97,6 @@ describe("sorter", () => {
     const inputArray: EntriesWithAttributes = [
       {
         entry: {
-          __typename: "Entry",
           id: "id1",
         },
         attributes: [
@@ -116,7 +107,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id2",
         },
         attributes: [
@@ -127,7 +117,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id3",
         },
         attributes: [
@@ -138,7 +127,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id4",
         },
         attributes: [
@@ -151,7 +139,6 @@ describe("sorter", () => {
     const expectedArray_a1: EntriesWithAttributes = [
       {
         entry: {
-          __typename: "Entry",
           id: "id1",
         },
         attributes: [
@@ -162,7 +149,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id2",
         },
         attributes: [
@@ -173,7 +159,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id3",
         },
         attributes: [
@@ -184,7 +169,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id4",
         },
         attributes: [
@@ -198,7 +182,6 @@ describe("sorter", () => {
     const expectedArray_a2: EntriesWithAttributes = [
       {
         entry: {
-          __typename: "Entry",
           id: "id2",
         },
         attributes: [
@@ -209,7 +192,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id4",
         },
         attributes: [
@@ -220,7 +202,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id1",
         },
         attributes: [
@@ -231,7 +212,6 @@ describe("sorter", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id3",
         },
         attributes: [
@@ -268,7 +248,6 @@ describe("stripper", () => {
     const inputArray: EntriesWithAttributes = [
       {
         entry: {
-          __typename: "Entry",
           id: "id1",
         },
         attributes: [
@@ -279,7 +258,6 @@ describe("stripper", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id2",
         },
         attributes: [
@@ -290,7 +268,6 @@ describe("stripper", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id3",
         },
         attributes: [
@@ -301,7 +278,6 @@ describe("stripper", () => {
       },
       {
         entry: {
-          __typename: "Entry",
           id: "id4",
         },
         attributes: [
@@ -315,19 +291,15 @@ describe("stripper", () => {
     expect(
       isEqual(stripper(inputArray), [
         {
-          __typename: "Entry",
           id: "id1",
         },
         {
-          __typename: "Entry",
           id: "id2",
         },
         {
-          __typename: "Entry",
           id: "id3",
         },
         {
-          __typename: "Entry",
           id: "id4",
         },
       ])
@@ -341,7 +313,6 @@ describe("splitter", () => {
       [
         {
           entry: {
-            __typename: "Entry",
             id: "id1",
           },
           attributes: [
@@ -352,7 +323,6 @@ describe("splitter", () => {
         },
         {
           entry: {
-            __typename: "Entry",
             id: "id2",
           },
           attributes: [
@@ -363,7 +333,6 @@ describe("splitter", () => {
         },
         {
           entry: {
-            __typename: "Entry",
             id: "id3",
           },
           attributes: [
@@ -374,7 +343,6 @@ describe("splitter", () => {
         },
         {
           entry: {
-            __typename: "Entry",
             id: "id4",
           },
           attributes: [
@@ -390,7 +358,6 @@ describe("splitter", () => {
       [
         {
           entry: {
-            __typename: "Entry",
             id: "id1",
           },
           attributes: [
@@ -403,7 +370,6 @@ describe("splitter", () => {
       [
         {
           entry: {
-            __typename: "Entry",
             id: "id2",
           },
           attributes: [
@@ -416,7 +382,6 @@ describe("splitter", () => {
       [
         {
           entry: {
-            __typename: "Entry",
             id: "id3",
           },
           attributes: [
@@ -429,7 +394,6 @@ describe("splitter", () => {
       [
         {
           entry: {
-            __typename: "Entry",
             id: "id4",
           },
           attributes: [

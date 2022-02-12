@@ -51,7 +51,6 @@ export const handler: AppSyncResolverHandler<
   }
 
   // get attributes metadata
-  // eslint-disable-next-line
   const responses: Attributes = (
     await Promise.all(
       foundEntries.map(({ id }) =>
@@ -73,7 +72,6 @@ export const handler: AppSyncResolverHandler<
   // trim to pageSize
 
   return {
-    __typename: "FolderConnection",
-    items: foundEntries.map(({ id }) => ({ __typename: "Entry", id })),
+    items: foundEntries.map(({ id }) => ({ id })),
   };
 };
