@@ -11,14 +11,18 @@ import {
   EntriesWithAttributes,
   TokenSearchResult,
 } from "./types";
-import sort from "./sort";
+import sort, { stripper } from "./sort";
 
 export const handler: AppSyncResolverHandler<
   QuerySearchArgs,
   FolderConnection
 > = async ({
   arguments: {
-    searchInput: { attributesSorter, attributesFilter, tagsFilter },
+    searchInput: {
+      attributesSorter = [],
+      attributesFilter = [],
+      tagsFilter = [],
+    },
     nextToken,
     pageSize,
   },
@@ -79,7 +83,9 @@ export const handler: AppSyncResolverHandler<
   }));
 
   // sort and skip to nextToken and trim to pageSize
-  const sortedEntries: Entries = sort(responses, attributesSorter);
+  const sortedEntries: Entries = stripper(
+    (attributesSorter.length && sort(responses, attributesSorter)) || responses
+  );
 
   // calculate next token
   const { startingIndex, newNextToken }: TokenSearchResult = findTokenIndex(

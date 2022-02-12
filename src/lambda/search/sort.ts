@@ -9,7 +9,7 @@ import {
 export default function (
   entriesWithAttributes: EntriesWithAttributes,
   attributesSorter: SearchInput["attributesSorter"]
-): Entries {
+): EntriesWithAttributes {
   const sortResult: SortResult = attributesSorter.reduce(
     (innerSortResult, { attribute, sortOrder }) => {
       // sort
@@ -23,8 +23,7 @@ export default function (
     [entriesWithAttributes]
   );
 
-  // strip
-  return stripper(sortResult.flat());
+  return sortResult.flat();
 }
 
 export const getValue = (attributes: Attributes, attribute: string): string =>

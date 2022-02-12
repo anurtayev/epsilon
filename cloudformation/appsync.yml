@@ -257,6 +257,15 @@ Resources:
       TypeName: Query
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
+      RequestMappingTemplate: |
+        #if ($util.isNull($ctx.args.searchInput.tagsFilter) && $util.isNull($ctx.args.searchInput.attributesFilter))
+          $util.error("search must have at least one filter specified")
+        #end
+        {
+          "version" : "2017-02-28",
+          "operation": "Invoke",
+          "payload": $util.toJson($context.args)
+        }
   GetMetaQueryResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema

@@ -1,11 +1,9 @@
-import { isEqual } from "lodash";
-
 import sort, { splitter, getValue, sorter, stripper } from "./sort";
 import { EntriesWithAttributes, Attributes, SortResult } from "./types";
-import { Entry, SearchInput, SortOrder } from "../../lib/graphqlTypes";
+import { SearchInput, SortOrder } from "../../lib/graphqlTypes";
 
 describe("sort", () => {
-  test("should sort property", () => {
+  test("should sort correctly", () => {
     const inputArray: EntriesWithAttributes = [
       {
         entry: {
@@ -48,18 +46,47 @@ describe("sort", () => {
         ],
       },
     ];
-    const expectedArray: Array<Entry> = [
+
+    const expectedArray: EntriesWithAttributes = [
       {
-        id: "id4",
+        entry: {
+          id: "id4",
+        },
+        attributes: [
+          ["a1", "v1"],
+          ["a2", "v21"],
+          ["a3", ""],
+        ],
       },
       {
-        id: "id1",
+        entry: {
+          id: "id1",
+        },
+        attributes: [
+          ["a1", "v1"],
+          ["a2", "v22"],
+          ["a3", ""],
+        ],
       },
       {
-        id: "id3",
+        entry: {
+          id: "id3",
+        },
+        attributes: [
+          ["a1", "v1"],
+          ["a2", "v23"],
+          ["a3", ""],
+        ],
       },
       {
-        id: "id2",
+        entry: {
+          id: "id2",
+        },
+        attributes: [
+          ["a1", "v2"],
+          ["a2", "nofig"],
+          ["a3", ""],
+        ],
       },
     ];
 
@@ -68,9 +95,7 @@ describe("sort", () => {
       { attribute: "a2", sortOrder: SortOrder.Asc },
     ];
 
-    expect(isEqual(sort(inputArray, attributesSorter), expectedArray)).toBe(
-      true
-    );
+    expect(sort(inputArray, attributesSorter)).toEqual(expectedArray);
   });
 });
 
@@ -222,24 +247,14 @@ describe("sorter", () => {
       },
     ];
 
-    expect(
-      isEqual(sorter(inputArray, "a1", SortOrder.Asc), expectedArray_a1)
-    ).toBe(true);
-    expect(
-      isEqual(
-        sorter(inputArray, "a1", SortOrder.Desc),
-        expectedArray_a1.reverse()
-      )
-    ).toBe(true);
-    expect(
-      isEqual(sorter(inputArray, "a2", SortOrder.Asc), expectedArray_a2)
-    ).toBe(true);
-    expect(
-      isEqual(
-        sorter(inputArray, "a2", SortOrder.Desc),
-        expectedArray_a2.reverse()
-      )
-    ).toBe(true);
+    expect(sorter(inputArray, "a1", SortOrder.Asc)).toEqual(expectedArray_a1);
+    expect(sorter(inputArray, "a1", SortOrder.Desc)).toEqual(
+      expectedArray_a1.reverse()
+    );
+    expect(sorter(inputArray, "a2", SortOrder.Asc)).toEqual(expectedArray_a2);
+    expect(sorter(inputArray, "a2", SortOrder.Desc)).toEqual(
+      expectedArray_a2.reverse()
+    );
   });
 });
 
@@ -288,22 +303,20 @@ describe("stripper", () => {
       },
     ];
 
-    expect(
-      isEqual(stripper(inputArray), [
-        {
-          id: "id1",
-        },
-        {
-          id: "id2",
-        },
-        {
-          id: "id3",
-        },
-        {
-          id: "id4",
-        },
-      ])
-    ).toBe(true);
+    expect(stripper(inputArray)).toEqual([
+      {
+        id: "id1",
+      },
+      {
+        id: "id2",
+      },
+      {
+        id: "id3",
+      },
+      {
+        id: "id4",
+      },
+    ]);
   });
 });
 
@@ -405,6 +418,6 @@ describe("splitter", () => {
       ],
     ];
 
-    expect(isEqual(splitter(inputArray, "a1"), expectedArray)).toBe(true);
+    expect(splitter(inputArray, "a1")).toEqual(expectedArray);
   });
 });
