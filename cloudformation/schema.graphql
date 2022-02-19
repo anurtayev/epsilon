@@ -4,7 +4,7 @@
 }
 
 input MetaDataInput {
-  attributes: [[String!]!]
+  attributes: [AttributeValueTerm!]
   tags: [String!]
 }
 
@@ -36,9 +36,8 @@ type Query {
 }
 
 input SearchInput {
-  tagsFilter: [String!]
-  attributesFilter: [[String!]!]
-  attributesSorter: [SortTerm!]
+  filter: MetaDataInput
+  sorter: [AttributeSortTerm!]
 }
 
 enum SortOrder {
@@ -46,9 +45,20 @@ enum SortOrder {
   DESC
 }
 
-input SortTerm {
+enum InputType {
+  STRING
+  NUMBER
+}
+
+input AttributeSortTerm {
   attribute: String!
   sortOrder: SortOrder!
+}
+
+input AttributeValueTerm {
+  attribute: String!
+  value: String!
+  type: InputType!
 }
 
 type TagsConnection {

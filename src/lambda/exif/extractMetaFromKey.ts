@@ -1,24 +1,37 @@
-export default (key: string) => {
-  let meta: object;
+const SUBSTRING_ANSI_DATES_BEGIN_WITH = "20";
+const MEDIA_PREFIX = "media";
 
-  const SUBSTRING_ANSI_DATES_BEGIN_WITH = "20";
-  const idParts = key.split(".");
+export default (
+  key: string | undefined | null
+):
+  | undefined
+  | { dateCreated: string; yearCreated: number; monthCreated: number } => {
+  if (!key) return;
+  if (!key.startsWith(MEDIA_PREFIX)) return;
+
+  const firstToken = key.split("/")[1].split(".")[0];
+
   if (
-    idParts[0].startsWith(SUBSTRING_ANSI_DATES_BEGIN_WITH) &&
-    idParts[0].length === 8
-  ) {
-    const dateCreatedBin = new Date(
-      Number(idParts[0].substring(0, 4)),
-      Number(idParts[0].substring(4, 6)) - 1 || 1,
-      Number(idParts[0].substring(6)) || 1
-    );
+    firstToken.length !== 8 ||
+    !firstToken.startsWith(SUBSTRING_ANSI_DATES_BEGIN_WITH)
+  )
+    return;
 
-    meta = {
-      dateCreated: dateCreatedBin.toISOString(),
-      yearCreated: dateCreatedBin.getFullYear(),
-      monthCreated: dateCreatedBin.getMonth() + 1,
-    };
-  }
+  const year = Number(firstToken.substring(0, 4));
+  const month = Number(firstToken.substring(4, 6)) - 1;
+  const day = Number(firstToken.substring(6));
 
-  return meta;
+  if (isNaN(year) || isNaN(month) || isNaN(day)) return;
+
+  // mon starts from 0
+  // day starts from 1
+  if (year < 2000 || month < 1 || month > 11 || day < 1 || day > 31) return;
+
+  const dateCreatedBin = new Date(year, month, day);
+
+  return {
+    dateCreated: dateCreatedBin.toISOString(),
+    yearCreated: dateCreatedBin.getFullYear(),
+    monthCreated: dateCreatedBin.getMonth() + 1,
+  };
 };

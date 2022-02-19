@@ -1,6 +1,6 @@
 import sort, { splitter, getValue, sorter, stripper } from "./sort";
 import { EntriesWithAttributes, Attributes, SortResult } from "./types";
-import { SearchInput, SortOrder } from "../../lib/graphqlTypes";
+import { SortOrder, AttributeSortTerm } from "../../lib/graphqlTypes";
 
 describe("sort", () => {
   test("should sort correctly", () => {
@@ -74,7 +74,7 @@ describe("sort", () => {
       },
     ];
 
-    const attributesSorter: SearchInput["attributesSorter"] = [
+    const attributesSorter: Array<AttributeSortTerm> = [
       { attribute: "a1", sortOrder: SortOrder.Asc },
       { attribute: "a2", sortOrder: SortOrder.Asc },
     ];

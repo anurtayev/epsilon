@@ -23,6 +23,17 @@ export type Scalars = {
   AWSURL: string;
 };
 
+export type AttributeSortTerm = {
+  attribute: Scalars['String'];
+  sortOrder: SortOrder;
+};
+
+export type AttributeValueTerm = {
+  attribute: Scalars['String'];
+  type: InputType;
+  value: Scalars['String'];
+};
+
 export type AttributesConnection = {
   __typename?: 'AttributesConnection';
   attributes?: Maybe<Array<Scalars['String']>>;
@@ -35,6 +46,11 @@ export type FolderConnection = {
   nextToken?: Maybe<Scalars['String']>;
 };
 
+export enum InputType {
+  Number = 'NUMBER',
+  String = 'STRING'
+}
+
 export type MetaData = {
   __typename?: 'MetaData';
   attributes?: Maybe<Array<Array<Scalars['String']>>>;
@@ -43,7 +59,7 @@ export type MetaData = {
 };
 
 export type MetaDataInput = {
-  attributes?: InputMaybe<Array<Array<Scalars['String']>>>;
+  attributes?: InputMaybe<Array<AttributeValueTerm>>;
   tags?: InputMaybe<Array<Scalars['String']>>;
 };
 
@@ -86,31 +102,25 @@ export type QueryGetTagsArgs = {
 export type QueryListFolderArgs = {
   id?: InputMaybe<Scalars['String']>;
   nextToken?: InputMaybe<Scalars['String']>;
-  pageSize?: InputMaybe<Scalars['Int']>;
+  pageSize: Scalars['Int'];
 };
 
 
 export type QuerySearchArgs = {
   nextToken?: InputMaybe<Scalars['String']>;
-  pageSize?: InputMaybe<Scalars['Int']>;
+  pageSize: Scalars['Int'];
   searchInput: SearchInput;
 };
 
 export type SearchInput = {
-  attributesFilter?: InputMaybe<Array<Array<Scalars['String']>>>;
-  attributesSorter?: InputMaybe<Array<SortTerm>>;
-  tagsFilter?: InputMaybe<Array<Scalars['String']>>;
+  filter?: InputMaybe<MetaDataInput>;
+  sorter?: InputMaybe<Array<AttributeSortTerm>>;
 };
 
 export enum SortOrder {
   Asc = 'ASC',
   Desc = 'DESC'
 }
-
-export type SortTerm = {
-  attribute: Scalars['String'];
-  sortOrder: SortOrder;
-};
 
 export type TagsConnection = {
   __typename?: 'TagsConnection';
@@ -196,9 +206,12 @@ export type ResolversTypes = {
   AWSTime: ResolverTypeWrapper<Scalars['AWSTime']>;
   AWSTimestamp: ResolverTypeWrapper<Scalars['AWSTimestamp']>;
   AWSURL: ResolverTypeWrapper<Scalars['AWSURL']>;
+  AttributeSortTerm: AttributeSortTerm;
+  AttributeValueTerm: AttributeValueTerm;
   AttributesConnection: ResolverTypeWrapper<AttributesConnection>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   FolderConnection: ResolverTypeWrapper<FolderConnection>;
+  InputType: InputType;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   MetaData: ResolverTypeWrapper<MetaData>;
   MetaDataInput: MetaDataInput;
@@ -206,7 +219,6 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   SearchInput: SearchInput;
   SortOrder: SortOrder;
-  SortTerm: SortTerm;
   String: ResolverTypeWrapper<Scalars['String']>;
   TagsConnection: ResolverTypeWrapper<TagsConnection>;
 };
@@ -222,6 +234,8 @@ export type ResolversParentTypes = {
   AWSTime: Scalars['AWSTime'];
   AWSTimestamp: Scalars['AWSTimestamp'];
   AWSURL: Scalars['AWSURL'];
+  AttributeSortTerm: AttributeSortTerm;
+  AttributeValueTerm: AttributeValueTerm;
   AttributesConnection: AttributesConnection;
   Boolean: Scalars['Boolean'];
   FolderConnection: FolderConnection;
@@ -231,7 +245,6 @@ export type ResolversParentTypes = {
   Mutation: {};
   Query: {};
   SearchInput: SearchInput;
-  SortTerm: SortTerm;
   String: Scalars['String'];
   TagsConnection: TagsConnection;
 };

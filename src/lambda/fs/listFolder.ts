@@ -14,11 +14,10 @@ export const handler: AppSyncResolverHandler<
   const res = await s3
     .listObjectsV2({
       Bucket: process.env.MEDIA_BUCKET,
-      MaxKeys: S3_MAX_KEYS,
       Delimiter: "/",
+      MaxKeys: pageSize || S3_MAX_KEYS,
       ...(nextToken ? { ContinuationToken: nextToken } : {}),
       ...(id ? { Prefix: id } : {}),
-      ...(pageSize ? { MaxKeys: pageSize } : {}),
     })
     .promise();
 

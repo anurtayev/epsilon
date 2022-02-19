@@ -14,20 +14,25 @@ export const handler: AppSyncResolverHandler<
 > = async ({
   arguments: {
     searchInput: {
-      attributesSorter = [],
-      attributesFilter = [],
-      tagsFilter = [],
+      filter: { tags: tagsFilter, attributes: attributesFilter },
+      sorter: attributesSorter,
     },
     nextToken,
     pageSize,
   },
 }) => {
-  info({ attributesSorter, attributesFilter, tagsFilter, nextToken, pageSize });
+  info({
+    attributesSorter,
+    attributesFilter,
+    tagsFilter,
+    nextToken,
+    pageSize,
+  });
 
   let foundEntries: Entries;
 
   // get all attributes-files relationships
-  for (const [attribute, value] of attributesFilter) {
+  for (const { attribute, value } of attributesFilter) {
     const { Items: items } = await documentClient
       .query({
         TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
@@ -79,7 +84,7 @@ export const handler: AppSyncResolverHandler<
     attributes: items[0].attributes,
   }));
 
-  // sort and skip to nextToken and trim to pageSize
+  // sort and convert from EntriesWithAttributes to Entries
   const sortedEntries: Entries = stripper(
     (attributesSorter.length && sort(responses, attributesSorter)) || responses
   );
@@ -91,7 +96,7 @@ export const handler: AppSyncResolverHandler<
     nextToken
   );
 
-  // skip to nextToken and trim to pageSize
+  // trim to pageSize
   return {
     items: sortedEntries.slice(startingIndex, pageSize),
     nextToken: newNextToken,

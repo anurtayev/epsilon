@@ -1,4 +1,4 @@
-import { SearchInput, SortOrder } from "../../lib/graphqlTypes";
+import { AttributeSortTerm, SortOrder } from "../../lib/graphqlTypes";
 import {
   EntriesWithAttributes,
   SortResult,
@@ -8,7 +8,7 @@ import {
 
 export default function (
   entriesWithAttributes: EntriesWithAttributes,
-  attributesSorter: SearchInput["attributesSorter"]
+  attributesSorter: Array<AttributeSortTerm>
 ): EntriesWithAttributes {
   const sortResult: SortResult = attributesSorter.reduce(
     (innerSortResult, { attribute, sortOrder }) => {

@@ -1,16 +1,13 @@
 import { error, info } from "console";
 import { EventBridgeHandler } from "aws-lambda";
+import exifr from "exifr";
 
 import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
 import { s3, documentClient } from "../../lib/awsClients";
 
 import extractMetaFromKey from "./extractMetaFromKey";
-import { exifrExtract } from "./exifrExtract";
-
-const cleanseAndPutIntoArray = (exifData: object = {}) =>
-  Reflect.ownKeys(exifData)
-    .filter((key) => Boolean(exifData[key]))
-    .map((key) => [key, String(exifData[key])]);
+import exifrTransform from "./exifrTransform";
+import cleanseAndPutIntoArray from "./cleanseAndPutIntoArray";
 
 export const handler: EventBridgeHandler<
   "Object Created",
@@ -42,7 +39,8 @@ export const handler: EventBridgeHandler<
   try {
     const buf = (await s3.getObject({ Bucket: bucket, Key: key }).promise())
       .Body;
-    exifMeta = await exifrExtract(buf);
+    const exifrData = await exifr.parse(buf as Buffer);
+    exifMeta = exifrTransform(exifrData);
   } catch (e) {
     error(e);
   }
