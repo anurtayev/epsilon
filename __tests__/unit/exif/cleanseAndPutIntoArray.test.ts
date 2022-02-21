@@ -1,4 +1,4 @@
-import cleanseAndPutIntoArray from "./cleanseAndPutIntoArray";
+import cleanseAndPutIntoArray from "../../../src/lambda/exif/cleanseAndPutIntoArray";
 
 describe("cleanseAndPutIntoArray", () => {
   test("should return correct value", () => {

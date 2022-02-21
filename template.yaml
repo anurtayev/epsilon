@@ -1,4 +1,8 @@
-Description: Aspan picture repository back-end
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Aspan picture repository back-end
+
+Transform: AWS::Serverless-2016-10-31
 
 Parameters:
   Timestamp:
@@ -19,6 +23,148 @@ Parameters:
     MaxLength: 100
 
 Resources:
+  SearchLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/lambda/search/search.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName:
+              - !GetAtt TagsTable.Arn
+      Environment:
+        Variables:
+          TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
+          META_TABLE: !Ref MetaTable
+
+  ExifLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/exif/exif.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Events:
+        S3Event:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - aws.s3
+              detail-type:
+                - Object Created
+              detail:
+                bucket:
+                  name:
+                    - !Ref S3Bucket
+            Target:
+              Id: ExifLambdaTarget
+      Policies:
+        - DynamoDBCrudPolicy:
+          TableName: !GetAtt MetaTable.Arn
+        - Statement:
+            - Effect: Allow
+              Action: s3:GetObject
+              Resource: !Sub ${S3Bucket.Arn}/*
+            - Effect: Allow
+              Action: s3:ListBucket
+              Resource: !GetAtt S3Bucket.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeStream
+                - dynamodb:GetRecords
+                - dynamodb:GetShardIterator
+                - dynamodb:ListStreams
+                - dynamodb:ListShards
+              Resource: !GetAtt MetaTable.StreamArn
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:GetItem
+                - dynamodb:DeleteItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt TagsTable.Arn
+                - !GetAtt TagsFilesRelationshipsTable.Arn
+                - !GetAtt AttributesTable.Arn
+                - !GetAtt AttributesFilesRelationshipsTable.Arn
+                - !GetAtt MetaTable.Arn
+                - !Join
+                  - ""
+                  - - !GetAtt AttributesFilesRelationshipsTable.Arn
+                    - /index/
+                    - !Sub ${AWS::StackName}-attributes-files-relationships-index
+      Environment:
+        Variables:
+          META_TABLE: !Ref MetaTable
+          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+
+  S3BucketRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Rule to invoke ExifLambda when new media file is uploaded
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - Object Created
+        detail:
+          bucket:
+            name:
+              - !Ref S3Bucket
+      State: "ENABLED"
+      Targets:
+        - Arn: !GetAtt ExifLambda.Arn
+          Id: ExifLambdaTarget
+
+  ListFolderLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/fs/listFolder.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !Ref S3Bucket
+          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+
+  ResizerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/resizer/resizer.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /resizer
+      Environment:
+        Variables:
+          MEDIA_BUCKET: !Ref S3Bucket
+
+  DynamoStreamProcessingLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/dbstream/index.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Events:
+        DDBEvent:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt MetaTable.StreamArn
+            StartingPosition: TRIM_HORIZON
+      Environment:
+        Variables:
+          TAGS_TABLE: !Ref TagsTable
+          TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
+          ATTRIBUTES_TABLE: !Ref AttributesTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
+
   MetaTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -105,15 +251,18 @@ Resources:
     Properties:
       Name: !Sub ${AWS::StackName}-appsync
       AuthenticationType: API_KEY
+
   ApiKey:
     Type: AWS::AppSync::ApiKey
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
+
   AppsyncSchema:
     Type: AWS::AppSync::GraphQLSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema_${Timestamp}.graphql
+
   MetaDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -131,6 +280,7 @@ Resources:
       DynamoDBConfig:
         TableName: !Ref MetaTable
         AwsRegion: !Sub ${AWS::Region}
+
   AttributesDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -148,6 +298,7 @@ Resources:
       DynamoDBConfig:
         TableName: !Ref AttributesTable
         AwsRegion: !Sub ${AWS::Region}
+
   TagsDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -165,6 +316,7 @@ Resources:
       DynamoDBConfig:
         TableName: !Ref TagsTable
         AwsRegion: !Sub ${AWS::Region}
+
   DynamoDBRole:
     Type: AWS::IAM::Role
     Properties:
@@ -179,6 +331,7 @@ Resources:
             Principal:
               Service:
                 - appsync.amazonaws.com
+
   AppSyncDynamoDBPolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -198,6 +351,7 @@ Resources:
               - !Join ["", [!GetAtt MetaTable.Arn, "*"]]
               - !Join ["", [!GetAtt AttributesTable.Arn, "*"]]
               - !Join ["", [!GetAtt TagsTable.Arn, "*"]]
+
   SearchLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -207,6 +361,7 @@ Resources:
       ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
       LambdaConfig:
         LambdaFunctionArn: !GetAtt SearchLambda.Arn
+
   ListFolderLambdaAppsyncDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
@@ -217,6 +372,7 @@ Resources:
       ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
       LambdaConfig:
         LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
+
   LambdaAppsyncDataSourceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -231,6 +387,7 @@ Resources:
             Principal:
               Service:
                 - appsync.amazonaws.com
+
   ListFolderLambdaAppsyncDataSourceRolePolicy:
     Type: AWS::IAM::ManagedPolicy
     Properties:
@@ -243,6 +400,7 @@ Resources:
             Resource:
               - !GetAtt ListFolderLambda.Arn
               - !GetAtt SearchLambda.Arn
+
   ListFolderQueryResolver:
     Type: AWS::AppSync::Resolver
     Properties:
@@ -250,6 +408,7 @@ Resources:
       TypeName: Query
       FieldName: listFolder
       DataSourceName: !GetAtt ListFolderLambdaAppsyncDataSource.Name
+
   SearchQueryResolver:
     Type: AWS::AppSync::Resolver
     Properties:
@@ -266,6 +425,7 @@ Resources:
           "operation": "Invoke",
           "payload": $util.toJson($context)
         }
+
   GetMetaQueryResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
@@ -284,6 +444,7 @@ Resources:
         }
       ResponseMappingTemplate: |
         $util.toJson($context.result)
+
   GetAttributesQueryResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
@@ -309,6 +470,7 @@ Resources:
           "attributes": $util.toJson($attributesArray),
           "nextToken": $util.toJson($ctx.result.nextToken)
         }
+
   GetTagsQueryResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
@@ -334,6 +496,7 @@ Resources:
           "tags": $util.toJson($tagsArray),
           "nextToken": $util.toJson($ctx.result.nextToken)
         }
+
   UpdateMetaDataMutationResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
@@ -397,23 +560,7 @@ Resources:
       NotificationConfiguration:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
-  S3BucketRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Rule to invoke ExifLambda when new media file is uploaded
-      EventPattern:
-        source:
-          - aws.s3
-        detail-type:
-          - Object Created
-        detail:
-          bucket:
-            name:
-              - !Ref S3Bucket
-      State: "ENABLED"
-      Targets:
-        - Arn: !GetAtt ExifLambda.Arn
-          Id: ExifLambdaTarget
+
   PermissionForEventsToInvokeLambda:
     Type: AWS::Lambda::Permission
     Properties:
@@ -422,6 +569,7 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: events.amazonaws.com
       SourceArn: !GetAtt S3BucketRule.Arn
+
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
@@ -441,196 +589,6 @@ Resources:
             Condition:
               StringEquals:
                 aws:PrincipalOrgID: o-kvc3hucixa
-
-  SearchLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Runtime: nodejs14.x
-      Role: !GetAtt AllLambdasExecutionRole.Arn
-      Handler: build/lambda/search/search.handler
-      Timeout: 10
-      Code:
-        S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Environment:
-        Variables:
-          TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
-          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
-          META_TABLE: !Ref MetaTable
-  SearchLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Join ["", ["/aws/lambda/", !Ref SearchLambda]]
-
-  ExifLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Runtime: nodejs14.x
-      Role: !GetAtt AllLambdasExecutionRole.Arn
-      Handler: build/lambda/exif/exif.handler
-      Code:
-        S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Environment:
-        Variables:
-          META_TABLE: !Ref MetaTable
-          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
-  ExifLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Join ["", ["/aws/lambda/", !Ref ExifLambda]]
-
-  ListFolderLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Runtime: nodejs14.x
-      Role: !GetAtt AllLambdasExecutionRole.Arn
-      Handler: build/lambda/fs/listFolder.handler
-      Code:
-        S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Environment:
-        Variables:
-          MEDIA_BUCKET: !Ref S3Bucket
-          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
-  ListFolderLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Join ["", ["/aws/lambda/", !Ref ListFolderLambda]]
-
-  ResizerLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Runtime: nodejs14.x
-      Role: !GetAtt AllLambdasExecutionRole.Arn
-      Handler: build/lambda/resizer/resizer.handler
-      Timeout: 10
-      Code:
-        S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Environment:
-        Variables:
-          MEDIA_BUCKET: !Ref S3Bucket
-  ResizerLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName: !Join ["", ["/aws/lambda/", !Ref ResizerLambda]]
-
-  AllLambdasExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: !Sub ${AWS::StackName}-all-lambdas-role
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:*
-                Resource: arn:aws:logs:*:*:*
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                Resource: !GetAtt MetaTable.Arn
-              - Effect: Allow
-                Action: s3:GetObject
-                Resource: !Sub ${S3Bucket.Arn}/*
-              - Effect: Allow
-                Action: s3:ListBucket
-                Resource: !GetAtt S3Bucket.Arn
-              - Effect: Allow
-                Action:
-                  - dynamodb:DescribeStream
-                  - dynamodb:GetRecords
-                  - dynamodb:GetShardIterator
-                  - dynamodb:ListStreams
-                  - dynamodb:ListShards
-                Resource: !GetAtt MetaTable.StreamArn
-              - Effect: Allow
-                Action:
-                  - dynamodb:PutItem
-                  - dynamodb:GetItem
-                  - dynamodb:DeleteItem
-                  - dynamodb:Query
-                Resource:
-                  - !GetAtt TagsTable.Arn
-                  - !GetAtt TagsFilesRelationshipsTable.Arn
-                  - !GetAtt AttributesTable.Arn
-                  - !GetAtt AttributesFilesRelationshipsTable.Arn
-                  - !GetAtt MetaTable.Arn
-                  - !Join
-                    - ""
-                    - - !GetAtt AttributesFilesRelationshipsTable.Arn
-                      - /index/
-                      - !Sub ${AWS::StackName}-attributes-files-relationships-index
-
-  HttpApi:
-    Type: AWS::ApiGatewayV2::Api
-    Properties:
-      Name: !Sub ${AWS::StackName}-api
-      ProtocolType: HTTP
-  ResizerLambdaRoute:
-    Type: AWS::ApiGatewayV2::Route
-    Properties:
-      ApiId: !Ref HttpApi
-      RouteKey: GET /resizer
-      Target: !Join [/, [integrations, !Ref ResizerLambdaIntegration]]
-  ResizerLambdaIntegration:
-    Type: AWS::ApiGatewayV2::Integration
-    Properties:
-      ApiId: !Ref HttpApi
-      IntegrationType: AWS_PROXY
-      IntegrationUri: !Join
-        - ""
-        - - "arn:"
-          - !Ref AWS::Partition
-          - ":apigateway:"
-          - !Ref AWS::Region
-          - ":lambda:path/2015-03-31/functions/"
-          - !GetAtt ResizerLambda.Arn
-          - "/invocations"
-      IntegrationMethod: POST
-      PayloadFormatVersion: "2.0"
-  DefaultStage:
-    Type: AWS::ApiGatewayV2::Stage
-    Properties:
-      StageName: $default
-      AutoDeploy: true
-      ApiId: !Ref HttpApi
-  HttpApiLambdaResourcePolicy:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !Join
-        - ":"
-        - - "arn:aws:lambda"
-          - !Ref AWS::Region
-          - !Ref AWS::AccountId
-          - "function"
-          - !Ref ResizerLambda
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Join
-        - ":"
-        - - arn:aws:execute-api
-          - !Ref AWS::Region
-          - !Ref AWS::AccountId
-          - !Join
-            - ""
-            - - !Ref HttpApi
-              - "/*/*/resizer"
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
@@ -657,8 +615,8 @@ Resources:
                 - TLSv1
                 - TLSv1.1
                 - TLSv1.2
-          - Id: !Select [2, !Split ["/", !GetAtt HttpApi.ApiEndpoint]]
-            DomainName: !Select [2, !Split ["/", !GetAtt HttpApi.ApiEndpoint]]
+          - Id: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+            DomainName: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             CustomOriginConfig:
               HTTPSPort: 443
               OriginProtocolPolicy: https-only
@@ -689,8 +647,7 @@ Resources:
               - HEAD
             CachePolicyId: !GetAtt ResizerCachePolicy.Id
             PathPattern: /resizer
-            TargetOriginId:
-              !Select [2, !Split ["/", !GetAtt HttpApi.ApiEndpoint]]
+            TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
 
   ResizerCachePolicy:
@@ -720,38 +677,6 @@ Resources:
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${AWS::StackName}-media-origin-access-identity
-
-  DynamoStreamProcessingLambdaEventSourceMapping:
-    Type: AWS::Lambda::EventSourceMapping
-    Properties:
-      EventSourceArn: !GetAtt MetaTable.StreamArn
-      FunctionName: !Ref DynamoStreamProcessingLambda
-      StartingPosition: TRIM_HORIZON
-
-  DynamoStreamProcessingLambda:
-    Type: AWS::Lambda::Function
-    Properties:
-      Runtime: nodejs14.x
-      Role: !GetAtt AllLambdasExecutionRole.Arn
-      Handler: build/lambda/dbstream/index.handler
-      Timeout: 10
-      Code:
-        S3Bucket: !Ref DeploymentBucketName
-        S3Key: !Sub ${AWS::StackName}-${Timestamp}.zip
-      Environment:
-        Variables:
-          TAGS_TABLE: !Ref TagsTable
-          TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
-          ATTRIBUTES_TABLE: !Ref AttributesTable
-          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
-          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
-
-  DynamoStreamProcessingLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      RetentionInDays: 14
-      LogGroupName:
-        !Join ["", ["/aws/lambda/", !Ref DynamoStreamProcessingLambda]]
 
 Outputs:
   CloudFrontDistributionUrl:

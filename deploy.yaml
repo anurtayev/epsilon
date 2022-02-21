@@ -1,0 +1,914 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Aspan picture repository back-end
+Transform: AWS::Serverless-2016-10-31
+Parameters:
+  Timestamp:
+    Description: Timestamp
+    Type: String
+    MinLength: 1
+    MaxLength: 16
+    AllowedPattern: '[0-9]*'
+  DeploymentBucketName:
+    Description: Deployment bucket name
+    Type: String
+    MinLength: 1
+    MaxLength: 100
+  AllowedExtensions:
+    Description: AllowedExtensions
+    Type: String
+    MinLength: 1
+    MaxLength: 100
+Resources:
+  SearchLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: src/lambda/search/search.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Policies:
+      - DynamoDBCrudPolicy: null
+        TableName:
+        - Fn::GetAtt:
+          - TagsTable
+          - Arn
+        - Fn::GetAtt:
+          - TagsFilesRelationshipsTable
+          - Arn
+        - Fn::GetAtt:
+          - AttributesTable
+          - Arn
+        - Fn::GetAtt:
+          - AttributesFilesRelationshipsTable
+          - Arn
+        - Fn::GetAtt:
+          - MetaTable
+          - Arn
+      Environment:
+        Variables:
+          TAGS_FILES_RELATIONSHIPS_TABLE:
+            Ref: TagsFilesRelationshipsTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE:
+            Ref: AttributesFilesRelationshipsTable
+          META_TABLE:
+            Ref: MetaTable
+      CodeUri: s3://aspan-epsilon-deployment/b3b5fd9e7c6db00956a1a93119fe2d8c
+    Metadata:
+      SamResourceId: SearchLambda
+  ExifLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/exif/exif.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Events:
+        S3Event:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+              - aws.s3
+              detail-type:
+              - Object Created
+              detail:
+                bucket:
+                  name:
+                  - Ref: S3Bucket
+            Target:
+              Id: ExifLambdaTarget
+      Policies:
+      - DynamoDBCrudPolicy: null
+        TableName:
+          Fn::GetAtt:
+          - MetaTable
+          - Arn
+      - Statement:
+        - Effect: Allow
+          Action: s3:GetObject
+          Resource:
+            Fn::Sub: ${S3Bucket.Arn}/*
+        - Effect: Allow
+          Action: s3:ListBucket
+          Resource:
+            Fn::GetAtt:
+            - S3Bucket
+            - Arn
+        - Effect: Allow
+          Action:
+          - dynamodb:DescribeStream
+          - dynamodb:GetRecords
+          - dynamodb:GetShardIterator
+          - dynamodb:ListStreams
+          - dynamodb:ListShards
+          Resource:
+            Fn::GetAtt:
+            - MetaTable
+            - StreamArn
+        - Effect: Allow
+          Action:
+          - dynamodb:PutItem
+          - dynamodb:GetItem
+          - dynamodb:DeleteItem
+          - dynamodb:Query
+          Resource:
+          - Fn::GetAtt:
+            - TagsTable
+            - Arn
+          - Fn::GetAtt:
+            - TagsFilesRelationshipsTable
+            - Arn
+          - Fn::GetAtt:
+            - AttributesTable
+            - Arn
+          - Fn::GetAtt:
+            - AttributesFilesRelationshipsTable
+            - Arn
+          - Fn::GetAtt:
+            - MetaTable
+            - Arn
+          - Fn::Join:
+            - ''
+            - - Fn::GetAtt:
+                - AttributesFilesRelationshipsTable
+                - Arn
+              - /index/
+              - Fn::Sub: ${AWS::StackName}-attributes-files-relationships-index
+      Environment:
+        Variables:
+          META_TABLE:
+            Ref: MetaTable
+          ALLOWED_EXTENSIONS:
+            Fn::Sub: ${AllowedExtensions}
+      CodeUri: s3://aspan-epsilon-deployment/b3b5fd9e7c6db00956a1a93119fe2d8c
+    Metadata:
+      SamResourceId: ExifLambda
+  S3BucketRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Rule to invoke ExifLambda when new media file is uploaded
+      EventPattern:
+        source:
+        - aws.s3
+        detail-type:
+        - Object Created
+        detail:
+          bucket:
+            name:
+            - Ref: S3Bucket
+      State: ENABLED
+      Targets:
+      - Arn:
+          Fn::GetAtt:
+          - ExifLambda
+          - Arn
+        Id: ExifLambdaTarget
+    Metadata:
+      SamResourceId: S3BucketRule
+  ListFolderLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/fs/listFolder.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Environment:
+        Variables:
+          MEDIA_BUCKET:
+            Ref: S3Bucket
+          ALLOWED_EXTENSIONS:
+            Fn::Sub: ${AllowedExtensions}
+      CodeUri: s3://aspan-epsilon-deployment/b3b5fd9e7c6db00956a1a93119fe2d8c
+    Metadata:
+      SamResourceId: ListFolderLambda
+  ResizerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/resizer/resizer.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            Method: GET
+            Path: /resizer
+      Environment:
+        Variables:
+          MEDIA_BUCKET:
+            Ref: S3Bucket
+      CodeUri: s3://aspan-epsilon-deployment/b3b5fd9e7c6db00956a1a93119fe2d8c
+    Metadata:
+      SamResourceId: ResizerLambda
+  DynamoStreamProcessingLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: build/lambda/dbstream/index.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Events:
+        DDBEvent:
+          Type: DynamoDB
+          Properties:
+            Stream:
+              Fn::GetAtt:
+              - MetaTable
+              - StreamArn
+            StartingPosition: TRIM_HORIZON
+      Environment:
+        Variables:
+          TAGS_TABLE:
+            Ref: TagsTable
+          TAGS_FILES_RELATIONSHIPS_TABLE:
+            Ref: TagsFilesRelationshipsTable
+          ATTRIBUTES_TABLE:
+            Ref: AttributesTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE:
+            Ref: AttributesFilesRelationshipsTable
+          ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX:
+            Fn::Sub: ${AWS::StackName}-attributes-files-relationships-index
+      CodeUri: s3://aspan-epsilon-deployment/b3b5fd9e7c6db00956a1a93119fe2d8c
+    Metadata:
+      SamResourceId: DynamoStreamProcessingLambda
+  MetaTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-meta
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: id
+        KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+    Metadata:
+      SamResourceId: MetaTable
+  TagsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-tags
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: tag
+        AttributeType: S
+      KeySchema:
+      - AttributeName: tag
+        KeyType: HASH
+    Metadata:
+      SamResourceId: TagsTable
+  TagsFilesRelationshipsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-tags-files-relationships
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: tag
+        AttributeType: S
+      - AttributeName: id
+        AttributeType: S
+      KeySchema:
+      - AttributeName: tag
+        KeyType: HASH
+      - AttributeName: id
+        KeyType: RANGE
+    Metadata:
+      SamResourceId: TagsFilesRelationshipsTable
+  AttributesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-attributes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: attribute
+        AttributeType: S
+      KeySchema:
+      - AttributeName: attribute
+        KeyType: HASH
+    Metadata:
+      SamResourceId: AttributesTable
+  AttributesFilesRelationshipsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName:
+        Fn::Sub: ${AWS::StackName}-attributes-files-relationships
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: attribute
+        AttributeType: S
+      - AttributeName: id
+        AttributeType: S
+      - AttributeName: attributeValue
+        AttributeType: S
+      KeySchema:
+      - AttributeName: attributeValue
+        KeyType: HASH
+      - AttributeName: id
+        KeyType: RANGE
+      GlobalSecondaryIndexes:
+      - IndexName:
+          Fn::Sub: ${AWS::StackName}-attributes-files-relationships-index
+        KeySchema:
+        - AttributeName: attribute
+          KeyType: HASH
+        - AttributeName: id
+          KeyType: RANGE
+        Projection:
+          ProjectionType: KEYS_ONLY
+    Metadata:
+      SamResourceId: AttributesFilesRelationshipsTable
+  AppsyncApi:
+    Type: AWS::AppSync::GraphQLApi
+    Properties:
+      Name:
+        Fn::Sub: ${AWS::StackName}-appsync
+      AuthenticationType: API_KEY
+    Metadata:
+      SamResourceId: AppsyncApi
+  ApiKey:
+    Type: AWS::AppSync::ApiKey
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+    Metadata:
+      SamResourceId: ApiKey
+  AppsyncSchema:
+    Type: AWS::AppSync::GraphQLSchema
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      DefinitionS3Location:
+        Fn::Sub: s3://${DeploymentBucketName}/cloudformation/schema_${Timestamp}.graphql
+    Metadata:
+      SamResourceId: AppsyncSchema
+  MetaDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      Name:
+        Fn::Join:
+        - _
+        - - Fn::Join:
+            - _
+            - Fn::Split:
+              - '-'
+              - Fn::Sub: ${AWS::StackName}
+          - meta_datasource
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - DynamoDBRole
+        - Arn
+      DynamoDBConfig:
+        TableName:
+          Ref: MetaTable
+        AwsRegion:
+          Fn::Sub: ${AWS::Region}
+    Metadata:
+      SamResourceId: MetaDataSource
+  AttributesDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      Name:
+        Fn::Join:
+        - _
+        - - Fn::Join:
+            - _
+            - Fn::Split:
+              - '-'
+              - Fn::Sub: ${AWS::StackName}
+          - attributes_datasource
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - DynamoDBRole
+        - Arn
+      DynamoDBConfig:
+        TableName:
+          Ref: AttributesTable
+        AwsRegion:
+          Fn::Sub: ${AWS::Region}
+    Metadata:
+      SamResourceId: AttributesDataSource
+  TagsDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      Name:
+        Fn::Join:
+        - _
+        - - Fn::Join:
+            - _
+            - Fn::Split:
+              - '-'
+              - Fn::Sub: ${AWS::StackName}
+          - tags_datasource
+      Type: AMAZON_DYNAMODB
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - DynamoDBRole
+        - Arn
+      DynamoDBConfig:
+        TableName:
+          Ref: TagsTable
+        AwsRegion:
+          Fn::Sub: ${AWS::Region}
+    Metadata:
+      SamResourceId: TagsDataSource
+  DynamoDBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+      - Ref: AppSyncDynamoDBPolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - sts:AssumeRole
+          Principal:
+            Service:
+            - appsync.amazonaws.com
+    Metadata:
+      SamResourceId: DynamoDBRole
+  AppSyncDynamoDBPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - dynamodb:GetItem
+          - dynamodb:PutItem
+          - dynamodb:UpdateItem
+          - dynamodb:Query
+          - dynamodb:Scan
+          - dynamodb:BatchGetItem
+          - dynamodb:BatchWriteItem
+          Resource:
+          - Fn::Join:
+            - ''
+            - - Fn::GetAtt:
+                - MetaTable
+                - Arn
+              - '*'
+          - Fn::Join:
+            - ''
+            - - Fn::GetAtt:
+                - AttributesTable
+                - Arn
+              - '*'
+          - Fn::Join:
+            - ''
+            - - Fn::GetAtt:
+                - TagsTable
+                - Arn
+              - '*'
+    Metadata:
+      SamResourceId: AppSyncDynamoDBPolicy
+  SearchLambdaAppsyncDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      Name:
+        Fn::Join:
+        - _
+        - - Fn::Join:
+            - _
+            - Fn::Split:
+              - '-'
+              - Ref: SearchLambda
+          - ds
+      Type: AWS_LAMBDA
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - LambdaAppsyncDataSourceRole
+        - Arn
+      LambdaConfig:
+        LambdaFunctionArn:
+          Fn::GetAtt:
+          - SearchLambda
+          - Arn
+    Metadata:
+      SamResourceId: SearchLambdaAppsyncDataSource
+  ListFolderLambdaAppsyncDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      Name:
+        Fn::Join:
+        - _
+        - - Fn::Join:
+            - _
+            - Fn::Split:
+              - '-'
+              - Ref: ListFolderLambda
+          - ds
+      Type: AWS_LAMBDA
+      ServiceRoleArn:
+        Fn::GetAtt:
+        - LambdaAppsyncDataSourceRole
+        - Arn
+      LambdaConfig:
+        LambdaFunctionArn:
+          Fn::GetAtt:
+          - ListFolderLambda
+          - Arn
+    Metadata:
+      SamResourceId: ListFolderLambdaAppsyncDataSource
+  LambdaAppsyncDataSourceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+      - Ref: ListFolderLambdaAppsyncDataSourceRolePolicy
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - sts:AssumeRole
+          Principal:
+            Service:
+            - appsync.amazonaws.com
+    Metadata:
+      SamResourceId: LambdaAppsyncDataSourceRole
+  ListFolderLambdaAppsyncDataSourceRolePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - lambda:invokeFunction
+          Resource:
+          - Fn::GetAtt:
+            - ListFolderLambda
+            - Arn
+          - Fn::GetAtt:
+            - SearchLambda
+            - Arn
+    Metadata:
+      SamResourceId: ListFolderLambdaAppsyncDataSourceRolePolicy
+  ListFolderQueryResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      TypeName: Query
+      FieldName: listFolder
+      DataSourceName:
+        Fn::GetAtt:
+        - ListFolderLambdaAppsyncDataSource
+        - Name
+    Metadata:
+      SamResourceId: ListFolderQueryResolver
+  SearchQueryResolver:
+    Type: AWS::AppSync::Resolver
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      TypeName: Query
+      FieldName: search
+      DataSourceName:
+        Fn::GetAtt:
+        - SearchLambdaAppsyncDataSource
+        - Name
+      RequestMappingTemplate: "#if ($util.isNull($ctx.args.searchInput.tagsFilter)\
+        \ && $util.isNull($ctx.args.searchInput.attributesFilter))\n  $util.error(\"\
+        search must have at least one filter specified\")\n#end\n{\n  \"version\"\
+        \ : \"2017-02-28\",\n  \"operation\": \"Invoke\",\n  \"payload\": $util.toJson($context)\n\
+        }\n"
+    Metadata:
+      SamResourceId: SearchQueryResolver
+  GetMetaQueryResolver:
+    Type: AWS::AppSync::Resolver
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      TypeName: Query
+      FieldName: getMeta
+      DataSourceName:
+        Fn::GetAtt:
+        - MetaDataSource
+        - Name
+      RequestMappingTemplate: "{\n  \"version\": \"2017-02-28\",\n  \"operation\"\
+        : \"GetItem\",\n  \"key\": {\n    \"id\": $util.dynamodb.toDynamoDBJson($ctx.args.id)\n\
+        \  },\n}\n"
+      ResponseMappingTemplate: '$util.toJson($context.result)
+
+        '
+    Metadata:
+      SamResourceId: GetMetaQueryResolver
+  GetAttributesQueryResolver:
+    Type: AWS::AppSync::Resolver
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      TypeName: Query
+      FieldName: getAttributes
+      DataSourceName:
+        Fn::GetAtt:
+        - AttributesDataSource
+        - Name
+      RequestMappingTemplate: "{\n  \"version\" : \"2018-05-29\",\n  \"operation\"\
+        \ : \"Scan\",\n  \"nextToken\": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken,\
+        \ null))\n}\n"
+      ResponseMappingTemplate: "#set($attributesArray = [])\n\n#foreach ($attributeItem\
+        \ in $ctx.result.items)\n  $util.qr($attributesArray.add($attributeItem.attribute))\n\
+        #end\n\n{\n  \"attributes\": $util.toJson($attributesArray),\n  \"nextToken\"\
+        : $util.toJson($ctx.result.nextToken)\n}\n"
+    Metadata:
+      SamResourceId: GetAttributesQueryResolver
+  GetTagsQueryResolver:
+    Type: AWS::AppSync::Resolver
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      TypeName: Query
+      FieldName: getTags
+      DataSourceName:
+        Fn::GetAtt:
+        - TagsDataSource
+        - Name
+      RequestMappingTemplate: "{\n  \"version\" : \"2018-05-29\",\n  \"operation\"\
+        \ : \"Scan\",\n  \"nextToken\": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken,\
+        \ null))\n}\n"
+      ResponseMappingTemplate: "#set($tagsArray = [])\n\n#foreach ($tagItem in $ctx.result.items)\n\
+        \  $util.qr($tagsArray.add($tagItem.tag))\n#end\n\n{\n  \"tags\": $util.toJson($tagsArray),\n\
+        \  \"nextToken\": $util.toJson($ctx.result.nextToken)\n}\n"
+    Metadata:
+      SamResourceId: GetTagsQueryResolver
+  UpdateMetaDataMutationResolver:
+    Type: AWS::AppSync::Resolver
+    DependsOn: AppsyncSchema
+    Properties:
+      ApiId:
+        Fn::GetAtt:
+        - AppsyncApi
+        - ApiId
+      TypeName: Mutation
+      FieldName: updateMetaData
+      DataSourceName:
+        Fn::GetAtt:
+        - MetaDataSource
+        - Name
+      RequestMappingTemplate: "{\n  \"version\": \"2018-05-29\",\n  \"key\": {\n \
+        \   \"id\": $util.dynamodb.toDynamoDBJson($ctx.args.id)\n  },\n#if ($util.isNull($ctx.args.metaDataInput)\
+        \ || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))\n\
+        \  \"operation\": \"DeleteItem\"\n#elseif (!$util.isNull($ctx.args.metaDataInput.attributes)\
+        \ && !$util.isNull($ctx.args.metaDataInput.tags))\n  \"operation\": \"UpdateItem\"\
+        ,\n  \"update\": {\n    \"expression\": \"SET attributes = :attributes, tags\
+        \ = :tags\",\n    \"expressionValues\": {\n      \":attributes\": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes),\n\
+        \      \":tags\": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)\n\
+        \    }\n  }\n#elseif (!$util.isNull($ctx.args.metaDataInput.attributes) &&\
+        \ $util.isNull($ctx.args.metaDataInput.tags))\n  \"operation\": \"UpdateItem\"\
+        ,\n  \"update\": {\n    \"expression\": \"SET attributes = :attributes REMOVE\
+        \ tags\",\n    \"expressionValues\": {\n      \":attributes\": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes)\n\
+        \    }\n  }\n#elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))\n\
+        \  \"operation\": \"UpdateItem\",\n  \"update\": {\n    \"expression\": \"\
+        SET tags = :tags REMOVE attributes\",\n    \"expressionValues\": {\n     \
+        \ \":tags\": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)\n\
+        \    }\n  }\n#end\n}\n"
+      ResponseMappingTemplate: "#if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes)\
+        \ && $util.isNull($ctx.args.metaDataInput.tags))\n  null\n#else\n  $util.toJson($context.result)\n\
+        #end\n"
+    Metadata:
+      SamResourceId: UpdateMetaDataMutationResolver
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    Properties:
+      BucketName:
+        Fn::Sub: ${AWS::StackName}-media
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      NotificationConfiguration:
+        EventBridgeConfiguration:
+          EventBridgeEnabled: true
+    Metadata:
+      SamResourceId: S3Bucket
+  PermissionForEventsToInvokeLambda:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Ref: ExifLambda
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn:
+        Fn::GetAtt:
+        - S3BucketRule
+        - Arn
+    Metadata:
+      SamResourceId: PermissionForEventsToInvokeLambda
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: S3Bucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Action: s3:GetObject
+          Effect: Allow
+          Resource:
+            Fn::Sub: ${S3Bucket.Arn}/*
+          Principal:
+            CanonicalUser:
+              Fn::GetAtt:
+              - CloudFrontOriginAccessIdentity
+              - S3CanonicalUserId
+        - Action: s3:ListBucket
+          Effect: Allow
+          Resource:
+            Fn::GetAtt:
+            - S3Bucket
+            - Arn
+          Principal: '*'
+          Condition:
+            StringEquals:
+              aws:PrincipalOrgID: o-kvc3hucixa
+    Metadata:
+      SamResourceId: S3BucketPolicy
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Origins:
+        - Id:
+            Fn::GetAtt:
+            - S3Bucket
+            - DomainName
+          DomainName:
+            Fn::GetAtt:
+            - S3Bucket
+            - DomainName
+          S3OriginConfig:
+            OriginAccessIdentity:
+              Fn::Join:
+              - ''
+              - - origin-access-identity/cloudfront/
+                - Ref: CloudFrontOriginAccessIdentity
+        - Id:
+            Fn::Select:
+            - 2
+            - Fn::Split:
+              - /
+              - Fn::GetAtt:
+                - AppsyncApi
+                - GraphQLUrl
+          DomainName:
+            Fn::Select:
+            - 2
+            - Fn::Split:
+              - /
+              - Fn::GetAtt:
+                - AppsyncApi
+                - GraphQLUrl
+          OriginCustomHeaders:
+          - HeaderName: x-api-key
+            HeaderValue:
+              Fn::GetAtt:
+              - ApiKey
+              - ApiKey
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only
+            OriginSSLProtocols:
+            - TLSv1
+            - TLSv1.1
+            - TLSv1.2
+        - Id:
+            Fn::Sub: ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+          DomainName:
+            Fn::Sub: ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only
+            OriginSSLProtocols:
+            - TLSv1
+            - TLSv1.1
+            - TLSv1.2
+        DefaultCacheBehavior:
+          TargetOriginId:
+            Fn::GetAtt:
+            - S3Bucket
+            - DomainName
+          ViewerProtocolPolicy: https-only
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        CacheBehaviors:
+        - AllowedMethods:
+          - GET
+          - HEAD
+          - OPTIONS
+          - PUT
+          - PATCH
+          - POST
+          - DELETE
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
+          PathPattern: /graphql
+          TargetOriginId:
+            Fn::Select:
+            - 2
+            - Fn::Split:
+              - /
+              - Fn::GetAtt:
+                - AppsyncApi
+                - GraphQLUrl
+          ViewerProtocolPolicy: https-only
+        - AllowedMethods:
+          - GET
+          - HEAD
+          CachePolicyId:
+            Fn::GetAtt:
+            - ResizerCachePolicy
+            - Id
+          PathPattern: /resizer
+          TargetOriginId:
+            Fn::Sub: ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+          ViewerProtocolPolicy: https-only
+    Metadata:
+      SamResourceId: CloudFrontDistribution
+  ResizerCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        DefaultTTL: 86400
+        MaxTTL: 31536000
+        MinTTL: 1
+        Name:
+          Fn::Sub: ${AWS::StackName}-resizer-cache-policy
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          EnableAcceptEncodingBrotli: false
+          EnableAcceptEncodingGzip: false
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: whitelist
+            QueryStrings:
+            - width
+            - height
+            - key
+    Metadata:
+      SamResourceId: ResizerCachePolicy
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment:
+          Fn::Sub: ${AWS::StackName}-media-origin-access-identity
+    Metadata:
+      SamResourceId: CloudFrontOriginAccessIdentity
+Outputs:
+  CloudFrontDistributionUrl:
+    Value:
+      Fn::GetAtt:
+      - CloudFrontDistribution
+      - DomainName
+  AppsyncApiId:
+    Value:
+      Fn::GetAtt:
+      - AppsyncApi
+      - ApiId

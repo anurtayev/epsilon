@@ -12,5 +12,11 @@
     "sourceMap": true,
     "target": "ES2020"
   },
-  "include": ["src/**/*"]
+  "include": [
+    "src/**/*",
+    "__tests__/unit/search/findTokenIndex.test.ts",
+    "__tests__/unit/exif/cleanseAndPutIntoArray.test.ts",
+    "events/eventStubs.ts",
+    "__tests__/unit/dbstream/extractMeta.test.ts"
+  ]
 }

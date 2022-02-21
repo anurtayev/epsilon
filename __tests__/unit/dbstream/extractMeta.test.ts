@@ -1,6 +1,6 @@
 import { isEqual } from "lodash";
 
-import { extractMeta } from "./extractMeta";
+import { extractMeta } from "../../../src/lambda/dbstream/extractMeta";
 import { DynamoDBStreamEvent } from "aws-lambda";
 
 import {
@@ -14,7 +14,7 @@ import {
   modifyEventWithTagsAndAttributesMeta,
   removeInsertEvent,
   removeInsertEventResult,
-} from "./eventStubs";
+} from "../../../events/eventStubs";
 
 describe("extractMeta", () => {
   test("should extract attributes and tags from INSERT event", () => {

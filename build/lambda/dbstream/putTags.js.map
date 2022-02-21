@@ -1,0 +1,1 @@
+{"version":3,"file":"putTags.js","sourceRoot":"","sources":["../../../src/lambda/dbstream/putTags.ts"],"names":[],"mappings":";;AAKA,qDAAsD;AAKtD,kBAAe,CACb,OAA2C,EAAE,EACM,EAAE,CACrD,IAAI,CAAC,GAAG,CAAC,CAAC,GAAG,EAAE,EAAE,CACf,2BAAc;KACX,GAAG,CAAC,EAAE,IAAI,EAAE,EAAE,GAAG,EAAE,EAAE,SAAS,EAAE,OAAO,CAAC,GAAG,CAAC,UAAU,EAAE,CAAC;KACzD,OAAO,EAAE,CACb,CAAC"}

@@ -1,6 +1,6 @@
 overwrite: true
 schema:
-  - cloudformation/schema.graphql
+  - schema.graphql
   - appsync.graphql
 config:
   scalars:
