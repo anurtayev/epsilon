@@ -1,6 +1,15 @@
-import sort, { splitter, getValue, sorter, stripper } from "./sort";
-import { EntriesWithAttributes, Attributes, SortResult } from "./types";
-import { SortOrder, AttributeSortTerm } from "../../lib/graphqlTypes";
+import sort, {
+  splitter,
+  getValue,
+  sorter,
+  stripper,
+} from "../../../src/lambda/search/sort";
+import {
+  EntriesWithAttributes,
+  Attributes,
+  SortResult,
+} from "../../../src/lambda/search/types";
+import { SortOrder, AttributeSortTerm } from "../../../src/lib/graphqlTypes";
 
 describe("sort", () => {
   test("should sort correctly", () => {

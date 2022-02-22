@@ -1,7 +1,7 @@
 import { DocumentClient } from "aws-sdk/clients/dynamodb";
 
-import mergeSearchArrays from "./mergeSearchArrays";
-import { Entries } from "./types";
+import mergeSearchArrays from "../../../src/lambda/search/mergeSearchArrays";
+import { Entries } from "../../../src/lambda/search/types";
 
 describe("mergeSearchArrays", () => {
   test("should run correctly when currentArray is a subset of inputArray", () => {

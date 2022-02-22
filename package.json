@@ -9,8 +9,8 @@
     "codegen:downloadSchema": "dotenv -- bash -c 'aws appsync get-introspection-schema --api-id $APPSYNC_API_ID --format SDL cloudformation/schema.graphql'",
     "codegen:run": "graphql-codegen --config codegen.yaml",
     "s3:uploadTestData": "aws s3 rm s3://epsilon-development-media --recursive && aws s3 sync s3://nurtai-pics-test s3://epsilon-development-media",
-    "test": "jest --testPathPattern=src",
-    "test:watch": "jest --watch --testPathPattern=src",
+    "test": "jest",
+    "test:watch": "jest --watch",
     "start": "dotenv ts-node src/lambda/fs/index.ts",
     "prepare": "husky install",
     "lint": "eslint src"

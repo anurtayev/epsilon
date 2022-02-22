@@ -1,4 +1,4 @@
-import extractMetaFromKey from "./extractMetaFromKey";
+import extractMetaFromKey from "../../../src/lambda/exif/extractMetaFromKey";
 
 describe("extractMetaFromKey", () => {
   test("should return undefined for undefined", () => {
