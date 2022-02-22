@@ -8,19 +8,19 @@ Parameters:
   Timestamp:
     Description: Timestamp
     Type: String
-    MinLength: 1
-    MaxLength: 16
+    MinLength: "1"
+    MaxLength: "16"
     AllowedPattern: "[0-9]*"
   DeploymentBucketName:
     Description: Deployment bucket name
     Type: String
-    MinLength: 1
-    MaxLength: 100
+    MinLength: "1"
+    MaxLength: "100"
   AllowedExtensions:
     Description: AllowedExtensions
     Type: String
-    MinLength: 1
-    MaxLength: 100
+    MinLength: "1"
+    MaxLength: "100"
 
 Resources:
   SearchLambda:
@@ -30,9 +30,7 @@ Resources:
       Runtime: nodejs14.x
       Timeout: 100
       Policies:
-        - DynamoDBCrudPolicy:
-            TableName:
-              - !GetAtt TagsTable.Arn
+        - AmazonDynamoDBReadOnlyAccess
       Environment:
         Variables:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
@@ -58,65 +56,13 @@ Resources:
                 bucket:
                   name:
                     - !Ref S3Bucket
-            Target:
-              Id: ExifLambdaTarget
       Policies:
-        - DynamoDBCrudPolicy:
-          TableName: !GetAtt MetaTable.Arn
-        - Statement:
-            - Effect: Allow
-              Action: s3:GetObject
-              Resource: !Sub ${S3Bucket.Arn}/*
-            - Effect: Allow
-              Action: s3:ListBucket
-              Resource: !GetAtt S3Bucket.Arn
-            - Effect: Allow
-              Action:
-                - dynamodb:DescribeStream
-                - dynamodb:GetRecords
-                - dynamodb:GetShardIterator
-                - dynamodb:ListStreams
-                - dynamodb:ListShards
-              Resource: !GetAtt MetaTable.StreamArn
-            - Effect: Allow
-              Action:
-                - dynamodb:PutItem
-                - dynamodb:GetItem
-                - dynamodb:DeleteItem
-                - dynamodb:Query
-              Resource:
-                - !GetAtt TagsTable.Arn
-                - !GetAtt TagsFilesRelationshipsTable.Arn
-                - !GetAtt AttributesTable.Arn
-                - !GetAtt AttributesFilesRelationshipsTable.Arn
-                - !GetAtt MetaTable.Arn
-                - !Join
-                  - ""
-                  - - !GetAtt AttributesFilesRelationshipsTable.Arn
-                    - /index/
-                    - !Sub ${AWS::StackName}-attributes-files-relationships-index
+        - AmazonDynamoDBFullAccess
+        - AmazonS3ReadOnlyAccess
       Environment:
         Variables:
           META_TABLE: !Ref MetaTable
           ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
-
-  S3BucketRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Rule to invoke ExifLambda when new media file is uploaded
-      EventPattern:
-        source:
-          - aws.s3
-        detail-type:
-          - Object Created
-        detail:
-          bucket:
-            name:
-              - !Ref S3Bucket
-      State: "ENABLED"
-      Targets:
-        - Arn: !GetAtt ExifLambda.Arn
-          Id: ExifLambdaTarget
 
   ListFolderLambda:
     Type: AWS::Serverless::Function
@@ -124,6 +70,8 @@ Resources:
       Handler: build/lambda/fs/listFolder.handler
       Runtime: nodejs14.x
       Timeout: 100
+      Policies:
+        - AmazonS3ReadOnlyAccess
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
@@ -135,6 +83,8 @@ Resources:
       Handler: build/lambda/resizer/resizer.handler
       Runtime: nodejs14.x
       Timeout: 100
+      Policies:
+        - AmazonS3ReadOnlyAccess
       Events:
         HttpApiEvent:
           Type: HttpApi
@@ -151,6 +101,8 @@ Resources:
       Handler: build/lambda/dbstream/index.handler
       Runtime: nodejs14.x
       Timeout: 100
+      Policies:
+        - AmazonDynamoDBFullAccess
       Events:
         DDBEvent:
           Type: DynamoDB
@@ -560,15 +512,6 @@ Resources:
       NotificationConfiguration:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
-
-  PermissionForEventsToInvokeLambda:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName:
-        Ref: ExifLambda
-      Action: lambda:InvokeFunction
-      Principal: events.amazonaws.com
-      SourceArn: !GetAtt S3BucketRule.Arn
 
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
