@@ -1,6 +1,6 @@
 {
   "name": "epsilon",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "aspan back-end",
   "scripts": {
     "sam:package": "sam package --template-file template.yaml --output-template-file deploy.yaml --s3-bucket aspan-epsilon-deployment",
