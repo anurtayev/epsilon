@@ -5,19 +5,8 @@ Description: >-
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
-  Timestamp:
-    Description: Timestamp
-    Type: String
-    MinLength: "1"
-    MaxLength: "16"
-    AllowedPattern: "[0-9]*"
   DeploymentBucketName:
     Description: Deployment bucket name
-    Type: String
-    MinLength: "1"
-    MaxLength: "100"
-  AllowedExtensions:
-    Description: AllowedExtensions
     Type: String
     MinLength: "1"
     MaxLength: "100"
@@ -62,7 +51,7 @@ Resources:
       Environment:
         Variables:
           META_TABLE: !Ref MetaTable
-          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+          ALLOWED_EXTENSIONS: jpg|jpeg
 
   ListFolderLambda:
     Type: AWS::Serverless::Function
@@ -75,7 +64,7 @@ Resources:
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
-          ALLOWED_EXTENSIONS: !Sub ${AllowedExtensions}
+          ALLOWED_EXTENSIONS: jpg|jpeg
 
   ResizerLambda:
     Type: AWS::Serverless::Function
