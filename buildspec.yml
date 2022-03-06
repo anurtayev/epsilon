@@ -6,4 +6,4 @@ phases:
   build:
     commands:
       # trigger the integration tests here
-      - echo 'Running integration tests'
+      - ls -la
