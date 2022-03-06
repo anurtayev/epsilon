@@ -10,9 +10,9 @@ phases:
     commands:
       - . ./assume-role.sh ${ENV_PIPELINE_EXECUTION_ROLE} deploy
       - sam deploy --stack-name ${ENV_STACK_NAME}
-                    --template ${ENV_TEMPLATE}
-                    --capabilities CAPABILITY_IAM
-                    --region ${ENV_REGION}
-                    --s3-bucket ${ENV_BUCKET}
-                    --no-fail-on-empty-changeset
-                    --role-arn ${ENV_CLOUDFORMATION_EXECUTION_ROLE}
+        --template ${ENV_TEMPLATE}
+        --capabilities CAPABILITY_IAM
+        --region ${ENV_REGION}
+        --s3-bucket ${ENV_BUCKET}
+        --no-fail-on-empty-changeset
+        --role-arn ${ENV_CLOUDFORMATION_EXECUTION_ROLE}
