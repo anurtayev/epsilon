@@ -13,7 +13,11 @@
     "test:watch": "jest --watch",
     "start": "dotenv ts-node src/lambda/fs/index.ts",
     "prepare": "husky install",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "s3:rm": ". scripts/cf_exports.sh && aws s3 rm s3://$INFRASTRUCTURE_BUCKET_NAME --recursive --quiet",
+    "pipeline:create": ". scripts/env.sh && aws cloudformation create-stack --stack-name $ENV_NAME-pipeline --template-body file://codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM",
+    "pipeline:update": ". scripts/env.sh && aws cloudformation update-stack --stack-name $ENV_NAME-pipeline --template-body file://codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM",
+    "pipeline:delete": "npm run s3:rm && . scripts/env.sh && aws cloudformation delete-stack --stack-name $ENV_NAME-pipeline"
   },
   "dependencies": {
     "exifr": "^7.1.3",

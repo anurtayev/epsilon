@@ -20,8 +20,9 @@ Parameters:
 Resources:
   InfrastructureBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub ${ProjectName}-${EnvironmentName}
+      BucketName: !Sub ${ProjectName}-${EnvironmentName}-${AWS::AccountId}-${AWS::Region}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -129,6 +130,9 @@ Resources:
     Properties:
       Name: !Sub ${ProjectName}-${EnvironmentName}-pipeline
       RoleArn: !GetAtt CodePipelineExecutionRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref InfrastructureBucket
       Stages:
         - Name: Source
           Actions:
@@ -157,9 +161,6 @@ Resources:
                 - Name: SourceAsZip
               Configuration:
                 ProjectName: !Ref CodeBuildProject
-      ArtifactStore:
-        Type: S3
-        Location: !Ref InfrastructureBucket
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -174,3 +175,15 @@ Resources:
         Image: aws/codebuild/standard:5.0
       Source:
         Type: CODEPIPELINE
+
+Outputs:
+  InfrastructureBucketName:
+    Description: InfrastructureBucket name
+    Value: !Ref InfrastructureBucket
+    Export:
+      Name: InfrastructureBucketName
+  InfrastructureBucketArn:
+    Description: InfrastructureBucket ARN
+    Value: !GetAtt InfrastructureBucket.Arn
+    Export:
+      Name: InfrastructureBucketArn

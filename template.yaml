@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: 2010-09-09
+AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
   Aspan picture repository back-end
 
@@ -8,8 +8,8 @@ Parameters:
   DeploymentBucketName:
     Description: Deployment bucket name
     Type: String
-    MinLength: "1"
-    MaxLength: "100"
+    MinLength: 1
+    MaxLength: 100
 
 Resources:
   SearchLambda:
