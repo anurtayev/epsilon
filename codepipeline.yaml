@@ -2,27 +2,21 @@ Description: pipeline
 
 Parameters:
   ProjectName:
-    Description: Project name
     Type: String
-    Default: epsilon
-  EnvironmentName:
+  GitBranchName:
     Description: Environment name, same as GitHub branch name
     Type: String
-    Default: development
   FullRepositoryId:
     Type: String
-    Default: "anurtayev/epsilon"
   PrincipalOrgID:
-    Description: Aspan Principal Organization ID
     Type: String
-    Default: o-kvc3hucixa
 
 Resources:
   InfrastructureBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub ${ProjectName}-${EnvironmentName}-${AWS::AccountId}-${AWS::Region}
+      BucketName: !Sub ${ProjectName}-${GitBranchName}-${AWS::AccountId}-${AWS::Region}
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -65,7 +59,7 @@ Resources:
               Service: codepipeline.amazonaws.com
       Path: /
       Policies:
-        - PolicyName: !Sub ${ProjectName}-${EnvironmentName}-CodePipelineExecutionRolePolicy
+        - PolicyName: !Sub ${ProjectName}-${GitBranchName}-CodePipelineExecutionRolePolicy
           PolicyDocument:
             Version: 2012-10-17
             Statement:
@@ -128,7 +122,7 @@ Resources:
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Sub ${ProjectName}-${EnvironmentName}-pipeline
+      Name: !Sub ${ProjectName}-${GitBranchName}-pipeline
       RoleArn: !GetAtt CodePipelineExecutionRole.Arn
       ArtifactStore:
         Type: S3
@@ -145,7 +139,7 @@ Resources:
               OutputArtifacts:
                 - Name: SourceAsZip
               Configuration:
-                BranchName: !Ref EnvironmentName
+                BranchName: !Ref GitBranchName
                 ConnectionArn: !Ref CodeStarConnection
                 FullRepositoryId: !Ref FullRepositoryId
               RunOrder: 1
@@ -165,7 +159,7 @@ Resources:
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: !Sub ${ProjectName}-${EnvironmentName}
+      Name: !Sub ${ProjectName}-${GitBranchName}
       ServiceRole: !GetAtt CodeBuildExecutionRole.Arn
       Artifacts:
         Type: CODEPIPELINE

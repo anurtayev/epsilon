@@ -12,6 +12,11 @@ Parameters:
     MaxLength: 100
 
 Resources:
+  Dependencies:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: nodejs/node_modules
+
   SearchLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -20,6 +25,8 @@ Resources:
       Timeout: 100
       Policies:
         - AmazonDynamoDBReadOnlyAccess
+      Layers:
+        - !Ref Dependencies
       Environment:
         Variables:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
