@@ -5,8 +5,8 @@
   "scripts": {
     "build:dependencies": "scripts/dependencies.sh",
     "build:src": "tsc",
-    "sam:package": "sam package --template-file template.yaml --output-template-file deploy.yaml --s3-bucket aspan-epsilon-deployment",
-    "sam:deploy": "sam deploy --template-file template.yaml --stack-name epsilon-development --capabilities CAPABILITY_IAM --region us-east-1 --s3-bucket aspan-epsilon-deployment",
+    "sam:package": "sam package --template-file template.yaml --output-template-file deploy.yaml --s3-bucket $INFRASTRUCTURE_BUCKET_NAME",
+    "sam:deploy": ". scripts/cf_exports.sh && sam deploy --template-file template.yaml --stack-name $PROJECT-$GIT_BRANCH --capabilities CAPABILITY_IAM --region us-east-1 --s3-bucket $INFRASTRUCTURE_BUCKET_NAME",
     "docker:prune": "docker system prune --volumes --force",
     "codegen:downloadSchema": "dotenv -- bash -c 'aws appsync get-introspection-schema --api-id $APPSYNC_API_ID --format SDL cloudformation/schema.graphql'",
     "codegen:run": "graphql-codegen --config codegen.yaml",
