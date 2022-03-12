@@ -1,4 +1,4 @@
-import { ExtractedMetaArray } from "../src/lambda/dbstream/extractMeta";
+import { ExtractedMetaArray } from "../src/dbstream/extractMeta";
 
 export const insertEventWithTagsAndAttributes = {
   Records: [

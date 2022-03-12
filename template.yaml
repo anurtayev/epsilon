@@ -24,7 +24,7 @@ Resources:
   SearchLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: src/lambda/search/search.handler
+      Handler: search.handler
       Runtime: nodejs14.x
       Timeout: 100
       Policies:
@@ -41,9 +41,10 @@ Resources:
   ExifLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: build/lambda/exif/exif.handler
+      Handler: exif.handler
       Runtime: nodejs14.x
       Timeout: 100
+      CodeUri: build/exif
       Events:
         S3Event:
           Type: EventBridgeRule
@@ -68,7 +69,8 @@ Resources:
   ListFolderLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: build/lambda/fs/listFolder.handler
+      Handler: listFolder.handler
+      CodeUri: build/fs
       Runtime: nodejs14.x
       Timeout: 100
       Policies:
@@ -81,7 +83,8 @@ Resources:
   ResizerLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: build/lambda/resizer/resizer.handler
+      Handler: resizer.handler
+      CodeUri: build/resizer
       Runtime: nodejs14.x
       Timeout: 100
       Policies:
@@ -99,7 +102,8 @@ Resources:
   DynamoStreamProcessingLambda:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: build/lambda/dbstream/index.handler
+      Handler: index.handler
+      CodeUri: build/dbstream
       Runtime: nodejs14.x
       Timeout: 100
       Policies:

@@ -14,7 +14,6 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "start": "dotenv ts-node src/lambda/fs/index.ts",
-    "prepare": "husky install",
     "lint": "eslint src",
     "s3:rm": ". scripts/cf_exports.sh && aws s3 rm s3://$INFRASTRUCTURE_BUCKET_NAME --recursive --quiet",
     "pipeline:create": ". scripts/env.sh && aws cloudformation create-stack --stack-name $PROJECT-$GIT_BRANCH-pipeline --template-body file://codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=ProjectName,ParameterValue=$PROJECT ParameterKey=GitBranchName,ParameterValue=$GIT_BRANCH ParameterKey=FullRepositoryId,ParameterValue=$FULL_REPOSITORY_ID ParameterKey=PrincipalOrgID,ParameterValue=$PRINCIPAL_ORG_ID",

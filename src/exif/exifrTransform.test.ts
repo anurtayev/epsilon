@@ -1,4 +1,4 @@
-import exifrTransform from "../../../src/lambda/exif/exifrTransform";
+import exifrTransform from "./exifrTransform";
 
 import * as appleNoGPS from "./testData/40B77F2A-FF8E-41FF-8D03-F3E1CBF49825.heic.raw.json";
 import * as appleWithGPS from "./testData/603FC7E3-6661-451E-AE7C-C84AE38A0630.jpeg.raw.json";
