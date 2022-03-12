@@ -1,5 +1,5 @@
 import { ExtractedMetaArray } from "./extractMeta";
-import { documentClient } from "../../lib/awsClients";
+import { documentClient } from "@aspan/sigma";
 
 /**
  * Deletes tag-file relationship and if tag is not related to

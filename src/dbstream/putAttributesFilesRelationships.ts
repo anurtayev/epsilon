@@ -3,7 +3,7 @@ import { PutItemOutput } from "aws-sdk/clients/dynamodb";
 import { AWSError } from "aws-sdk/lib/error";
 
 import { ExtractedMetaArray } from "./extractMeta";
-import { documentClient } from "../../lib/awsClients";
+import { documentClient } from "@aspan/sigma";
 
 /**
  * Put all attributesValuesFilesRelationships into

@@ -11,11 +11,15 @@ Parameters:
     MinLength: 1
     MaxLength: 100
 
+Metadata:
+  BuildMethod: nodejs14.x
+  BuildArchitecture: x86_64
+
 Resources:
   Dependencies:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: nodejs/node_modules
+      ContentUri: dependencies
 
   SearchLambda:
     Type: AWS::Serverless::Function
@@ -27,6 +31,7 @@ Resources:
         - AmazonDynamoDBReadOnlyAccess
       Layers:
         - !Ref Dependencies
+      CodeUri: build/search
       Environment:
         Variables:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable

@@ -1,5 +1,5 @@
 import { ExtractedMetaArray } from "./extractMeta";
-import { documentClient } from "../../lib/awsClients";
+import { documentClient } from "@aspan/sigma";
 
 /**
  * Deletes attribute-file relationship and if it is not related to

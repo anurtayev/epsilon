@@ -1,7 +1,7 @@
 import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from "aws-lambda";
 import * as sharp from "sharp";
 import { strict as assert } from "assert";
-import { s3 } from "../../lib/awsClients";
+import { s3 } from "@aspan/sigma";
 
 const bucketName = process.env.MEDIA_BUCKET;
 assert(bucketName, "Bucket name environment variable is required");

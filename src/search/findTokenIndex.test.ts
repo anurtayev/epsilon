@@ -1,5 +1,5 @@
-import findTokenIndex from "../../../src/lambda/search/findTokenIndex";
-import { Entries, TokenSearchResult } from "../../../src/lambda/search/types";
+import findTokenIndex from "./findTokenIndex";
+import { Entries, TokenSearchResult } from "./types";
 
 const inputArray: Entries = [
   "media/heli1.jpg",

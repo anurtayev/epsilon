@@ -1,4 +1,4 @@
-import { MetaData, SearchInput } from "../../lib/graphqlTypes";
+import { MetaData, SearchInput } from "@aspan/sigma";
 
 export type Attributes = MetaData["attributes"];
 
@@ -9,7 +9,7 @@ export type EntryWithAttributes = {
 
 export type EntriesWithAttributes = Array<EntryWithAttributes>;
 
-export type AttributesSorter = SearchInput["attributesSorter"];
+export type AttributesSorter = SearchInput["sorter"];
 
 export type SortResult = Array<EntriesWithAttributes>;
 

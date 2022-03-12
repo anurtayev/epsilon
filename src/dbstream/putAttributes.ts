@@ -3,16 +3,19 @@ import { PutItemOutput } from "aws-sdk/clients/dynamodb";
 import { AWSError } from "aws-sdk/lib/error";
 
 import { ExtractedMetaArray } from "./extractMeta";
-import { documentClient } from "../../lib/awsClients";
+import { documentClient } from "@aspan/sigma";
 
 /**
- * Add all tags to the Tags table if they do not exists.
+ * Put all attributes into Attributes table if they do not exist.
  */
 export default (
-  tags: ExtractedMetaArray[number]["tags"] = []
+  attributes: ExtractedMetaArray[number]["attributes"] = []
 ): Promise<PromiseResult<PutItemOutput, AWSError>>[] =>
-  tags.map((tag) =>
+  attributes.map(({ name: attribute }) =>
     documentClient
-      .put({ Item: { tag }, TableName: process.env.TAGS_TABLE })
+      .put({
+        Item: { attribute },
+        TableName: process.env.ATTRIBUTES_TABLE,
+      })
       .promise()
   );

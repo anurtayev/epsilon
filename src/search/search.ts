@@ -1,8 +1,11 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
 
-import { documentClient } from "../../lib/awsClients";
-import { QuerySearchArgs, FolderConnection } from "../../lib/graphqlTypes";
+import {
+  documentClient,
+  QuerySearchArgs,
+  FolderConnection,
+} from "@aspan/sigma";
 import mergeSearchArrays from "./mergeSearchArrays";
 import findTokenIndex from "./findTokenIndex";
 import { Entries, EntriesWithAttributes, TokenSearchResult } from "./types";

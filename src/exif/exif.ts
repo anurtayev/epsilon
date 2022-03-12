@@ -2,8 +2,12 @@ import { error, info } from "console";
 import { EventBridgeHandler } from "aws-lambda";
 import exifr from "exifr";
 
-import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
-import { s3, documentClient } from "../../lib/awsClients";
+import {
+  isKeyExtensionAllowed,
+  getExtension,
+  s3,
+  documentClient,
+} from "@aspan/sigma";
 
 import extractMetaFromKey from "./extractMetaFromKey";
 import exifrTransform from "./exifrTransform";

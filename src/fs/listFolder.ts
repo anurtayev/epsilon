@@ -1,9 +1,14 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
 
-import { isKeyExtensionAllowed, getExtension } from "../../lib/util";
-import { s3, S3_MAX_KEYS } from "../../lib/awsClients";
-import { QueryListFolderArgs, FolderConnection } from "../../lib/graphqlTypes";
+import {
+  QueryListFolderArgs,
+  FolderConnection,
+  isKeyExtensionAllowed,
+  getExtension,
+  s3,
+  S3_MAX_KEYS,
+} from "@aspan/sigma";
 
 export const handler: AppSyncResolverHandler<
   QueryListFolderArgs,

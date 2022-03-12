@@ -1,4 +1,4 @@
-import { AttributeValueTerm, InputType } from "../../lib/graphqlTypes";
+import { AttributeValueTerm, InputType } from "@aspan/sigma";
 
 export default (
   exifData: {

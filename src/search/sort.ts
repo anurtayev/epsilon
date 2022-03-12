@@ -1,4 +1,4 @@
-import { AttributeSortTerm, SortOrder } from "../../lib/graphqlTypes";
+import { AttributeSortTerm, SortOrder } from "@aspan/sigma";
 import {
   EntriesWithAttributes,
   SortResult,

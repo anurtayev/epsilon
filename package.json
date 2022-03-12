@@ -3,6 +3,8 @@
   "version": "1.0.2",
   "description": "aspan back-end",
   "scripts": {
+    "build:dependencies": "scripts/dependencies.sh",
+    "build:src": "tsc",
     "sam:package": "sam package --template-file template.yaml --output-template-file deploy.yaml --s3-bucket aspan-epsilon-deployment",
     "sam:deploy": "sam deploy --template-file template.yaml --stack-name epsilon-development --capabilities CAPABILITY_IAM --region us-east-1 --s3-bucket aspan-epsilon-deployment",
     "docker:prune": "docker system prune --volumes --force",
@@ -20,6 +22,7 @@
     "pipeline:delete": "npm run s3:rm && . scripts/env.sh && aws cloudformation delete-stack --stack-name $ENV_NAME-pipeline"
   },
   "dependencies": {
+    "@aspan/sigma": "^1.0.4",
     "exifr": "^7.1.3",
     "sharp": "^0.29.3"
   },
@@ -35,7 +38,7 @@
     "@types/sharp": "^0.29.5",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
-    "aws-sdk": "^2.991.0",
+    "aws-sdk": "^2.1092.0",
     "dotenv-cli": "^4.1.1",
     "dotenv-safe": "^8.2.0",
     "eslint": "^8.6.0",
