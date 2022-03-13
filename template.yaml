@@ -5,11 +5,8 @@ Description: >-
 Transform: AWS::Serverless-2016-10-31
 
 Parameters:
-  DeploymentBucketName:
-    Description: Deployment bucket name
+  SchemaURI:
     Type: String
-    MinLength: 1
-    MaxLength: 100
 
 Metadata:
   BuildMethod: nodejs14.x
@@ -218,7 +215,7 @@ Resources:
     Type: AWS::AppSync::GraphQLSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
-      DefinitionS3Location: !Sub s3://${DeploymentBucketName}/cloudformation/schema_${Timestamp}.graphql
+      DefinitionS3Location: !Ref SchemaURI
 
   MetaDataSource:
     Type: AWS::AppSync::DataSource
@@ -508,7 +505,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub ${AWS::StackName}-media
+      BucketName: !Sub ${AWS::StackName}-media-bucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -631,3 +628,11 @@ Outputs:
     Value: !GetAtt CloudFrontDistribution.DomainName
   AppsyncApiId:
     Value: !GetAtt AppsyncApi.ApiId
+  S3BucketName:
+    Value: !Ref S3Bucket
+    Export:
+      Name: S3BucketName
+  S3BucketArn:
+    Value: !GetAtt S3Bucket.Arn
+    Export:
+      Name: S3BucketArn

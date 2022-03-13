@@ -16,7 +16,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub ${ProjectName}-${GitBranchName}-${AWS::AccountId}-${AWS::Region}
+      BucketName: !Sub ${AWS::StackName}-infra
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
