@@ -76,7 +76,11 @@ export const extractMeta = ({
   return mappedEventRecords;
 };
 
-const reduceMeta = (id: string, NewImage: Image, OldImage: Image) => ({
+const reduceMeta = (
+  id: string,
+  NewImage: Image,
+  OldImage: Image
+): ExtractedMeta => ({
   id,
   ...(OldImage
     ? {
@@ -111,19 +115,27 @@ const reduceMeta = (id: string, NewImage: Image, OldImage: Image) => ({
 const calculateDeletedAttributes = (
   oldAttributes: AttributeValue[],
   newAttributes: AttributeValue[] | undefined
-): Array<valueObject> =>
+): Attributes =>
   oldAttributes
     .filter(
-      ({ L: [{ S: oldName }, oldVO] }) =>
+      ({
+        M: {
+          attribute: { S: oldAttributeName },
+          value: { S: oldValueString },
+        },
+      }) =>
         !newAttributes?.find(
-          ({ L: [{ S: newName }, newVO] }) =>
-            oldName === newName && (oldVO.S || oldVO.N) === (newVO.S || newVO.N)
+          ({
+            M: {
+              attribute: { S: newAttributeName },
+              value: { S: newValueString },
+            },
+          }) =>
+            oldAttributeName === newAttributeName &&
+            oldValueString === newValueString
         )
     )
-    .map(({ L: [{ S: oldName }, oldVO] }) => ({
-      name: oldName,
-      value: oldVO.S || oldVO.N,
-    }));
+    .map(attributeMapper);
 
 const calculateDeletedTags = (
   oldTags: AttributeValue[],
@@ -138,18 +150,25 @@ const calculateDeletedTags = (
 const extractTags = (tags: AttributeValue[]): Array<string> =>
   tags.reduce((prev, { S: tag }) => [...prev, tag], []);
 
-const extractAttributes = (attributes: AttributeValue[]): Array<valueObject> =>
-  attributes.reduce(
-    (prev, { L: [{ S: name }, valueObject] }) => [
-      ...prev,
-      { name, value: valueObject.S || valueObject.N },
-    ],
-    []
-  );
+const extractAttributes = (attributes: AttributeValue[]): Attributes =>
+  attributes.map(attributeMapper);
 
-type valueObject = { name: string; value: string };
+const attributeMapper = ({
+  M: {
+    attribute: { S: attributeName },
+    type: { S: typeName },
+    value: { S: valueString },
+  },
+}: AttributeValue): Attribute => ({
+  attribute: attributeName,
+  type: typeName,
+  value: valueString,
+});
 
 export type ExtractedMetaArray = Array<ExtractedMeta>;
+
+export type Attribute = { attribute: string; type: string; value: string };
+export type Attributes = Array<Attribute>;
 
 export type ExtractedMeta = {
   id: string;
@@ -157,6 +176,6 @@ export type ExtractedMeta = {
   tags?: Array<string>;
   deletedTags?: Array<string>;
 
-  attributes?: Array<valueObject>;
-  deletedAttributes?: Array<valueObject>;
+  attributes?: Attributes;
+  deletedAttributes?: Attributes;
 };

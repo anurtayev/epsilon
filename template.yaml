@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
-  Aspan picture repository back-end
+  Aspan picture repository back-end.
 
 Transform: AWS::Serverless-2016-10-31
 
@@ -42,6 +42,8 @@ Resources:
       Runtime: nodejs14.x
       Timeout: 100
       CodeUri: build/exif
+      Layers:
+        - !Ref Dependencies
       Events:
         S3Event:
           Type: EventBridgeRule
@@ -62,6 +64,7 @@ Resources:
         Variables:
           META_TABLE: !Ref MetaTable
           ALLOWED_EXTENSIONS: jpg|jpeg
+          NODE_OPTIONS: --enable-source-maps
 
   ListFolderLambda:
     Type: AWS::Serverless::Function
@@ -70,12 +73,15 @@ Resources:
       CodeUri: build/fs
       Runtime: nodejs14.x
       Timeout: 100
+      Layers:
+        - !Ref Dependencies
       Policies:
         - AmazonS3ReadOnlyAccess
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
           ALLOWED_EXTENSIONS: jpg|jpeg
+          NODE_OPTIONS: --enable-source-maps
 
   ResizerLambda:
     Type: AWS::Serverless::Function
@@ -84,6 +90,8 @@ Resources:
       CodeUri: build/resizer
       Runtime: nodejs14.x
       Timeout: 100
+      Layers:
+        - !Ref Dependencies
       Policies:
         - AmazonS3ReadOnlyAccess
       Events:
@@ -95,6 +103,7 @@ Resources:
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref S3Bucket
+          NODE_OPTIONS: --enable-source-maps
 
   DynamoStreamProcessingLambda:
     Type: AWS::Serverless::Function
@@ -103,6 +112,8 @@ Resources:
       CodeUri: build/dbstream
       Runtime: nodejs14.x
       Timeout: 100
+      Layers:
+        - !Ref Dependencies
       Policies:
         - AmazonDynamoDBFullAccess
       Events:
@@ -118,6 +129,7 @@ Resources:
           ATTRIBUTES_TABLE: !Ref AttributesTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
+          NODE_OPTIONS: --enable-source-maps
 
   MetaTable:
     Type: AWS::DynamoDB::Table

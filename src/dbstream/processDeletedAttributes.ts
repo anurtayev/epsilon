@@ -1,4 +1,4 @@
-import { ExtractedMetaArray } from "./extractMeta";
+import { ExtractedMeta } from "./extractMeta";
 import { documentClient } from "@aspan/sigma";
 
 /**
@@ -11,8 +11,8 @@ import { documentClient } from "@aspan/sigma";
 export default ({
   id,
   deletedAttributes = [],
-}: Pick<ExtractedMetaArray[number], "id" | "deletedAttributes">) =>
-  deletedAttributes.map(async ({ name, value }) => {
+}: Pick<ExtractedMeta, "id" | "deletedAttributes">) =>
+  deletedAttributes.map(async ({ attribute, value }) => {
     // check if more than one relationship exists
     // then attribute is related to other files
     const checkResult = await documentClient
@@ -21,7 +21,7 @@ export default ({
         IndexName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX,
         KeyConditionExpression: "#a = :attribute",
         ExpressionAttributeValues: {
-          ":attribute": name,
+          ":attribute": attribute,
         },
         ExpressionAttributeNames: {
           "#a": "attribute",
@@ -37,7 +37,7 @@ export default ({
         .delete({
           TableName: process.env.ATTRIBUTES_TABLE,
           Key: {
-            attribute: name,
+            attribute,
           },
         })
         .promise();
@@ -48,7 +48,7 @@ export default ({
       .delete({
         TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
         Key: {
-          attributeValue: `${name}#${value}`,
+          attributeValue: `${attribute}#${value}`,
           id,
         },
       })

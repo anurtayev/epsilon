@@ -1,5 +1,5 @@
 import { APIGatewayProxyHandlerV2, APIGatewayProxyEventV2 } from "aws-lambda";
-import * as sharp from "sharp";
+import sharp from "sharp";
 import { strict as assert } from "assert";
 import { s3 } from "@aspan/sigma";
 
