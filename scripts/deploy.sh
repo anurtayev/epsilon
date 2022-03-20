@@ -11,4 +11,4 @@ sam deploy --template-file template.yaml \
   --resolve-s3
 
 rm schema-tabbed.graphql
-rm template.yaml
+# rm template.yaml

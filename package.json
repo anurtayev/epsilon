@@ -9,6 +9,7 @@
     "sam:deploy": "scripts/deploy.sh",
     "sam:delete": ". scripts/env.sh && sam delete --stack-name $ASPAN_ENV_NAME-app --no-prompts --region $AWS_DEFAULT_REGION",
     "sam:sync": ". scripts/env.sh && sam sync --stack-name $ASPAN_ENV_NAME-app --watch --beta-features",
+    "sam:logs": ". scripts/env.sh && sam logs --stack-name $ASPAN_ENV_NAME-app --tail --beta-features ",
     "docker:prune": "docker system prune --volumes --force",
     "codegen:downloadSchema": "dotenv -- bash -c 'aws appsync get-introspection-schema --api-id $APPSYNC_API_ID --format SDL cloudformation/schema.graphql'",
     "codegen:run": "graphql-codegen --config codegen.yaml",
