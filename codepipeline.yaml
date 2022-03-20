@@ -12,34 +12,6 @@ Parameters:
     Type: String
 
 Resources:
-  InfrastructureBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-infra
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-
-  InfrastructureBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref InfrastructureBucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action: s3:*
-            Effect: Allow
-            Resource:
-              - !Sub arn:aws:s3:::${InfrastructureBucket}
-              - !Sub arn:aws:s3:::${InfrastructureBucket}/*
-            Principal: "*"
-            Condition:
-              StringEquals:
-                aws:PrincipalOrgID: !Ref PrincipalOrgID
-
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
     Properties:

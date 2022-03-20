@@ -1,11 +1,23 @@
-﻿type AttributesConnection {
-  attributes: [String!]
-  nextToken: String
+input AttributeSortTerm {
+  attribute: String!
+  sortOrder: SortOrder!
 }
 
-input MetaDataInput {
-  attributes: [AttributeValueTerm!]
-  tags: [String!]
+type AttributeValueTerm {
+  attribute: String!
+  value: String!
+  type: InputType!
+}
+
+input AttributeValueTermInput {
+  attribute: String!
+  value: String!
+  type: InputType!
+}
+
+type AttributesConnection {
+  attributes: [String!]
+  nextToken: String
 }
 
 type FolderConnection {
@@ -13,9 +25,19 @@ type FolderConnection {
   nextToken: String
 }
 
+enum InputType {
+  STRING
+  NUMBER
+}
+
 type MetaData {
   id: String!
   attributes: [AttributeValueTerm!]
+  tags: [String!]
+}
+
+input MetaDataInput {
+  attributes: [AttributeValueTermInput!]
   tags: [String!]
 }
 
@@ -43,22 +65,6 @@ input SearchInput {
 enum SortOrder {
   ASC
   DESC
-}
-
-enum InputType {
-  STRING
-  NUMBER
-}
-
-input AttributeSortTerm {
-  attribute: String!
-  sortOrder: SortOrder!
-}
-
-input AttributeValueTerm {
-  attribute: String!
-  value: String!
-  type: InputType!
 }
 
 type TagsConnection {
