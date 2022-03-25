@@ -1,6 +1,6 @@
-import sort, { splitter, getValue, sorter, stripper } from "./sort";
+import { SortOrder, AttributeSortTerm, InputType } from "@aspan/sigma";
+import sort, { splitter, getValueTerm, sorter, stripper } from "./sort";
 import { EntriesWithAttributes, Attributes, SortResult } from "./types";
-import { SortOrder, AttributeSortTerm } from "@aspan/sigma";
 
 describe("sort", () => {
   test("should sort correctly", () => {
@@ -8,33 +8,33 @@ describe("sort", () => {
       {
         id: "id1",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v22"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
       {
         id: "id2",
         attributes: [
-          ["a1", "v2"],
-          ["a2", "nofig"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+          { attribute: { name: "a2", type: InputType.String }, value: "nofig" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
       {
         id: "id3",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v23"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
       {
         id: "id4",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v21"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
     ];
@@ -43,33 +43,33 @@ describe("sort", () => {
       {
         id: "id4",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v21"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
       {
         id: "id1",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v22"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
       {
         id: "id3",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v23"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
       {
         id: "id2",
         attributes: [
-          ["a1", "v2"],
-          ["a2", "nofig"],
-          ["a3", ""],
+          { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+          { attribute: { name: "a2", type: InputType.String }, value: "nofig" },
+          { attribute: { name: "a3", type: InputType.String }, value: "" },
         ],
       },
     ];
@@ -79,142 +79,159 @@ describe("sort", () => {
       { attribute: "a2", sortOrder: SortOrder.Asc },
     ];
 
-    expect(sort(inputArray, attributesSorter)).toEqual(expectedArray);
+    const result = sort(inputArray, attributesSorter);
+    expect(new Set(result)).toEqual(new Set(expectedArray));
   });
 });
 
-describe("getValue", () => {
+describe("getValueTerm", () => {
   test("should return correct value", () => {
     const attributes: Attributes = [
-      ["a1", "v1"],
-      ["a2", "v2"],
-      ["a3", "v3"],
-      ["a4", "v4"],
+      { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+      { attribute: { name: "a2", type: InputType.String }, value: "v2" },
+      { attribute: { name: "a3", type: InputType.String }, value: "v3" },
+      { attribute: { name: "a4", type: InputType.String }, value: "v4" },
     ];
 
-    expect(getValue(attributes, "a1")).toEqual("v1");
-    expect(getValue(attributes, "a4")).toEqual("v4");
-    expect(getValue(attributes, null)).toBeUndefined();
-    expect(getValue(null, "v10")).toBeUndefined();
-    expect(getValue(null, undefined)).toBeUndefined();
-    expect(getValue(undefined, undefined)).toBeUndefined();
+    expect(getValueTerm(attributes, "a1")).toEqual({
+      attribute: { name: "a1", type: InputType.String },
+      value: "v1",
+    });
+    expect(getValueTerm(attributes, "a4")).toEqual({
+      attribute: { name: "a4", type: InputType.String },
+      value: "v4",
+    });
+    expect(getValueTerm(attributes, null)).toBeUndefined();
+    expect(getValueTerm(null, "v10")).toBeUndefined();
+    expect(getValueTerm(null, undefined)).toBeUndefined();
+    expect(getValueTerm(undefined, undefined)).toBeUndefined();
   });
 });
 
-describe("sorter", () => {
-  test("should sort correctly", () => {
-    const inputArray: EntriesWithAttributes = [
-      {
-        id: "id1",
-        attributes: [
-          ["a1", "v1"],
-          ["a2", "v22"],
-          ["a3", "p"],
-        ],
-      },
-      {
-        id: "id2",
-        attributes: [
-          ["a1", "v2"],
-          ["a2", "nofig"],
-          ["a3", "r"],
-        ],
-      },
-      {
-        id: "id3",
-        attributes: [
-          ["a1", "v3"],
-          ["a2", "v23"],
-          ["a3", "q"],
-        ],
-      },
-      {
-        id: "id4",
-        attributes: [
-          ["a1", "v4"],
-          ["a2", "v21"],
-          ["a3", "p"],
-        ],
-      },
-    ];
-    const expectedArray_a1: EntriesWithAttributes = [
-      {
-        id: "id1",
-        attributes: [
-          ["a1", "v1"],
-          ["a2", "v22"],
-          ["a3", "p"],
-        ],
-      },
-      {
-        id: "id2",
-        attributes: [
-          ["a1", "v2"],
-          ["a2", "nofig"],
-          ["a3", "r"],
-        ],
-      },
-      {
-        id: "id3",
-        attributes: [
-          ["a1", "v3"],
-          ["a2", "v23"],
-          ["a3", "q"],
-        ],
-      },
-      {
-        id: "id4",
-        attributes: [
-          ["a1", "v4"],
-          ["a2", "v21"],
-          ["a3", "p"],
-        ],
-      },
-    ];
+describe("sorter STRING", () => {
+  const inputArray: EntriesWithAttributes = [
+    {
+      id: "id1",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+        { attribute: { name: "a3", type: InputType.String }, value: "p" },
+      ],
+    },
+    {
+      id: "id2",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+        { attribute: { name: "a2", type: InputType.String }, value: "nofig" },
+        { attribute: { name: "a3", type: InputType.String }, value: "r" },
+      ],
+    },
+    {
+      id: "id3",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v3" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+        { attribute: { name: "a3", type: InputType.String }, value: "q" },
+      ],
+    },
+    {
+      id: "id4",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v4" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+        { attribute: { name: "a3", type: InputType.String }, value: "p" },
+      ],
+    },
+  ];
 
-    const expectedArray_a2: EntriesWithAttributes = [
-      {
-        id: "id2",
-        attributes: [
-          ["a1", "v2"],
-          ["a2", "nofig"],
-          ["a3", "r"],
-        ],
-      },
-      {
-        id: "id4",
-        attributes: [
-          ["a1", "v4"],
-          ["a2", "v21"],
-          ["a3", "p"],
-        ],
-      },
-      {
-        id: "id1",
-        attributes: [
-          ["a1", "v1"],
-          ["a2", "v22"],
-          ["a3", "p"],
-        ],
-      },
-      {
-        id: "id3",
-        attributes: [
-          ["a1", "v3"],
-          ["a2", "v23"],
-          ["a3", "q"],
-        ],
-      },
-    ];
+  const expectedArray_a1: EntriesWithAttributes = [
+    {
+      id: "id1",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+        { attribute: { name: "a3", type: InputType.String }, value: "p" },
+      ],
+    },
+    {
+      id: "id2",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+        { attribute: { name: "a2", type: InputType.String }, value: "nofig" },
+        { attribute: { name: "a3", type: InputType.String }, value: "r" },
+      ],
+    },
+    {
+      id: "id3",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v3" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+        { attribute: { name: "a3", type: InputType.String }, value: "q" },
+      ],
+    },
+    {
+      id: "id4",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v4" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+        { attribute: { name: "a3", type: InputType.String }, value: "p" },
+      ],
+    },
+  ];
 
-    expect(sorter(inputArray, "a1", SortOrder.Asc)).toEqual(expectedArray_a1);
-    expect(sorter(inputArray, "a1", SortOrder.Desc)).toEqual(
-      expectedArray_a1.reverse()
-    );
-    expect(sorter(inputArray, "a2", SortOrder.Asc)).toEqual(expectedArray_a2);
-    expect(sorter(inputArray, "a2", SortOrder.Desc)).toEqual(
-      expectedArray_a2.reverse()
-    );
+  const expectedArray_a2: EntriesWithAttributes = [
+    {
+      id: "id2",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+        { attribute: { name: "a2", type: InputType.String }, value: "nofig" },
+        { attribute: { name: "a3", type: InputType.String }, value: "r" },
+      ],
+    },
+    {
+      id: "id4",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v4" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+        { attribute: { name: "a3", type: InputType.String }, value: "p" },
+      ],
+    },
+    {
+      id: "id1",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+        { attribute: { name: "a3", type: InputType.String }, value: "p" },
+      ],
+    },
+    {
+      id: "id3",
+      attributes: [
+        { attribute: { name: "a1", type: InputType.String }, value: "v3" },
+        { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+        { attribute: { name: "a3", type: InputType.String }, value: "q" },
+      ],
+    },
+  ];
+
+  test("should sort correctly ASC 1", () => {
+    const result1 = sorter(inputArray, "a1", SortOrder.Asc);
+    expect(result1).toEqual(expectedArray_a1);
+  });
+
+  test("should sort correctly ASC 2", () => {
+    const result = sorter(inputArray, "a2", SortOrder.Asc);
+    expect(result).toEqual(expectedArray_a2);
+  });
+
+  test("should sort correctly DESC 1", () => {
+    const result2 = sorter(inputArray, "a1", SortOrder.Desc);
+    expect(result2).toEqual(expectedArray_a1.reverse());
+  });
+
+  test("should sort correctly DESC 2", () => {
+    const result = sorter(inputArray, "a2", SortOrder.Desc);
+    expect(result).toEqual(expectedArray_a2.reverse());
   });
 });
 
@@ -224,38 +241,43 @@ describe("stripper", () => {
       {
         id: "id1",
         attributes: [
-          ["a1", "v1"],
-          ["a2", "v22"],
-          ["a3", "p"],
+          { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+          { attribute: { name: "a3", type: InputType.String }, value: "p" },
         ],
       },
       {
         id: "id2",
         attributes: [
-          ["a1", "v2"],
-          ["a2", "nofig"],
-          ["a3", "r"],
+          { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+          { attribute: { name: "a2", type: InputType.String }, value: "nofig" },
+          { attribute: { name: "a3", type: InputType.String }, value: "r" },
         ],
       },
       {
         id: "id3",
         attributes: [
-          ["a1", "v3"],
-          ["a2", "v23"],
-          ["a3", "q"],
+          { attribute: { name: "a1", type: InputType.String }, value: "v3" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+          { attribute: { name: "a3", type: InputType.String }, value: "q" },
         ],
       },
       {
         id: "id4",
         attributes: [
-          ["a1", "v4"],
-          ["a2", "v21"],
-          ["a3", "p"],
+          { attribute: { name: "a1", type: InputType.String }, value: "v4" },
+          { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+          { attribute: { name: "a3", type: InputType.String }, value: "p" },
         ],
       },
     ];
 
-    expect(stripper(inputArray)).toEqual(["id1", "id2", "id3", "id4"]);
+    expect(stripper(inputArray)).toEqual([
+      { id: "id1" },
+      { id: "id2" },
+      { id: "id3" },
+      { id: "id4" },
+    ]);
   });
 });
 
@@ -266,33 +288,36 @@ describe("splitter", () => {
         {
           id: "id1",
           attributes: [
-            ["a1", "v1"],
-            ["a2", "v22"],
-            ["a3", "p"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+            { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+            { attribute: { name: "a3", type: InputType.String }, value: "p" },
           ],
         },
         {
           id: "id2",
           attributes: [
-            ["a1", "v2"],
-            ["a2", "nofig"],
-            ["a3", "r"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+            {
+              attribute: { name: "a2", type: InputType.String },
+              value: "nofig",
+            },
+            { attribute: { name: "a3", type: InputType.String }, value: "r" },
           ],
         },
         {
           id: "id3",
           attributes: [
-            ["a1", "v3"],
-            ["a2", "v23"],
-            ["a3", "q"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v3" },
+            { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+            { attribute: { name: "a3", type: InputType.String }, value: "q" },
           ],
         },
         {
           id: "id4",
           attributes: [
-            ["a1", "v4"],
-            ["a2", "v21"],
-            ["a3", "p"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v4" },
+            { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+            { attribute: { name: "a3", type: InputType.String }, value: "p" },
           ],
         },
       ],
@@ -303,9 +328,9 @@ describe("splitter", () => {
         {
           id: "id1",
           attributes: [
-            ["a1", "v1"],
-            ["a2", "v22"],
-            ["a3", "p"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v1" },
+            { attribute: { name: "a2", type: InputType.String }, value: "v22" },
+            { attribute: { name: "a3", type: InputType.String }, value: "p" },
           ],
         },
       ],
@@ -313,9 +338,12 @@ describe("splitter", () => {
         {
           id: "id2",
           attributes: [
-            ["a1", "v2"],
-            ["a2", "nofig"],
-            ["a3", "r"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v2" },
+            {
+              attribute: { name: "a2", type: InputType.String },
+              value: "nofig",
+            },
+            { attribute: { name: "a3", type: InputType.String }, value: "r" },
           ],
         },
       ],
@@ -323,9 +351,9 @@ describe("splitter", () => {
         {
           id: "id3",
           attributes: [
-            ["a1", "v3"],
-            ["a2", "v23"],
-            ["a3", "q"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v3" },
+            { attribute: { name: "a2", type: InputType.String }, value: "v23" },
+            { attribute: { name: "a3", type: InputType.String }, value: "q" },
           ],
         },
       ],
@@ -333,9 +361,9 @@ describe("splitter", () => {
         {
           id: "id4",
           attributes: [
-            ["a1", "v4"],
-            ["a2", "v21"],
-            ["a3", "p"],
+            { attribute: { name: "a1", type: InputType.String }, value: "v4" },
+            { attribute: { name: "a2", type: InputType.String }, value: "v21" },
+            { attribute: { name: "a3", type: InputType.String }, value: "p" },
           ],
         },
       ],

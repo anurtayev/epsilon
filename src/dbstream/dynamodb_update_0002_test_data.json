@@ -1,0 +1,96 @@
+[
+  {
+    "attributes": [
+      {
+        "attribute": {
+          "name": "make",
+          "type": "STRING"
+        },
+        "value": "Apple"
+      },
+      {
+        "attribute": {
+          "name": "model",
+          "type": "STRING"
+        },
+        "value": "iPhone 11 Pro Max"
+      },
+      {
+        "attribute": {
+          "name": "orientation",
+          "type": "STRING"
+        },
+        "value": "Horizontal (normal)"
+      },
+      {
+        "attribute": {
+          "name": "width",
+          "type": "NUMBER"
+        },
+        "value": "1024"
+      },
+      {
+        "attribute": {
+          "name": "height",
+          "type": "NUMBER"
+        },
+        "value": "768"
+      },
+      {
+        "attribute": {
+          "name": "latitude",
+          "type": "NUMBER"
+        },
+        "value": "10.528519444444445"
+      },
+      {
+        "attribute": {
+          "name": "longitude",
+          "type": "NUMBER"
+        },
+        "value": "-85.749625"
+      },
+      {
+        "attribute": {
+          "name": "dateCreated",
+          "type": "STRING"
+        },
+        "value": "2022-03-05T12:02:02.000Z"
+      },
+      {
+        "attribute": {
+          "name": "monthCreated",
+          "type": "NUMBER"
+        },
+        "value": "3"
+      },
+      {
+        "attribute": {
+          "name": "yearCreated",
+          "type": "NUMBER"
+        },
+        "value": "2022"
+      },
+      {
+        "attribute": {
+          "name": "size",
+          "type": "NUMBER"
+        },
+        "value": "346920"
+      },
+      {
+        "attribute": {
+          "name": "extension",
+          "type": "STRING"
+        },
+        "value": "jpeg"
+      }
+    ],
+    "tags": [
+      "fav",
+      "wicked",
+      "randory"
+    ],
+    "id": "media/B7AC27C2-ADB7-41FB-9669-207636B0224C_1_105_c.jpeg"
+  }
+]

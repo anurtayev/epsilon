@@ -2,14 +2,14 @@ import findTokenIndex from "./findTokenIndex";
 import { Entries, TokenSearchResult } from "./types";
 
 const inputArray: Entries = [
-  "media/heli1.jpg",
-  "media/heli2.jpg",
-  "media/heli3.jpg",
-  "media/heli4.jpg",
-  "media/heli47.jpg",
-  "media/heli48.jpg",
-  "media/roboto.jpg",
-  "media/sturgeon.jpg",
+  { id: "media/heli1.jpg" },
+  { id: "media/heli2.jpg" },
+  { id: "media/heli3.jpg" },
+  { id: "media/heli4.jpg" },
+  { id: "media/heli47.jpg" },
+  { id: "media/heli48.jpg" },
+  { id: "media/roboto.jpg" },
+  { id: "media/sturgeon.jpg" },
 ];
 
 describe("findTokenIndex", () => {

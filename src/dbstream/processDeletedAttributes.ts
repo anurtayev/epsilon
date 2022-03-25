@@ -12,7 +12,7 @@ export default ({
   id,
   deletedAttributes = [],
 }: Pick<ExtractedMeta, "id" | "deletedAttributes">) =>
-  deletedAttributes.map(async ({ attribute, value }) => {
+  deletedAttributes.map(async ({ attribute: { name: attribute }, value }) => {
     // check if more than one relationship exists
     // then attribute is related to other files
     const checkResult = await documentClient

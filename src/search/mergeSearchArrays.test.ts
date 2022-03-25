@@ -27,12 +27,13 @@ describe("mergeSearchArrays", () => {
         attributeValue: "monthCreated#6",
       },
     ];
-    const currentArray: Entries = ["media/heli2.jpg", "media/heli1.jpg"];
+    const currentArray: Entries = [
+      { id: "media/heli2.jpg" },
+      { id: "media/heli1.jpg" },
+    ];
     const resultArray: Entries = mergeSearchArrays(inputArray, currentArray);
 
-    expect(resultArray).toContain("media/heli2.jpg");
-    expect(resultArray).toContain("media/heli1.jpg");
-    expect(resultArray.length).toBe(2);
+    expect(new Set(resultArray)).toEqual(new Set(currentArray));
   });
 
   test("should run correctly when currentArray is a superset of inputArray", () => {
@@ -49,13 +50,17 @@ describe("mergeSearchArrays", () => {
       },
     ];
     const currentArray: Entries = [
-      "media/heli2.jpg",
-      "media/heli1.jpg",
-      "media/heli4.jpg",
+      { id: "media/heli2.jpg" },
+      { id: "media/heli1.jpg" },
+      { id: "media/heli4.jpg" },
     ];
-    const expectedArray: Entries = ["media/heli2.jpg", "media/heli4.jpg"];
-
-    expect(mergeSearchArrays(inputArray, currentArray)).toEqual(expectedArray);
+    const expectedArray: Entries = [
+      { id: "media/heli4.jpg" },
+      { id: "media/heli2.jpg" },
+    ];
+    expect(new Set(mergeSearchArrays(inputArray, currentArray))).toEqual(
+      new Set(expectedArray)
+    );
   });
 
   test("should run correctly when currentArray and inputArray intersect", () => {
@@ -82,14 +87,19 @@ describe("mergeSearchArrays", () => {
       },
     ];
     const currentArray: Entries = [
-      "media/heli2.jpg",
-      "media/heli1.jpg",
-      "media/heli3.jpg",
-      "media/heli4.jpg",
+      { id: "media/heli2.jpg" },
+      { id: "media/heli1.jpg" },
+      { id: "media/heli3.jpg" },
+      { id: "media/heli4.jpg" },
     ];
-    const expectedArray: Entries = ["media/heli2.jpg", "media/heli4.jpg"];
+    const expectedArray: Entries = [
+      { id: "media/heli4.jpg" },
+      { id: "media/heli2.jpg" },
+    ];
 
-    expect(mergeSearchArrays(inputArray, currentArray)).toEqual(expectedArray);
+    expect(new Set(mergeSearchArrays(inputArray, currentArray))).toEqual(
+      new Set(expectedArray)
+    );
   });
 
   test("should run correctly when currentArray is undefined", () => {
@@ -115,12 +125,15 @@ describe("mergeSearchArrays", () => {
         attributeValue: "monthCreated#6",
       },
     ];
-    const expectedArray: Entries = mergeSearchArrays(inputArray, undefined);
+    const resultArray: Entries = mergeSearchArrays(inputArray, undefined);
 
-    expect(expectedArray).toContain("media/heli3.jpg");
-    expect(expectedArray).toContain("media/heli2.jpg");
-    expect(expectedArray).toContain("media/heli4.jpg");
-    expect(expectedArray).toContain("media/heli1.jpg");
-    expect(expectedArray.length).toBe(4);
+    const expectedArray = [
+      { id: "media/heli3.jpg" },
+      { id: "media/heli2.jpg" },
+      { id: "media/heli4.jpg" },
+      { id: "media/heli1.jpg" },
+    ];
+
+    expect(new Set(resultArray)).toEqual(new Set(expectedArray));
   });
 });

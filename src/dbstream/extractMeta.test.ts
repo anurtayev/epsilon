@@ -1,10 +1,10 @@
 import { extractMeta } from "./extractMeta";
 import { DynamoDBStreamEvent } from "aws-lambda";
 
-import dynamodb_update_0001 from "../../events/dynamodb_update_0001.json";
-import dynamodb_update_0001_test_data from "../../events/dynamodb_update_0001_test_data.json";
-import dynamodb_update_0002 from "../../events/dynamodb_update_0002.json";
-import dynamodb_update_0002_test_data from "../../events/dynamodb_update_0002_test_data.json";
+import dynamodb_update_0001 from "./dynamodb_update_0001.json";
+import dynamodb_update_0001_test_data from "./dynamodb_update_0001_test_data.json";
+import dynamodb_update_0002 from "./dynamodb_update_0002.json";
+import dynamodb_update_0002_test_data from "./dynamodb_update_0002_test_data.json";
 
 describe("extractMeta", () => {
   test("should extract attributes and tags from INSERT event 0001", () => {

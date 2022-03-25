@@ -15,10 +15,14 @@ export default ({
 }: Pick<ExtractedMeta, "id" | "attributes">): Promise<
   PromiseResult<PutItemOutput, AWSError>
 >[] =>
-  attributes.map(({ attribute, value }) =>
+  attributes.map(({ attribute: { name: attribute }, value }) =>
     documentClient
       .put({
-        Item: { attribute, id, attributeValue: `${attribute}#${value}` },
+        Item: {
+          attribute,
+          id,
+          attributeValue: `${attribute}#${value}`,
+        },
         TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
       })
       .promise()

@@ -3,16 +3,24 @@ input AttributeSortTerm {
   sortOrder: SortOrder!
 }
 
-type AttributeValueTerm {
-  attribute: String!
-  value: String!
+type Attribute {
+  name: String!
   type: InputType!
 }
 
-input AttributeValueTermInput {
-  attribute: String!
-  value: String!
+input AttributeInput {
+  name: String!
   type: InputType!
+}
+
+type AttributeValue {
+  attribute: Attribute!
+  value: String!
+}
+
+input AttributeValueInput {
+  attribute: AttributeInput!
+  value: String!
 }
 
 type AttributesConnection {
@@ -21,7 +29,7 @@ type AttributesConnection {
 }
 
 type FolderConnection {
-  items: [String!]
+  items: [MetaData!]
   nextToken: String
 }
 
@@ -32,29 +40,29 @@ enum InputType {
 
 type MetaData {
   id: String!
-  attributes: [AttributeValueTerm!]
+  attributes: [AttributeValue!]
   tags: [String!]
 }
 
 input MetaDataInput {
-  attributes: [AttributeValueTermInput!]
+  id: String!
+  attributes: [AttributeValueInput!]
   tags: [String!]
 }
 
 type Mutation {
-  updateMetaData(id: String!, metaDataInput: MetaDataInput): MetaData
+  updateMetaData(metaDataInput: MetaDataInput): MetaData
 }
 
 type Query {
   listFolder(id: String, nextToken: String, pageSize: Int!): FolderConnection
-  getMeta(id: String!): MetaData
-  getAttributes(nextToken: String): AttributesConnection
-  getTags(nextToken: String): TagsConnection
   search(
     searchInput: SearchInput!
     nextToken: String
     pageSize: Int!
   ): FolderConnection
+  getAttributes(nextToken: String): AttributesConnection
+  getTags(nextToken: String): TagsConnection
 }
 
 input SearchInput {

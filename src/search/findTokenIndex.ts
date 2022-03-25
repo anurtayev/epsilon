@@ -6,14 +6,20 @@ export default (
   pageSize: number,
   token?: string
 ): TokenSearchResult => {
-  assert(pageSize, "pageSize must be a number that is greater than zero");
+  assert(pageSize >= 0, "pageSize must be a number that is greater than zero");
   let newNextToken: string;
-  const foundIndex = entries.findIndex((id) => id === token);
+  let startingIndex = 0;
+  let foundIndex: number;
 
-  const startingIndex = token ? (foundIndex >= 0 ? foundIndex : 0) : 0;
+  if (token) {
+    foundIndex = entries.findIndex(({ id }) => id === token);
+    startingIndex = foundIndex >= 0 ? foundIndex : 0;
+  } else {
+    startingIndex = 0;
+  }
 
   if (entries.length > startingIndex + pageSize - 1) {
-    newNextToken = entries[startingIndex + pageSize];
+    newNextToken = entries[startingIndex + pageSize].id;
   }
 
   return { startingIndex, newNextToken };

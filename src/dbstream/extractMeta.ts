@@ -3,6 +3,7 @@ import {
   AttributeValue,
   DynamoDBRecord,
 } from "aws-lambda";
+import { AttributeValue as AttributeValueTerm, InputType } from "@aspan/sigma";
 
 enum EventName {
   INSERT = "INSERT",
@@ -155,20 +156,21 @@ const extractAttributes = (attributes: AttributeValue[]): Attributes =>
 
 const attributeMapper = ({
   M: {
-    attribute: { S: attributeName },
+    attribute: { S: name },
     type: { S: typeName },
-    value: { S: valueString },
+    value: { S: value },
   },
-}: AttributeValue): Attribute => ({
-  attribute: attributeName,
-  type: typeName,
-  value: valueString,
+}: AttributeValue): AttributeValueTerm => ({
+  attribute: {
+    name,
+    type: typeName === InputType.String ? InputType.String : InputType.Number,
+  },
+  value,
 });
 
 export type ExtractedMetaArray = Array<ExtractedMeta>;
 
-export type Attribute = { attribute: string; type: string; value: string };
-export type Attributes = Array<Attribute>;
+export type Attributes = Array<AttributeValueTerm>;
 
 export type ExtractedMeta = {
   id: string;

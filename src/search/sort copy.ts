@@ -45,30 +45,25 @@ export const sorter = (
   arr.sort(({ attributes: attributes1 }, { attributes: attributes2 }) => {
     const valueTerm1 = getValueTerm(attributes1, attribute);
     const valueTerm2 = getValueTerm(attributes2, attribute);
-    const {
-      attribute: { type: type1 },
-      value: value1,
-    } = valueTerm1;
-    const { value: value2 } = valueTerm2;
 
     if (!valueTerm1 && !valueTerm2) return 0;
     else if (!valueTerm1 && valueTerm2) return 1;
     else if (valueTerm1 && !valueTerm2) return -1;
-    else if (value1 === value2) return 0;
-    else
-      return sortOrder === SortOrder.Asc
-        ? (
-            type1 === InputType.String
-              ? value1 < value2
-              : Number(value1) < Number(value2)
-          )
-          ? -1
-          : 1
-        : (
-            type1 === InputType.String
-              ? value1 > value2
-              : Number(value1) > Number(value2)
-          )
+    else if (valueTerm1.value === valueTerm2.value) return 0;
+    else if (sortOrder === SortOrder.Asc) {
+      return (
+        valueTerm1.attribute.type === InputType.String
+          ? valueTerm1.value < valueTerm2.value
+          : Number(valueTerm1.value) < Number(valueTerm2.value)
+      )
+        ? -1
+        : 1;
+    } else
+      return (
+        valueTerm1.attribute.type === InputType.String
+          ? valueTerm1.value > valueTerm2.value
+          : Number(valueTerm1.value) > Number(valueTerm2.value)
+      )
         ? -1
         : 1;
   });

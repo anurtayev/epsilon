@@ -11,10 +11,10 @@ import { documentClient } from "@aspan/sigma";
 export default (
   attributes: Attributes = []
 ): Promise<PromiseResult<PutItemOutput, AWSError>>[] =>
-  attributes.map(({ attribute }) =>
+  attributes.map(({ attribute: { name: attribute, type } }) =>
     documentClient
       .put({
-        Item: { attribute },
+        Item: { attribute, type },
         TableName: process.env.ATTRIBUTES_TABLE,
       })
       .promise()

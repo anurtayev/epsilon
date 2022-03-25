@@ -6,13 +6,17 @@ describe("cleanseAndPutIntoArray", () => {
       cleanseAndPutIntoArray({ a: 1, b: "sdf", K: null, aa: undefined })
     ).toEqual([
       {
-        attribute: "a",
-        type: "NUMBER",
+        attribute: {
+          name: "a",
+          type: "NUMBER",
+        },
         value: "1",
       },
       {
-        attribute: "b",
-        type: "STRING",
+        attribute: {
+          name: "b",
+          type: "STRING",
+        },
         value: "sdf",
       },
     ]);

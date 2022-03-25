@@ -10,5 +10,6 @@
   },
   "editor.formatOnSave": true,
   "editor.formatOnType": true,
-  "javascript.validate.enable": false
+  "javascript.validate.enable": false,
+  "jest.jestCommandLine": "npx jest"
 }
