@@ -738,7 +738,10 @@ Resources:
 
 Outputs:
   CloudFrontDistributionUrl:
-    Value: !GetAtt CloudFrontDistribution.DomainName
+    Value: !Join
+      - ""
+      - - "https://"
+        - !GetAtt CloudFrontDistribution.DomainName
   AppsyncApiId:
     Value: !GetAtt AppsyncApi.ApiId
   S3BucketName:
