@@ -45,13 +45,12 @@ type MetaData {
 }
 
 input MetaDataInput {
-  id: String!
   attributes: [AttributeValueInput!]
   tags: [String!]
 }
 
 type Mutation {
-  updateMetaData(metaDataInput: MetaDataInput): MetaData
+  updateMetaData(id: String!, metaDataInput: MetaDataInput): MetaData
 }
 
 type Query {

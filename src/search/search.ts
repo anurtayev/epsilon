@@ -24,44 +24,57 @@ export const handler: AppSyncResolverHandler<
     pageSize,
   },
 }) => {
-  info({
-    attributesSorter,
-    attributesFilter,
-    tagsFilter,
-    nextToken,
-    pageSize,
-  });
+  info(
+    JSON.stringify(
+      {
+        attributesSorter,
+        attributesFilter,
+        tagsFilter,
+        nextToken,
+        pageSize,
+      },
+      null,
+      2
+    )
+  );
 
   let foundEntries: Entries;
 
   // get all attributes-files relationships
-  for (const { attribute, value } of attributesFilter) {
-    const { Items: items } = await documentClient
-      .query({
-        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
-        KeyConditionExpression: "attributeValue = :attributeValue",
-        ExpressionAttributeValues: {
-          ":attributeValue": `${attribute}#${value}`,
-        },
-        Select: "ALL_ATTRIBUTES",
-      })
-      .promise();
-    foundEntries = mergeSearchArrays(items, foundEntries);
+  if (attributesFilter) {
+    for (const {
+      attribute: { name: attribute },
+      value,
+    } of attributesFilter) {
+      const { Items: items } = await documentClient
+        .query({
+          TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+          KeyConditionExpression: "attributeValue = :attributeValue",
+          ExpressionAttributeValues: {
+            ":attributeValue": `${attribute}#${value}`,
+          },
+          Select: "ALL_ATTRIBUTES",
+        })
+        .promise();
+      foundEntries = mergeSearchArrays(items, foundEntries);
+    }
   }
 
   // get all tags-files relationships
-  for (const tag of tagsFilter) {
-    const { Items: items } = await documentClient
-      .query({
-        TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
-        KeyConditionExpression: "tag = :tag",
-        ExpressionAttributeValues: {
-          ":tag": tag,
-        },
-        Select: "ALL_ATTRIBUTES",
-      })
-      .promise();
-    foundEntries = mergeSearchArrays(items, foundEntries);
+  if (tagsFilter) {
+    for (const tag of tagsFilter) {
+      const { Items: items } = await documentClient
+        .query({
+          TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
+          KeyConditionExpression: "tag = :tag",
+          ExpressionAttributeValues: {
+            ":tag": tag,
+          },
+          Select: "ALL_ATTRIBUTES",
+        })
+        .promise();
+      foundEntries = mergeSearchArrays(items, foundEntries);
+    }
   }
 
   if (!foundEntries) return { items: null, nextToken: null };
@@ -69,7 +82,7 @@ export const handler: AppSyncResolverHandler<
   // get attributes metadata
   const responses: EntriesWithAttributes = (
     await Promise.all(
-      foundEntries.map((id) =>
+      foundEntries.map(({ id }) =>
         documentClient
           .query({
             TableName: process.env.META_TABLE,
@@ -89,7 +102,7 @@ export const handler: AppSyncResolverHandler<
 
   // sort and convert from EntriesWithAttributes to Entries
   const sortedEntries: Entries = stripper(
-    (attributesSorter.length && sort(responses, attributesSorter)) || responses
+    (attributesSorter?.length && sort(responses, attributesSorter)) || responses
   );
 
   // calculate next token

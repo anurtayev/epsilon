@@ -30,6 +30,7 @@ Resources:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE: !Ref AttributesFilesRelationshipsTable
           META_TABLE: !Ref MetaTable
+          NODE_OPTIONS: --enable-source-maps
 
   ExifLambda:
     Type: AWS::Serverless::Function
@@ -379,7 +380,7 @@ Resources:
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
       RequestMappingTemplate: |
-        #if ($util.isNull($ctx.args.searchInput.tagsFilter) && $util.isNull($ctx.args.searchInput.attributesFilter))
+        #if ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags))
           $util.error("search must have at least one filter specified")
         #end
         {
