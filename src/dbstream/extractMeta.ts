@@ -156,8 +156,12 @@ const extractAttributes = (attributes: AttributeValue[]): Attributes =>
 
 const attributeMapper = ({
   M: {
-    attribute: { S: name },
-    type: { S: typeName },
+    attribute: {
+      M: {
+        name: { S: name },
+        type: { S: typeName },
+      },
+    },
     value: { S: value },
   },
 }: AttributeValue): AttributeValueTerm => ({

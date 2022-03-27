@@ -17,45 +17,38 @@
       },
       {
         "attribute": {
-          "name": "orientation",
-          "type": "STRING"
-        },
-        "value": "Horizontal (normal)"
-      },
-      {
-        "attribute": {
           "name": "width",
-          "type": "NUMBER"
-        },
-        "value": "1024"
-      },
-      {
-        "attribute": {
-          "name": "height",
           "type": "NUMBER"
         },
         "value": "768"
       },
       {
         "attribute": {
+          "name": "height",
+          "type": "NUMBER"
+        },
+        "value": "1024"
+      },
+      {
+        "attribute": {
           "name": "latitude",
           "type": "NUMBER"
         },
-        "value": "10.528519444444445"
+        "value": "10.528105555555557"
       },
       {
         "attribute": {
           "name": "longitude",
           "type": "NUMBER"
         },
-        "value": "-85.749625"
+        "value": "-85.74935277777777"
       },
       {
         "attribute": {
           "name": "dateCreated",
           "type": "STRING"
         },
-        "value": "2022-03-05T12:02:02.000Z"
+        "value": "2022-03-04T20:20:05.000Z"
       },
       {
         "attribute": {
@@ -76,7 +69,7 @@
           "name": "size",
           "type": "NUMBER"
         },
-        "value": "346920"
+        "value": "143537"
       },
       {
         "attribute": {
@@ -86,6 +79,6 @@
         "value": "jpeg"
       }
     ],
-    "id": "media/B7AC27C2-ADB7-41FB-9669-207636B0224C_1_105_c.jpeg"
+    "id": "media/8B2D6A2A-52C7-44A1-9849-93B171FCC374_1_105_c.jpeg"
   }
 ]

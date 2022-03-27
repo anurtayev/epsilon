@@ -1,0 +1,219 @@
+{
+  "Records": [
+    {
+      "eventID": "c3dd2e0df7ee50bc687d42e9fd707267",
+      "eventName": "INSERT",
+      "eventVersion": "1.1",
+      "eventSource": "aws:dynamodb",
+      "awsRegion": "us-east-1",
+      "dynamodb": {
+        "ApproximateCreationDateTime": 1648387435,
+        "Keys": {
+          "id": {
+            "S": "media/8B2D6A2A-52C7-44A1-9849-93B171FCC374_1_105_c.jpeg"
+          }
+        },
+        "NewImage": {
+          "attributes": {
+            "L": [
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "make"
+                      },
+                      "type": {
+                        "S": "STRING"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "Apple"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "model"
+                      },
+                      "type": {
+                        "S": "STRING"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "iPhone 11 Pro Max"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "width"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "768"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "height"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "1024"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "latitude"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "10.528105555555557"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "longitude"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "-85.74935277777777"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "dateCreated"
+                      },
+                      "type": {
+                        "S": "STRING"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "2022-03-04T20:20:05.000Z"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "monthCreated"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "3"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "yearCreated"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "2022"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "size"
+                      },
+                      "type": {
+                        "S": "NUMBER"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "143537"
+                  }
+                }
+              },
+              {
+                "M": {
+                  "attribute": {
+                    "M": {
+                      "name": {
+                        "S": "extension"
+                      },
+                      "type": {
+                        "S": "STRING"
+                      }
+                    }
+                  },
+                  "value": {
+                    "S": "jpeg"
+                  }
+                }
+              }
+            ]
+          },
+          "id": {
+            "S": "media/8B2D6A2A-52C7-44A1-9849-93B171FCC374_1_105_c.jpeg"
+          }
+        },
+        "SequenceNumber": "34780700000000001604384727",
+        "SizeBytes": 744,
+        "StreamViewType": "NEW_AND_OLD_IMAGES"
+      },
+      "eventSourceARN": "arn:aws:dynamodb:us-east-1:057876537511:table/epsilon-development-057876537511-us-east-1-app-meta/stream/2022-03-20T03:31:26.818"
+    }
+  ]
+}
