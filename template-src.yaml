@@ -615,6 +615,7 @@ Resources:
             TargetOriginId:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
+            ResponseHeadersPolicyId: !Ref CloudFrontResponseHeadersPolicy
           - AllowedMethods:
               - GET
               - HEAD
@@ -650,6 +651,24 @@ Resources:
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${AWS::StackName}-media-origin-access-identity
+
+  CloudFrontResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        CorsConfig:
+          AccessControlAllowCredentials: false
+          AccessControlAllowHeaders:
+            Items:
+              - "*"
+          AccessControlAllowMethods:
+            Items:
+              - ALL
+          AccessControlAllowOrigins:
+            Items:
+              - "*"
+          OriginOverride: true
+        Name: !Sub ${AWS::StackName}-reponse-headers-policy
 
 Outputs:
   CloudFrontDistributionUrl:
