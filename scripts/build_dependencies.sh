@@ -1,7 +1,5 @@
 #!/bin/bash
 
-#. scripts/env.sh
-
 rm -rf dependencies
 mkdir -p dependencies/nodejs
 cp package.json package-lock.json dependencies/nodejs
