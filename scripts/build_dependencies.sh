@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. scripts/env.sh
+#. scripts/env.sh
 
 rm -rf dependencies
 mkdir -p dependencies/nodejs
