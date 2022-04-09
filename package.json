@@ -22,7 +22,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@aspan/sigma": "^1.0.14",
+    "@aspan/sigma": "^1.0.18",
     "exifr": "^7.1.3",
     "sharp": "^0.29.3"
   },
@@ -34,7 +34,7 @@
     "@types/sharp": "^0.29.5",
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
-    "aws-sdk": "^2.1092.0",
+    "aws-sdk": "^2.1111.0",
     "dotenv-cli": "^4.1.1",
     "dotenv-safe": "^8.2.0",
     "eslint": "^8.6.0",

@@ -128,6 +128,38 @@ Resources:
           ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX: !Sub ${AWS::StackName}-attributes-files-relationships-index
           NODE_OPTIONS: --enable-source-maps
 
+  GetTagsLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Policies:
+        - AmazonDynamoDBReadOnlyAccess
+      Layers:
+        - !Ref Dependencies
+      CodeUri: build/getTags
+      Environment:
+        Variables:
+          TAGS_TABLE: !Ref TagsTable
+          NODE_OPTIONS: --enable-source-maps
+
+  GetAttributesLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs14.x
+      Timeout: 100
+      Policies:
+        - AmazonDynamoDBReadOnlyAccess
+      Layers:
+        - !Ref Dependencies
+      CodeUri: build/getAttributes
+      Environment:
+        Variables:
+          ATTRIBUTES_TABLE: !Ref AttributesTable
+          NODE_OPTIONS: --enable-source-maps
+
   MetaTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -282,8 +314,8 @@ Resources:
             nextToken: String
             pageSize: Int!
           ): FolderConnection
-          getAttributes: [Attribute!]
-          getTags: [String!]
+          getAttributes: [Attribute!]!
+          getTags: [String!]!
         }
         
         input SearchInput {
@@ -324,36 +356,21 @@ Resources:
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       Name:
-        !Join [
-          "_",
-          [
-            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
-            "attributes_datasource",
-          ],
-        ]
-      Type: AMAZON_DYNAMODB
-      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
-      DynamoDBConfig:
-        TableName: !Ref AttributesTable
-        AwsRegion: !Sub ${AWS::Region}
+        !Join ["_", [!Join ["_", !Split ["-", !Ref GetAttributesLambda]], "ds"]]
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt GetAttributesLambda.Arn
 
   TagsDataSource:
     Type: AWS::AppSync::DataSource
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
-      Name:
-        !Join [
-          "_",
-          [
-            !Join ["_", !Split ["-", !Sub "${AWS::StackName}"]],
-            "tags_datasource",
-          ],
-        ]
-      Type: AMAZON_DYNAMODB
-      ServiceRoleArn: !GetAtt DynamoDBRole.Arn
-      DynamoDBConfig:
-        TableName: !Ref TagsTable
-        AwsRegion: !Sub ${AWS::Region}
+      Name: !Join ["_", [!Join ["_", !Split ["-", !Ref GetTagsLambda]], "ds"]]
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt GetTagsLambda.Arn
 
   DynamoDBRole:
     Type: AWS::IAM::Role
@@ -438,6 +455,8 @@ Resources:
             Resource:
               - !GetAtt ListFolderLambda.Arn
               - !GetAtt SearchLambda.Arn
+              - !GetAtt GetTagsLambda.Arn
+              - !GetAtt GetAttributesLambda.Arn
 
   ListFolderQueryResolver:
     Type: AWS::AppSync::Resolver
@@ -512,20 +531,8 @@ Resources:
       DataSourceName: !GetAtt AttributesDataSource.Name
       RequestMappingTemplate: |
         {
-          "version" : "2018-05-29",
-          "operation" : "Scan",
-          "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
-        }
-      ResponseMappingTemplate: |
-        #set($attributesArray = [])
-
-        #foreach ($attributeItem in $ctx.result.items)
-          $util.qr($attributesArray.add($attributeItem.attribute))
-        #end
-
-        {
-          "attributes": $util.toJson($attributesArray),
-          "nextToken": $util.toJson($ctx.result.nextToken)
+          "version" : "2017-02-28",
+          "operation": "Invoke",
         }
 
   GetTagsQueryResolver:
@@ -538,20 +545,8 @@ Resources:
       DataSourceName: !GetAtt TagsDataSource.Name
       RequestMappingTemplate: |
         {
-          "version" : "2018-05-29",
-          "operation" : "Scan",
-          "nextToken": $util.toJson($util.defaultIfNullOrBlank($ctx.args.nextToken, null))
-        }
-      ResponseMappingTemplate: |
-        #set($tagsArray = [])
-
-        #foreach ($tagItem in $ctx.result.items)
-          $util.qr($tagsArray.add($tagItem.tag))
-        #end
-
-        {
-          "tags": $util.toJson($tagsArray),
-          "nextToken": $util.toJson($ctx.result.nextToken)
+          "version" : "2017-02-28",
+          "operation": "Invoke",
         }
 
   UpdateMetaDataMutationResolver:
