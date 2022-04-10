@@ -372,6 +372,27 @@ Resources:
       LambdaConfig:
         LambdaFunctionArn: !GetAtt GetTagsLambda.Arn
 
+  SearchLambdaAppsyncDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      Name: !Join ["_", [!Join ["_", !Split ["-", !Ref SearchLambda]], "ds"]]
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt SearchLambda.Arn
+
+  ListFolderLambdaAppsyncDataSource:
+    Type: AWS::AppSync::DataSource
+    Properties:
+      ApiId: !GetAtt AppsyncApi.ApiId
+      Name:
+        !Join ["_", [!Join ["_", !Split ["-", !Ref ListFolderLambda]], "ds"]]
+      Type: AWS_LAMBDA
+      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
+      LambdaConfig:
+        LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
+
   DynamoDBRole:
     Type: AWS::IAM::Role
     Properties:
@@ -406,27 +427,6 @@ Resources:
               - !Join ["", [!GetAtt MetaTable.Arn, "*"]]
               - !Join ["", [!GetAtt AttributesTable.Arn, "*"]]
               - !Join ["", [!GetAtt TagsTable.Arn, "*"]]
-
-  SearchLambdaAppsyncDataSource:
-    Type: AWS::AppSync::DataSource
-    Properties:
-      ApiId: !GetAtt AppsyncApi.ApiId
-      Name: !Join ["_", [!Join ["_", !Split ["-", !Ref SearchLambda]], "ds"]]
-      Type: AWS_LAMBDA
-      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
-      LambdaConfig:
-        LambdaFunctionArn: !GetAtt SearchLambda.Arn
-
-  ListFolderLambdaAppsyncDataSource:
-    Type: AWS::AppSync::DataSource
-    Properties:
-      ApiId: !GetAtt AppsyncApi.ApiId
-      Name:
-        !Join ["_", [!Join ["_", !Split ["-", !Ref ListFolderLambda]], "ds"]]
-      Type: AWS_LAMBDA
-      ServiceRoleArn: !GetAtt LambdaAppsyncDataSourceRole.Arn
-      LambdaConfig:
-        LambdaFunctionArn: !GetAtt ListFolderLambda.Arn
 
   LambdaAppsyncDataSourceRole:
     Type: AWS::IAM::Role
@@ -529,11 +529,6 @@ Resources:
       TypeName: Query
       FieldName: getAttributes
       DataSourceName: !GetAtt AttributesDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version" : "2017-02-28",
-          "operation": "Invoke",
-        }
 
   GetTagsQueryResolver:
     Type: AWS::AppSync::Resolver
@@ -543,11 +538,6 @@ Resources:
       TypeName: Query
       FieldName: getTags
       DataSourceName: !GetAtt TagsDataSource.Name
-      RequestMappingTemplate: |
-        {
-          "version" : "2017-02-28",
-          "operation": "Invoke",
-        }
 
   UpdateMetaDataMutationResolver:
     Type: AWS::AppSync::Resolver
