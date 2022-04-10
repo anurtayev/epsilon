@@ -12,7 +12,7 @@
     "sam:delete": ". scripts/env.sh && sam delete --stack-name $ASPAN_ENV_NAME-app --no-prompts --region $AWS_DEFAULT_REGION",
     "sam:sync": ". scripts/env.sh && sam sync --stack-name $ASPAN_ENV_NAME-app --watch --beta-features",
     "sam:logs": ". scripts/env.sh && sam logs --stack-name $ASPAN_ENV_NAME-app --tail --beta-features ",
-    "s3:media:uploadTestData": "aws s3 rm s3://epsilon-development-media --recursive && aws s3 sync s3://nurtai-pics-test s3://epsilon-development-media",
+    "s3:media:uploadTestData": ". scripts/env.sh && aws s3 rm s3://$EPSILON_MEDIA_BUCKET_NAME --recursive && aws s3 sync s3://aspan-test-media s3://$EPSILON_MEDIA_BUCKET_NAME",
     "s3:media:rm": "scripts/remove_media_bucket.sh",
     "pipeline:create": ". scripts/env.sh && aws cloudformation create-stack --stack-name $ASPAN_ENV_NAME-pipeline --template-body file://codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=ProjectName,ParameterValue=$PROJECT ParameterKey=GitBranchName,ParameterValue=$GIT_BRANCH ParameterKey=FullRepositoryId,ParameterValue=$FULL_REPOSITORY_ID ParameterKey=PrincipalOrgID,ParameterValue=$PRINCIPAL_ORG_ID",
     "pipeline:update": ". scripts/env.sh && aws cloudformation update-stack --stack-name $ASPAN_ENV_NAME-pipeline --template-body file://codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=ProjectName,ParameterValue=$PROJECT ParameterKey=GitBranchName,ParameterValue=$GIT_BRANCH ParameterKey=FullRepositoryId,ParameterValue=$FULL_REPOSITORY_ID ParameterKey=PrincipalOrgID,ParameterValue=$PRINCIPAL_ORG_ID",
