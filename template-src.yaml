@@ -446,22 +446,22 @@ Resources:
       ResponseMappingTemplate: |
         $util.toJson($context.result.tags)
 
-  GetAttributesQueryResolver:
+  AttributesQueryResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       TypeName: Query
-      FieldName: getAttributes
+      FieldName: attributes
       DataSourceName: !GetAtt AttributesDataSource.Name
 
-  GetTagsQueryResolver:
+  TagsQueryResolver:
     Type: AWS::AppSync::Resolver
     DependsOn: AppsyncSchema
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
       TypeName: Query
-      FieldName: getTags
+      FieldName: tags
       DataSourceName: !GetAtt TagsDataSource.Name
 
   UpdateMetaDataMutationResolver:
