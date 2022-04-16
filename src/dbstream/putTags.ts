@@ -10,9 +10,19 @@ import { documentClient } from "@aspan/sigma";
  */
 export default (
   tags: ExtractedMetaArray[number]["tags"] = []
-): Promise<PromiseResult<PutItemOutput, AWSError>>[] =>
-  tags.map((tag) =>
-    documentClient
-      .put({ Item: { tag }, TableName: process.env.TAGS_TABLE })
-      .promise()
-  );
+): Promise<PromiseResult<PutItemOutput, AWSError>>[] => {
+  console.log("==> putTags", tags);
+
+  let result;
+  try {
+    result = tags.map((tag) =>
+      documentClient
+        .put({ Item: { tag }, TableName: process.env.TAGS_TABLE })
+        .promise()
+    );
+  } catch (error) {
+    console.error("==> putTags", error);
+  }
+
+  return result;
+};

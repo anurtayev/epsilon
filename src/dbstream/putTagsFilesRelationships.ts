@@ -14,12 +14,22 @@ export default ({
   tags = [],
 }: Pick<ExtractedMetaArray[number], "id" | "tags">): Promise<
   PromiseResult<PutItemOutput, AWSError>
->[] =>
-  tags.map((tag) =>
-    documentClient
-      .put({
-        Item: { tag, id },
-        TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
-      })
-      .promise()
-  );
+>[] => {
+  console.log("==> putTagsFilesRelationships", id, tags);
+
+  let result;
+  try {
+    result = tags.map((tag) =>
+      documentClient
+        .put({
+          Item: { tag, id },
+          TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
+        })
+        .promise()
+    );
+  } catch (error) {
+    console.error("==> putTagsFilesRelationships", error);
+  }
+
+  return result;
+};

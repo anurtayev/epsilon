@@ -102,8 +102,8 @@ describe("getValueTerm", () => {
       value: "v4",
     });
     expect(getValueTerm(attributes, null)).toBeUndefined();
-    expect(getValueTerm(null, "v10")).toBeUndefined();
-    expect(getValueTerm(null, undefined)).toBeUndefined();
+    expect(getValueTerm(null, "v10")).toBeFalsy();
+    expect(getValueTerm(null, undefined)).toBeFalsy();
     expect(getValueTerm(undefined, undefined)).toBeUndefined();
   });
 });

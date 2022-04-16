@@ -14,16 +14,26 @@ export default ({
   attributes = [],
 }: Pick<ExtractedMeta, "id" | "attributes">): Promise<
   PromiseResult<PutItemOutput, AWSError>
->[] =>
-  attributes.map(({ attribute: { name: attribute }, value }) =>
-    documentClient
-      .put({
-        Item: {
-          attribute,
-          id,
-          attributeValue: `${attribute}#${value}`,
-        },
-        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
-      })
-      .promise()
-  );
+>[] => {
+  console.log("==> putAttributesFilesRelationships", id, attributes);
+
+  let result;
+  try {
+    return attributes.map(({ attribute: { name: attribute }, value }) =>
+      documentClient
+        .put({
+          Item: {
+            attribute,
+            id,
+            attributeValue: `${attribute}#${value}`,
+          },
+          TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+        })
+        .promise()
+    );
+  } catch (error) {
+    console.error("==> putAttributesFilesRelationships", error);
+  }
+
+  return result;
+};

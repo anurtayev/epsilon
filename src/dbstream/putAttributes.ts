@@ -10,12 +10,22 @@ import { documentClient } from "@aspan/sigma";
  */
 export default (
   attributes: Attributes = []
-): Promise<PromiseResult<PutItemOutput, AWSError>>[] =>
-  attributes.map(({ attribute: { name: attribute, type } }) =>
-    documentClient
-      .put({
-        Item: { attribute, type },
-        TableName: process.env.ATTRIBUTES_TABLE,
-      })
-      .promise()
-  );
+): Promise<PromiseResult<PutItemOutput, AWSError>>[] => {
+  console.log("==> putAttributes", attributes);
+
+  let result;
+  try {
+    result = attributes.map(({ attribute: { name: attribute, type } }) =>
+      documentClient
+        .put({
+          Item: { attribute, type },
+          TableName: process.env.ATTRIBUTES_TABLE,
+        })
+        .promise()
+    );
+  } catch (error) {
+    console.error("==> putAttributes", error);
+  }
+
+  return result;
+};

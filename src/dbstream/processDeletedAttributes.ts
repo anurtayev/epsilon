@@ -11,46 +11,58 @@ import { documentClient } from "@aspan/sigma";
 export default ({
   id,
   deletedAttributes = [],
-}: Pick<ExtractedMeta, "id" | "deletedAttributes">) =>
-  deletedAttributes.map(async ({ attribute: { name: attribute }, value }) => {
-    // check if more than one relationship exists
-    // then attribute is related to other files
-    const checkResult = await documentClient
-      .query({
-        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
-        IndexName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX,
-        KeyConditionExpression: "#a = :attribute",
-        ExpressionAttributeValues: {
-          ":attribute": attribute,
-        },
-        ExpressionAttributeNames: {
-          "#a": "attribute",
-        },
-        Limit: 2,
-        Select: "COUNT",
-      })
-      .promise();
+}: Pick<ExtractedMeta, "id" | "deletedAttributes">) => {
+  console.log("==> processDeletedAttributes", { id, deletedAttributes });
 
-    if (checkResult.Count === 1) {
-      // if it is not, delete it from Attributes table
-      await documentClient
-        .delete({
-          TableName: process.env.ATTRIBUTES_TABLE,
-          Key: {
-            attribute,
-          },
-        })
-        .promise();
-    }
+  let result;
+  try {
+    result = deletedAttributes.map(
+      async ({ attribute: { name: attribute }, value }) => {
+        // check if more than one relationship exists
+        // then attribute is related to other files
+        const checkResult = await documentClient
+          .query({
+            TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+            IndexName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE_INDEX,
+            KeyConditionExpression: "#a = :attribute",
+            ExpressionAttributeValues: {
+              ":attribute": attribute,
+            },
+            ExpressionAttributeNames: {
+              "#a": "attribute",
+            },
+            Limit: 2,
+            Select: "COUNT",
+          })
+          .promise();
 
-    // delete attribute-file relationship
-    await documentClient
-      .delete({
-        TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
-        Key: {
-          attributeValue: `${attribute}#${value}`,
-          id,
-        },
-      })
-      .promise();
-  });
+        if (checkResult.Count === 1) {
+          // if it is not, delete it from Attributes table
+          await documentClient
+            .delete({
+              TableName: process.env.ATTRIBUTES_TABLE,
+              Key: {
+                attribute,
+              },
+            })
+            .promise();
+        }
+
+        // delete attribute-file relationship
+        await documentClient
+          .delete({
+            TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
+            Key: {
+              attributeValue: `${attribute}#${value}`,
+              id,
+            },
+          })
+          .promise();
+      }
+    );
+  } catch (error) {
+    console.error("==> processDeletedAttributes", error);
+  }
+
+  return result;
+};
