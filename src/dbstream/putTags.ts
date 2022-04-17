@@ -13,16 +13,15 @@ export default (
 ): Promise<PromiseResult<PutItemOutput, AWSError>>[] => {
   console.log("==> putTags", tags);
 
-  let result;
-  try {
-    result = tags.map((tag) =>
-      documentClient
+  return tags.map(async (tag) => {
+    let result;
+    try {
+      result = await documentClient
         .put({ Item: { tag }, TableName: process.env.TAGS_TABLE })
-        .promise()
-    );
-  } catch (error) {
-    console.error("==> putTags", error);
-  }
-
-  return result;
+        .promise();
+    } catch (error) {
+      console.error("==> putTags", error);
+    }
+    return result;
+  });
 };

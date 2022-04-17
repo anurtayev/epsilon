@@ -13,17 +13,21 @@ export const handler: DynamoDBStreamHandler = async (event) => {
   const extractedMetaArray = extractMeta(event);
   console.log(JSON.stringify(extractedMetaArray, null, 2));
 
-  await Promise.all(
-    extractedMetaArray
-      .map(({ id, tags, deletedTags, attributes, deletedAttributes }) => [
-        putTags(tags),
-        putTagsFilesRelationships({ id, tags }),
-        processDeletedTags({ id, deletedTags }),
+  try {
+    await Promise.all(
+      extractedMetaArray
+        .map(({ id, tags, deletedTags, attributes, deletedAttributes }) => [
+          putTags(tags),
+          putTagsFilesRelationships({ id, tags }),
+          processDeletedTags({ id, deletedTags }),
 
-        putAttributes(attributes),
-        putAttributesFilesRelationships({ id, attributes }),
-        processDeletedAttributes({ id, deletedAttributes }),
-      ])
-      .flat(2)
-  );
+          putAttributes(attributes),
+          putAttributesFilesRelationships({ id, attributes }),
+          processDeletedAttributes({ id, deletedAttributes }),
+        ])
+        .flat(2)
+    );
+  } catch (error) {
+    console.error("==> index", error);
+  }
 };

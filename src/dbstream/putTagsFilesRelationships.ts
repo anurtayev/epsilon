@@ -17,19 +17,19 @@ export default ({
 >[] => {
   console.log("==> putTagsFilesRelationships", id, tags);
 
-  let result;
-  try {
-    result = tags.map((tag) =>
-      documentClient
+  return tags.map(async (tag) => {
+    let result;
+    try {
+      result = await documentClient
         .put({
           Item: { tag, id },
           TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
         })
-        .promise()
-    );
-  } catch (error) {
-    console.error("==> putTagsFilesRelationships", error);
-  }
+        .promise();
+    } catch (error) {
+      console.error("==> putTagsFilesRelationships", error);
+    }
 
-  return result;
+    return result;
+  });
 };

@@ -14,10 +14,9 @@ export default ({
 }: Pick<ExtractedMeta, "id" | "deletedAttributes">) => {
   console.log("==> processDeletedAttributes", { id, deletedAttributes });
 
-  let result;
-  try {
-    result = deletedAttributes.map(
-      async ({ attribute: { name: attribute }, value }) => {
+  return deletedAttributes.map(
+    async ({ attribute: { name: attribute }, value }) => {
+      try {
         // check if more than one relationship exists
         // then attribute is related to other files
         const checkResult = await documentClient
@@ -58,11 +57,9 @@ export default ({
             },
           })
           .promise();
+      } catch (error) {
+        console.error("==> processDeletedAttributes", error);
       }
-    );
-  } catch (error) {
-    console.error("==> processDeletedAttributes", error);
-  }
-
-  return result;
+    }
+  );
 };

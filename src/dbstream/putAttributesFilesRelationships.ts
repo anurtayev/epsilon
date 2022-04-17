@@ -17,10 +17,10 @@ export default ({
 >[] => {
   console.log("==> putAttributesFilesRelationships", id, attributes);
 
-  let result;
-  try {
-    return attributes.map(({ attribute: { name: attribute }, value }) =>
-      documentClient
+  return attributes.map(async ({ attribute: { name: attribute }, value }) => {
+    let result;
+    try {
+      result = await documentClient
         .put({
           Item: {
             attribute,
@@ -29,11 +29,10 @@ export default ({
           },
           TableName: process.env.ATTRIBUTES_FILES_RELATIONSHIPS_TABLE,
         })
-        .promise()
-    );
-  } catch (error) {
-    console.error("==> putAttributesFilesRelationships", error);
-  }
-
-  return result;
+        .promise();
+    } catch (error) {
+      console.error("==> putAttributesFilesRelationships", error);
+    }
+    return result;
+  });
 };

@@ -13,19 +13,21 @@ export default (
 ): Promise<PromiseResult<PutItemOutput, AWSError>>[] => {
   console.log("==> putAttributes", attributes);
 
-  let result;
-  try {
-    result = attributes.map(({ attribute: { name: attribute, type } }) =>
-      documentClient
+  return attributes.map(async ({ attribute: { name: attribute, type } }) => {
+    console.error("==> putAttributes");
+
+    let result;
+    try {
+      result = await documentClient
         .put({
           Item: { attribute, type },
           TableName: process.env.ATTRIBUTES_TABLE,
         })
-        .promise()
-    );
-  } catch (error) {
-    console.error("==> putAttributes", error);
-  }
+        .promise();
+    } catch (error) {
+      console.error("==> putAttributes", error);
+    }
 
-  return result;
+    return result;
+  });
 };

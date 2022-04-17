@@ -11,16 +11,15 @@ export default ({
 }: Pick<ExtractedMetaArray[number], "id" | "deletedTags">) => {
   console.log("==> processDeletedTags", { id, deletedTags });
 
-  let result;
-  try {
-    result = deletedTags.map(async (tag) => {
+  return deletedTags.map(async (tag) => {
+    try {
       // check if it is related to other files
       const checkResult = await documentClient
         .query({
-          TableName: process.env.TAGS_TABLE,
+          TableName: process.env.TAGS_FILES_RELATIONSHIPS_TABLE,
           KeyConditionExpression: "tag = :tag",
           ExpressionAttributeValues: {
-            ":tag": { S: tag },
+            ":tag": tag,
           },
           Limit: 2,
           Select: "COUNT",
@@ -49,10 +48,8 @@ export default ({
           },
         })
         .promise();
-    });
-  } catch (error) {
-    console.error("==> processDeletedTags", error);
-  }
-
-  return result;
+    } catch (error) {
+      console.error("==> processDeletedTags", error);
+    }
+  });
 };
