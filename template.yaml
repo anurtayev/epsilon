@@ -423,6 +423,7 @@ Resources:
               - dynamodb:Scan
               - dynamodb:BatchGetItem
               - dynamodb:BatchWriteItem
+              - dynamodb:DeleteItem
             Resource:
               - !Join ["", [!GetAtt MetaTable.Arn, "*"]]
               - !Join ["", [!GetAtt AttributesTable.Arn, "*"]]
