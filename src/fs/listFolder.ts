@@ -29,17 +29,15 @@ export const handler: AppSyncResolverHandler<
   info(res);
 
   return {
-    items: [
-      ...res.CommonPrefixes.map(({ Prefix }) => Prefix)
-        .sort()
-        .map((id) => ({ id })),
-      ...res.Contents.filter(({ Key: id }) =>
-        isKeyExtensionAllowed(getExtension(id))
-      )
-        .map(({ Key }) => Key)
-        .sort()
-        .map((id) => ({ id })),
-    ],
+    folders: res.CommonPrefixes.map(({ Prefix }) => Prefix)
+      .sort()
+      .map((id) => ({ id })),
+    files: res.Contents.filter(({ Key: id }) =>
+      isKeyExtensionAllowed(getExtension(id))
+    )
+      .map(({ Key }) => Key)
+      .sort()
+      .map((id) => ({ id })),
     nextToken: res.NextContinuationToken,
   };
 };

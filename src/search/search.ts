@@ -1,6 +1,6 @@
 import { info } from "console";
 import { AppSyncResolverHandler } from "aws-lambda";
-
+import isFolder from "./isFolder";
 import {
   documentClient,
   QuerySearchArgs,
@@ -113,8 +113,11 @@ export const handler: AppSyncResolverHandler<
   );
 
   // trim to pageSize
+  const finalResult = sortedEntries.slice(startingIndex, pageSize);
+
   return {
-    items: sortedEntries.slice(startingIndex, pageSize),
+    folders: finalResult.filter(({ id }) => isFolder(id)),
+    files: finalResult.filter(({ id }) => !isFolder(id)),
     nextToken: newNextToken,
   };
 };
