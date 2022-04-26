@@ -283,7 +283,8 @@ Resources:
         }
         
         type FolderConnection {
-          items: [MetaData!]
+          folders: [MetaData!]
+          files: [MetaData!]
           nextToken: String
         }
         
