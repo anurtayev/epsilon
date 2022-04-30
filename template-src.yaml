@@ -251,6 +251,7 @@ Resources:
     Type: AWS::AppSync::ApiKey
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
+      Expires: 1704067200
 
   AppsyncSchema:
     Type: AWS::AppSync::GraphQLSchema
@@ -400,7 +401,7 @@ Resources:
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
       RequestMappingTemplate: |
-        #if ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags))
+        #if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
           $util.error("search must have at least one filter specified")
         #end
         {

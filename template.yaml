@@ -311,7 +311,7 @@ Resources:
         type Query {
           listFolder(id: String, nextToken: String, pageSize: Int!): FolderConnection
           search(
-            searchInput: SearchInput!
+            searchInput: SearchInput
             nextToken: String
             pageSize: Int!
           ): FolderConnection
@@ -320,7 +320,7 @@ Resources:
         }
         
         input SearchInput {
-          filter: MetaDataInput
+          filter: MetaDataInput!
           sorter: [AttributeSortTerm!]
         }
         
@@ -476,7 +476,7 @@ Resources:
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
       RequestMappingTemplate: |
-        #if ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags))
+        #if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
           $util.error("search must have at least one filter specified")
         #end
         {
