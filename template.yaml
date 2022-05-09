@@ -251,6 +251,7 @@ Resources:
     Type: AWS::AppSync::ApiKey
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
+      Expires: 1704067200
 
   AppsyncSchema:
     Type: AWS::AppSync::GraphQLSchema
@@ -604,6 +605,10 @@ Resources:
       NotificationConfiguration:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+
 
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
