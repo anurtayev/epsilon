@@ -529,6 +529,10 @@ Resources:
       NotificationConfiguration:
         EventBridgeConfiguration:
           EventBridgeEnabled: true
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+
 
   S3BucketPolicy:
     Type: AWS::S3::BucketPolicy
