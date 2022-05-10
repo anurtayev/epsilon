@@ -553,6 +553,15 @@ Resources:
             Condition:
               StringEquals:
                 aws:PrincipalOrgID: o-kvc3hucixa
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: s3:PutObject
+            Resource: !Sub ${S3Bucket.Arn}/*
+            Condition:
+              ForAllValues:StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+                aws:PrincipalOrgID: o-kvc3hucixa
 
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
