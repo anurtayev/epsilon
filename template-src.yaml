@@ -251,7 +251,7 @@ Resources:
     Type: AWS::AppSync::ApiKey
     Properties:
       ApiId: !GetAtt AppsyncApi.ApiId
-      Expires: 1704067200
+      Expires: 1682913600
 
   AppsyncSchema:
     Type: AWS::AppSync::GraphQLSchema
@@ -532,6 +532,13 @@ Resources:
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: IntelligentTieringRule
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: INTELLIGENT_TIERING
 
 
   S3BucketPolicy:
@@ -553,13 +560,13 @@ Resources:
             Condition:
               StringEquals:
                 aws:PrincipalOrgID: o-kvc3hucixa
-          - Effect: Allow
+          - Action: s3:PutObject
+            Effect: Allow
             Principal:
               AWS: "*"
-            Action: s3:PutObject
             Resource: !Sub ${S3Bucket.Arn}/*
             Condition:
-              ForAllValues:StringEquals:
+              StringEquals:
                 s3:x-amz-acl: bucket-owner-full-control
                 aws:PrincipalOrgID: o-kvc3hucixa
 
