@@ -53,7 +53,7 @@ Resources:
               detail:
                 bucket:
                   name:
-                    - !Ref S3Bucket
+                    - !Ref MediaBucket
       Policies:
         - AmazonDynamoDBFullAccess
         - AmazonS3ReadOnlyAccess
@@ -76,7 +76,7 @@ Resources:
         - AmazonS3ReadOnlyAccess
       Environment:
         Variables:
-          MEDIA_BUCKET: !Ref S3Bucket
+          MEDIA_BUCKET: !Ref MediaBucket
           ALLOWED_EXTENSIONS: jpg|jpeg
           NODE_OPTIONS: --enable-source-maps
 
@@ -99,7 +99,7 @@ Resources:
             Path: /resizer
       Environment:
         Variables:
-          MEDIA_BUCKET: !Ref S3Bucket
+          MEDIA_BUCKET: !Ref MediaBucket
           NODE_OPTIONS: --enable-source-maps
 
   DynamoStreamProcessingLambda:
@@ -592,7 +592,35 @@ Resources:
           $util.toJson($context.result)
         #end
 
-  S3Bucket:
+  WebsiteHostingBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-website-bucket
+      OwnershipControls:
+        Rules:
+          - ObjectOwnership: BucketOwnerEnforced
+      LifecycleConfiguration:
+        Rules:
+          - Id: IntelligentTieringRule
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: INTELLIGENT_TIERING
+
+  WebsiteHostingBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref MediaBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: s3:GetObject
+            Effect: Allow
+            Principal: "*"
+            Resource: !Sub ${WebsiteHostingBucket.Arn}/*
+
+  MediaBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
@@ -617,21 +645,21 @@ Resources:
                 StorageClass: INTELLIGENT_TIERING
 
 
-  S3BucketPolicy:
+  MediaBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
-      Bucket: !Ref S3Bucket
+      Bucket: !Ref MediaBucket
       PolicyDocument:
         Version: 2012-10-17
         Statement:
           - Action: s3:GetObject
             Effect: Allow
-            Resource: !Sub ${S3Bucket.Arn}/*
+            Resource: !Sub ${MediaBucket.Arn}/*
             Principal:
               CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
           - Action: s3:ListBucket
             Effect: Allow
-            Resource: !GetAtt S3Bucket.Arn
+            Resource: !GetAtt MediaBucket.Arn
             Principal: "*"
             Condition:
               StringEquals:
@@ -640,7 +668,7 @@ Resources:
             Effect: Allow
             Principal:
               AWS: "*"
-            Resource: !Sub ${S3Bucket.Arn}/*
+            Resource: !Sub ${MediaBucket.Arn}/*
             Condition:
               StringEquals:
                 s3:x-amz-acl: bucket-owner-full-control
@@ -652,8 +680,8 @@ Resources:
       DistributionConfig:
         Enabled: true
         Origins:
-          - Id: !GetAtt S3Bucket.DomainName
-            DomainName: !GetAtt S3Bucket.DomainName
+          - Id: !GetAtt MediaBucket.DomainName
+            DomainName: !GetAtt MediaBucket.DomainName
             S3OriginConfig:
               OriginAccessIdentity: !Join
                 - ""
@@ -681,7 +709,7 @@ Resources:
                 - TLSv1.1
                 - TLSv1.2
         DefaultCacheBehavior:
-          TargetOriginId: !GetAtt S3Bucket.DomainName
+          TargetOriginId: !GetAtt MediaBucket.DomainName
           ViewerProtocolPolicy: https-only
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
         CacheBehaviors:
@@ -761,11 +789,19 @@ Outputs:
         - !GetAtt CloudFrontDistribution.DomainName
   AppsyncApiId:
     Value: !GetAtt AppsyncApi.ApiId
-  S3BucketName:
-    Value: !Ref S3Bucket
+  MediaBucketName:
+    Value: !Ref MediaBucket
     Export:
-      Name: S3BucketName
-  S3BucketArn:
-    Value: !GetAtt S3Bucket.Arn
+      Name: MediaBucketName
+  MediaBucketArn:
+    Value: !GetAtt MediaBucket.Arn
     Export:
-      Name: S3BucketArn
+      Name: MediaBucketArn
+  WebsiteHostingBucketName:
+    Value: !Ref WebsiteHostingBucket
+    Export:
+      Name: WebsiteHostingBucketName
+  WebsiteHostingBucketArn:
+    Value: !GetAtt WebsiteHostingBucket.Arn
+    Export:
+      Name: WebsiteHostingBucketArn
