@@ -7,6 +7,7 @@ phases:
       - npm install
   build:
     commands:
-      - ls -la
+      - printenv
       - npm run build
+      - ls -la
       - npm run sam:deploy
