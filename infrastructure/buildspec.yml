@@ -1,0 +1,12 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      node: 14.x
+    commands:
+      - npm install
+  build:
+    commands:
+      - ls -la
+      - npm run build
+      - npm run sam:deploy
