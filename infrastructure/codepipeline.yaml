@@ -134,6 +134,7 @@ Resources:
         - Name: Source
           Actions:
             - Name: SourceCodeRepo
+              Namespace: SourceCodeRepo
               ActionTypeId:
                 Category: Source
                 Owner: AWS
@@ -172,7 +173,7 @@ Resources:
         Image: aws/codebuild/standard:5.0
         EnvironmentVariables:
           - Name: GIT_BRANCH
-            Value: #{Source.BranchName}
+            Value: #{SourceCodeRepo.BranchName}
       Source:
         Type: CODEPIPELINE
         BuildSpec: infrastructure/buildspec.yaml
