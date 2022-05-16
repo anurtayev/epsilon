@@ -173,6 +173,7 @@ Resources:
         Image: aws/codebuild/standard:5.0
         EnvironmentVariables:
           - Name: GIT_BRANCH
+            Type: PLAINTEXT
             Value: "#{SourceCodeRepo.BranchName}"
       Source:
         Type: CODEPIPELINE
