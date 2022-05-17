@@ -159,6 +159,7 @@ Resources:
                 - Name: SourceAsZip
               Configuration:
                 ProjectName: !Ref CodeBuildProject
+                EnvironmentVariables: '[{"name":"GIT_BRANCH","value":"#{SourceCodeRepo.BranchName}","type":"PLAINTEXT"}]'
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
@@ -171,10 +172,6 @@ Resources:
         Type: LINUX_CONTAINER
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:5.0
-        EnvironmentVariables:
-          - Name: GIT_BRANCH
-            Type: PLAINTEXT
-            Value: "#{SourceCodeRepo.BranchName}"
       Source:
         Type: CODEPIPELINE
         BuildSpec: infrastructure/buildspec.yaml
