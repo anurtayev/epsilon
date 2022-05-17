@@ -5,7 +5,11 @@ then
   export $(cat .env | sed 's/#.*//g' | xargs)
 fi
 
-[[ -z $CODEBUILD_CI ]] && export GIT_BRANCH=$(git status|head -n 1|cut -d ' ' -f3) && echo "hui"
+if [ -z $CODEBUILD_CI ]
+then
+  export GIT_BRANCH=$(git status|head -n 1|cut -d ' ' -f3) && echo "hui"
+fi
+
 export ASPAN_AWS_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
 export ASPAN_ENV_NAME=$PROJECT-$GIT_BRANCH-$ASPAN_AWS_ACCOUNT-$AWS_DEFAULT_REGION
 export ASPAN_APP_STACK_NAME=$ASPAN_ENV_NAME-app
