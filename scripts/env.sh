@@ -7,7 +7,7 @@ fi
 
 if [ -z $CODEBUILD_CI ]
 then
-  export GIT_BRANCH=$(git status|head -n 1|cut -d ' ' -f3) && echo "hui"
+  export GIT_BRANCH=$(git status|head -n 1|cut -d ' ' -f3)
 fi
 
 export ASPAN_AWS_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)

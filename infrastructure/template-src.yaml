@@ -1,18 +1,29 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >-
-  Aspan picture repository back-end.
+  Aspan picture repository back-end
 
 Transform: AWS::Serverless-2016-10-31
 
 Metadata:
   BuildMethod: nodejs14.x
   BuildArchitecture: x86_64
+  AWS::ServerlessRepo::Application:
+    Name: epsilon
+    Description: Aspan picture repository back-end
+    Author: Adik
+    SpdxLicenseId: Apache-2.0
+    LicenseUrl: ../LICENSE.txt
+    ReadmeUrl: ../README.md
+    Labels: ['aspan']
+    HomePageUrl: https://github.com/user1/my-app-project
+    SemanticVersion: 0.0.1
+    SourceCodeUrl: https://github.com/user1/my-app-project
 
 Resources:
   Dependencies:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: dependencies
+      ContentUri: ../dependencies
 
   SearchLambda:
     Type: AWS::Serverless::Function
@@ -24,7 +35,7 @@ Resources:
         - AmazonDynamoDBReadOnlyAccess
       Layers:
         - !Ref Dependencies
-      CodeUri: build/search
+      CodeUri: ../build/search
       Environment:
         Variables:
           TAGS_FILES_RELATIONSHIPS_TABLE: !Ref TagsFilesRelationshipsTable
@@ -38,7 +49,7 @@ Resources:
       Handler: exif.handler
       Runtime: nodejs14.x
       Timeout: 100
-      CodeUri: build/exif
+      CodeUri: ../build/exif
       Layers:
         - !Ref Dependencies
       Events:
@@ -67,7 +78,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: listFolder.handler
-      CodeUri: build/fs
+      CodeUri: ../build/fs
       Runtime: nodejs14.x
       Timeout: 100
       Layers:
@@ -84,7 +95,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: resizer.handler
-      CodeUri: build/resizer
+      CodeUri: ../build/resizer
       Runtime: nodejs14.x
       Timeout: 100
       Layers:
@@ -106,7 +117,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      CodeUri: build/dbstream
+      CodeUri: ../build/dbstream
       Runtime: nodejs14.x
       Timeout: 100
       Layers:
@@ -138,7 +149,7 @@ Resources:
         - AmazonDynamoDBReadOnlyAccess
       Layers:
         - !Ref Dependencies
-      CodeUri: build/getTags
+      CodeUri: ../build/getTags
       Environment:
         Variables:
           TAGS_TABLE: !Ref TagsTable
@@ -154,7 +165,7 @@ Resources:
         - AmazonDynamoDBReadOnlyAccess
       Layers:
         - !Ref Dependencies
-      CodeUri: build/getAttributes
+      CodeUri: ../build/getAttributes
       Environment:
         Variables:
           ATTRIBUTES_TABLE: !Ref AttributesTable
