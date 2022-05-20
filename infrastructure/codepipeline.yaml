@@ -124,6 +124,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:*
+                  - s3:*
                 Resource: "*"
 
   CodePipeline:
