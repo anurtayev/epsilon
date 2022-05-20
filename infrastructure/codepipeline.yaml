@@ -124,8 +124,12 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:*
-                  - s3:*
                 Resource: "*"
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub ${InfrastructureBucket.Arn}/*
 
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
@@ -164,7 +168,21 @@ Resources:
                 - Name: SourceAsZip
               Configuration:
                 ProjectName: !Ref CodeBuildProject
-                EnvironmentVariables: '[{"name":"GIT_BRANCH","value":"#{SourceCodeRepo.BranchName}","type":"PLAINTEXT"}]'
+                EnvironmentVariables:
+                  !Join [
+                    "",
+                    [
+                      '[',
+                      '{"name":"GIT_BRANCH","value":"#{SourceCodeRepo.BranchName}","type":"PLAINTEXT"}',
+                      ',',
+                      '[{"name":"INFRA_BUCKET_NAME","value":"',
+                      !Ref InfrastructureBucket,
+                      '","type":"PLAINTEXT"}',
+                      ']',
+                    ],
+                  ]
+
+                
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project

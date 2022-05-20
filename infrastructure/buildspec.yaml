@@ -9,8 +9,7 @@ phases:
     commands:
       - npm run build
       - pwd
-      - ls -la
-      - ls -la infrastructure
+      - printen | sort
       - npm run sam:deploy
       # - sam package --resolve-s3 --template-file infrastructure/template.yaml --output-template-file packaged-template.yaml
       # - sam publish --template packaged.yaml --region us-east-1
