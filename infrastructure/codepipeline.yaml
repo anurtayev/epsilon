@@ -124,9 +124,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:*
-                Resource: "*"
-              - Effect: Allow
-                Action:
+                  - iam:GetRole
                   - lambda:*
                 Resource: "*"
               - Effect: Allow
