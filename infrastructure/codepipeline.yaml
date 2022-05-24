@@ -146,6 +146,7 @@ Resources:
                 Action:
                   - iam:PassRole
                   - iam:CreateRole
+                  - iam:CreatePolicy
                   - iam:DetachRolePolicy
                   - iam:GetRole
                   - iam:CreateTags
