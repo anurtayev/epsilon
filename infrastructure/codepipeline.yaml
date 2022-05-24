@@ -127,12 +127,7 @@ Resources:
                   - s3:PutObject
                 Resource: !Sub ${InfrastructureBucket.Arn}/*
               - Effect: Allow
-                Action:
-                  - cloudformation:*
-                  - lambda:*
-                  - dynamodb:*
-                  - s3:*
-                  - iam:*
+                Action: "*"
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
