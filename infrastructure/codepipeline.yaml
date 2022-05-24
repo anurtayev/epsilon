@@ -154,6 +154,7 @@ Resources:
                   - iam:CreateTags
                   - iam:DeleteRole
                   - iam:AttachRolePolicy
+                  - iam:GetPolicy
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
@@ -161,6 +162,7 @@ Resources:
                       - cloudformation.amazonaws.com
                       - iam.amazonaws.com
                       - lambda.amazonaws.com
+                      - appsync.amazonaws.com
 
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
