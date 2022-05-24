@@ -136,6 +136,7 @@ Resources:
                   - dynamodb:*
                   - s3:*
                   - appsync:*
+                  - cloudfront:*
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
@@ -148,6 +149,7 @@ Resources:
                   - iam:DetachRolePolicy
                   - iam:GetRole
                   - iam:CreateTags
+                  - iam:AttachRolePolicy
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
