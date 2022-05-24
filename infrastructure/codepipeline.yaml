@@ -138,6 +138,7 @@ Resources:
                   - appsync:*
                   - cloudfront:*
                   - events:*
+                  - apigateway:*
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
@@ -151,6 +152,7 @@ Resources:
                   - iam:DetachRolePolicy
                   - iam:GetRole
                   - iam:CreateTags
+                  - iam:DeleteRole
                   - iam:AttachRolePolicy
                 Resource: "*"
                 Condition:
