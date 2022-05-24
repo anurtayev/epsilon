@@ -156,6 +156,7 @@ Resources:
                     iam:PassedToService:
                       - cloudformation.amazonaws.com
                       - iam.amazonaws.com
+                      - lambda.amazonaws.com
 
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
