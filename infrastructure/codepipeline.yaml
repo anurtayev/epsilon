@@ -133,7 +133,9 @@ Resources:
                   - s3:PutObject
                 Resource: !Sub ${InfrastructureBucket.Arn}/*
               - Effect: Allow
-                Action: iam:PassRole
+                Action:
+                  - iam:PassRole
+                  - iam:CreateRole
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
