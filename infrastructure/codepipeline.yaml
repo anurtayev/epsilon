@@ -124,7 +124,6 @@ Resources:
               - Effect: Allow
                 Action:
                   - cloudformation:*
-                  - iam:GetRole
                   - lambda:*
                 Resource: "*"
               - Effect: Allow
@@ -134,8 +133,19 @@ Resources:
                 Resource: !Sub ${InfrastructureBucket.Arn}/*
               - Effect: Allow
                 Action:
+                  - dynamodb:*
+                Resource: "*"
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+              - Effect: Allow
+                Action:
                   - iam:PassRole
                   - iam:CreateRole
+                  - iam:DetachRolePolicy
+                  - iam:GetRole
+                  - iam:CreateTags
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
