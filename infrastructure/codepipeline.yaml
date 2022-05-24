@@ -123,11 +123,31 @@ Resources:
                 Resource: "*"
               - Effect: Allow
                 Action:
+                  - cloudformation:*
+                  - lambda:*
+                Resource: "*"
+              - Effect: Allow
+                Action:
                   - s3:GetObject
                   - s3:PutObject
                 Resource: !Sub ${InfrastructureBucket.Arn}/*
               - Effect: Allow
-                Action: "*"
+                Action:
+                  - dynamodb:*
+                  - s3:*
+                  - appsync:*
+                Resource: "*"
+                Condition:
+                  StringEqualsIfExists:
+                    iam:PassedToService:
+                      - cloudformation.amazonaws.com
+              - Effect: Allow
+                Action:
+                  - iam:PassRole
+                  - iam:CreateRole
+                  - iam:DetachRolePolicy
+                  - iam:GetRole
+                  - iam:CreateTags
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
