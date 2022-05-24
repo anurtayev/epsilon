@@ -557,7 +557,7 @@ Resources:
 
   MediaBucket:
     Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
+    DeletionPolicy: Retain
     Properties:
       BucketName: !Sub ${AWS::StackName}-media-bucket
       PublicAccessBlockConfiguration:

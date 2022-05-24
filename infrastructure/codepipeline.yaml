@@ -1,4 +1,4 @@
-Description: pipeline
+Description: Aspan backend pipeline (epsilon)
 
 Parameters:
   ProjectName:
