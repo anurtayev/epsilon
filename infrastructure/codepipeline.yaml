@@ -27,6 +27,11 @@ Resources:
           - Id: DeleteOldObjects
             Status: Enabled
             ExpirationInDays: 30
+          - Id: IntelligentTieringRule
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: INTELLIGENT_TIERING
 
   InfrastructureBucketPolicy:
     Type: AWS::S3::BucketPolicy
@@ -215,8 +220,6 @@ Resources:
                     ],
                   ]
 
-                
-
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
@@ -231,13 +234,3 @@ Resources:
       Source:
         Type: CODEPIPELINE
         BuildSpec: infrastructure/buildspec.yaml
-
-Outputs:
-  InfrastructureBucketName:
-    Value: !Ref InfrastructureBucket
-    Export:
-      Name: InfrastructureBucketName
-  InfrastructureBucketArn:
-    Value: !GetAtt InfrastructureBucket.Arn
-    Export:
-      Name: InfrastructureBucketArn

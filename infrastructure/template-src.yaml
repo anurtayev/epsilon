@@ -622,6 +622,13 @@ Resources:
                 - ""
                 - - "origin-access-identity/cloudfront/"
                   - !Ref CloudFrontOriginAccessIdentity
+          - Id: !GetAtt WebsiteHostingBucket.DomainName
+            DomainName: !GetAtt WebsiteHostingBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Join
+                - ""
+                - - "origin-access-identity/cloudfront/"
+                  - !Ref CloudFrontOriginAccessIdentity
           - Id: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             DomainName: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             OriginCustomHeaders:
@@ -646,7 +653,7 @@ Resources:
         DefaultCacheBehavior:
           TargetOriginId: !GetAtt MediaBucket.DomainName
           ViewerProtocolPolicy: https-only
-          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+          CachePolicyId: !GetAtt ROCachePolicy.Id
         CacheBehaviors:
           - AllowedMethods:
               - GET
@@ -669,14 +676,21 @@ Resources:
             PathPattern: /resizer
             TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
+          - AllowedMethods:
+              - GET
+              - HEAD
+            CachePolicyId: !GetAtt ROCachePolicy.Id
+            PathPattern: /kappa
+            TargetOriginId: !GetAtt WebsiteHostingBucket.DomainName
+            ViewerProtocolPolicy: https-only
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy
     Properties:
       CachePolicyConfig:
-        DefaultTTL: 86400
-        MaxTTL: 31536000
-        MinTTL: 1
+        DefaultTTL: 157680000
+        MaxTTL: 157680000
+        MinTTL: 157680000
         Name: !Sub ${AWS::StackName}-resizer-cache-policy
         ParametersInCacheKeyAndForwardedToOrigin:
           CookiesConfig:
@@ -691,6 +705,24 @@ Resources:
               - width
               - height
               - key
+
+  ROCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        DefaultTTL: 157680000
+        MaxTTL: 157680000
+        MinTTL: 157680000
+        Name: !Sub ${AWS::StackName}-ro-cache-policy
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          EnableAcceptEncodingBrotli: false
+          EnableAcceptEncodingGzip: false
+          HeadersConfig:
+            HeaderBehavior: none
+          QueryStringsConfig:
+            QueryStringBehavior: none
 
   CloudFrontOriginAccessIdentity:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
