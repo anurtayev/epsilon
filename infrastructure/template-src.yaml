@@ -552,7 +552,8 @@ Resources:
         Statement:
           - Action: s3:GetObject
             Effect: Allow
-            Principal: "*"
+            Principal:
+              CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
             Resource: !Sub ${WebsiteHostingBucket.Arn}/*
 
   MediaBucket:
