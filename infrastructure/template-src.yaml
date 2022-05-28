@@ -550,11 +550,13 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: s3:GetObject
+          - Action: s3:*
             Effect: Allow
             Principal:
               CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
-            Resource: !Sub ${WebsiteHostingBucket.Arn}/*
+            Resource:
+              - !Sub ${WebsiteHostingBucket.Arn}/*
+              - !GetAtt WebsiteHostingBucket.Arn
 
   MediaBucket:
     Type: AWS::S3::Bucket
@@ -616,21 +618,21 @@ Resources:
       DistributionConfig:
         Enabled: true
         Origins:
-          - Id: !GetAtt MediaBucket.DomainName
+          - Id: Media
             DomainName: !GetAtt MediaBucket.DomainName
             S3OriginConfig:
               OriginAccessIdentity: !Join
                 - ""
                 - - "origin-access-identity/cloudfront/"
                   - !Ref CloudFrontOriginAccessIdentity
-          - Id: !GetAtt WebsiteHostingBucket.DomainName
+          - Id: App
             DomainName: !GetAtt WebsiteHostingBucket.DomainName
             S3OriginConfig:
               OriginAccessIdentity: !Join
                 - ""
                 - - "origin-access-identity/cloudfront/"
                   - !Ref CloudFrontOriginAccessIdentity
-          - Id: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
+          - Id: GraphQL
             DomainName: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             OriginCustomHeaders:
               - HeaderName: x-api-key
@@ -642,7 +644,7 @@ Resources:
                 - TLSv1
                 - TLSv1.1
                 - TLSv1.2
-          - Id: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+          - Id: API Gateway
             DomainName: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             CustomOriginConfig:
               HTTPSPort: 443
