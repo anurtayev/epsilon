@@ -4,3 +4,4 @@ node_modules
 .aws-sam
 dependencies
 build
+infrastructure/template.yaml
