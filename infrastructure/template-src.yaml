@@ -618,21 +618,21 @@ Resources:
       DistributionConfig:
         Enabled: true
         Origins:
-          - Id: Media
+          - Id: !GetAtt MediaBucket.DomainName
             DomainName: !GetAtt MediaBucket.DomainName
             S3OriginConfig:
               OriginAccessIdentity: !Join
                 - ""
                 - - "origin-access-identity/cloudfront/"
                   - !Ref CloudFrontOriginAccessIdentity
-          - Id: App
+          - Id: !GetAtt WebsiteHostingBucket.DomainName
             DomainName: !GetAtt WebsiteHostingBucket.DomainName
             S3OriginConfig:
               OriginAccessIdentity: !Join
                 - ""
                 - - "origin-access-identity/cloudfront/"
                   - !Ref CloudFrontOriginAccessIdentity
-          - Id: GraphQL
+          - Id: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             DomainName: !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             OriginCustomHeaders:
               - HeaderName: x-api-key
@@ -644,7 +644,7 @@ Resources:
                 - TLSv1
                 - TLSv1.1
                 - TLSv1.2
-          - Id: API Gateway
+          - Id: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             DomainName: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             CustomOriginConfig:
               HTTPSPort: 443
