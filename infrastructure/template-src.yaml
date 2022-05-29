@@ -555,13 +555,11 @@ Resources:
       PolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: s3:*
+          - Action: s3:GetObject
             Effect: Allow
             Principal:
               CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
-            Resource:
-              - !Sub ${WebsiteHostingBucket.Arn}/*
-              - !GetAtt WebsiteHostingBucket.Arn
+            Resource: !Sub ${WebsiteHostingBucket.Arn}/*
 
   MediaBucket:
     Type: AWS::S3::Bucket
@@ -659,7 +657,7 @@ Resources:
                 - TLSv1.1
                 - TLSv1.2
         DefaultCacheBehavior:
-          TargetOriginId: !GetAtt MediaBucket.DomainName
+          TargetOriginId: !GetAtt WebsiteHostingBucket.DomainName
           ViewerProtocolPolicy: https-only
           CachePolicyId: !GetAtt ROCachePolicy.Id
         CacheBehaviors:
@@ -688,8 +686,8 @@ Resources:
               - GET
               - HEAD
             CachePolicyId: !GetAtt ROCachePolicy.Id
-            PathPattern: /kappa
-            TargetOriginId: !GetAtt WebsiteHostingBucket.DomainName
+            PathPattern: /media
+            TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
 
   ResizerCachePolicy:
