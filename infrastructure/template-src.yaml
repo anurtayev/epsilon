@@ -660,6 +660,7 @@ Resources:
           TargetOriginId: !GetAtt WebsiteHostingBucket.DomainName
           ViewerProtocolPolicy: https-only
           CachePolicyId: !GetAtt ROCachePolicy.Id
+        DefaultRootObject: index.html
         CacheBehaviors:
           - AllowedMethods:
               - GET
