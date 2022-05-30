@@ -761,8 +761,8 @@ Outputs:
       - ""
       - - "https://"
         - !GetAtt CloudFrontDistribution.DomainName
-  AppsyncApiId:
-    Value: !GetAtt AppsyncApi.ApiId
+    Export:
+      Name: CloudFrontDistributionUrl
   MediaBucketName:
     Value: !Ref MediaBucket
     Export:
