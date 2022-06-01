@@ -560,6 +560,19 @@ Resources:
             Principal:
               CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
             Resource: !Sub ${WebsiteHostingBucket.Arn}/*
+          - Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:ListBucket
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: o-kvc3hucixa              
+            Resource:
+              - !Sub ${WebsiteHostingBucket.Arn}/*
+              - !GetAtt WebsiteHostingBucket.Arn
 
   MediaBucket:
     Type: AWS::S3::Bucket
