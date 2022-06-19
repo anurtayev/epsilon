@@ -95,6 +95,7 @@ Resources:
                 Action:
                   - cloudformation:*
                   - lambda:*
+                  - cognito-idp:*
                 Resource: "*"
               - Effect: Allow
                 Action:
