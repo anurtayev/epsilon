@@ -771,8 +771,6 @@ Resources:
   CognitoUserPool:
     Type: AWS::Cognito::UserPool
     Properties:
-      AliasAttributes:
-        - email
       AutoVerifiedAttributes:
         - email
       EmailConfiguration:
@@ -780,6 +778,8 @@ Resources:
       EnabledMfas:
         - SOFTWARE_TOKEN_MFA
       MfaConfiguration: "ON"
+      UsernameAttributes:
+        - email
 
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
