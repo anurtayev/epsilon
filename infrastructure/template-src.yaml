@@ -779,7 +779,7 @@ Resources:
         EmailSendingAccount: COGNITO_DEFAULT
       EnabledMfas:
         - SOFTWARE_TOKEN_MFA
-      MfaConfiguration: ON
+      MfaConfiguration: "ON"
 
   CognitoUserPoolClient:
     Type: AWS::Cognito::UserPoolClient
