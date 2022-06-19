@@ -768,6 +768,25 @@ Resources:
           OriginOverride: true
         Name: !Sub ${AWS::StackName}-reponse-headers-policy
 
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AliasAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+        - phone_number
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      MfaConfiguration: ON
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+
 Outputs:
   CloudFrontDistributionUrl:
     Value: !Join
@@ -792,3 +811,11 @@ Outputs:
     Value: !GetAtt WebsiteHostingBucket.Arn
     Export:
       Name: WebsiteHostingBucketArn
+  CognitoUserPoolName:
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: CognitoUserPoolName
+  CognitoUserPoolClientId:
+    Value: !Ref CognitoUserPoolClient
+    Export:
+      Name: CognitoUserPoolClientId

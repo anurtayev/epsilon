@@ -1,0 +1,94 @@
+Description: Aspan shared resources
+
+Parameters:
+  PrincipalOrgID:
+    Type: String
+
+Resources:
+  InfrastructureBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-infra
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldObjects
+            Status: Enabled
+            ExpirationInDays: 30
+          - Id: IntelligentTieringRule
+            Status: Enabled
+            Transitions:
+              - TransitionInDays: 1
+                StorageClass: INTELLIGENT_TIERING
+
+  InfrastructureBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref InfrastructureBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: s3:*
+            Effect: Allow
+            Resource: !Sub ${InfrastructureBucket.Arn}/*
+            Principal: "*"
+            Condition:
+              StringEquals:
+                aws:PrincipalOrgID: !Ref PrincipalOrgID
+
+  NotificationTopic:
+    Type: AWS::SNS::Topic
+
+  NotificationTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties: 
+      Topics: 
+        - !Ref NotificationTopic
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - SNS:GetTopicAttributes
+              - SNS:SetTopicAttributes
+              - SNS:AddPermission
+              - SNS:RemovePermission
+              - SNS:DeleteTopic
+              - SNS:Subscribe
+              - SNS:ListSubscriptionsByTopic
+              - SNS:Publish
+              - SNS:Receive
+            Resource: !Ref NotificationTopic
+            Condition:
+              StringEquals:
+                aws:SourceOwner: !Sub ${AWS::AccountId}
+          - Effect: Allow
+            Sid: AWSCodeStarNotifications_publish
+            Principal:
+              Service: codestar-notifications.amazonaws.com
+            Action: SNS:Publish
+            Resource: !Ref NotificationTopic
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Sub ${AWS::AccountId}
+
+Outputs:
+  InfrastructureBucketName:
+    Value: !Ref InfrastructureBucket
+    Export:
+      Name: InfrastructureBucketName
+  InfrastructureBucketArn:
+    Value: !GetAtt InfrastructureBucket.Arn
+    Export:
+      Name: InfrastructureBucketArn
+  NotificationTopicArn:
+    Value: !Ref NotificationTopic
+    Export:
+      Name: NotificationTopicArn

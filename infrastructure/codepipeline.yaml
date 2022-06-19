@@ -12,42 +12,6 @@ Parameters:
     Type: String
 
 Resources:
-  InfrastructureBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Delete
-    Properties:
-      BucketName: !Sub ${AWS::StackName}-infra
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      LifecycleConfiguration:
-        Rules:
-          - Id: DeleteOldObjects
-            Status: Enabled
-            ExpirationInDays: 30
-          - Id: IntelligentTieringRule
-            Status: Enabled
-            Transitions:
-              - TransitionInDays: 1
-                StorageClass: INTELLIGENT_TIERING
-
-  InfrastructureBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref InfrastructureBucket
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Action: s3:*
-            Effect: Allow
-            Resource: !Sub ${InfrastructureBucket.Arn}/*
-            Principal: "*"
-            Condition:
-              StringEquals:
-                aws:PrincipalOrgID: !Ref PrincipalOrgID
-
   CodeStarConnection:
     Type: AWS::CodeStarConnections::Connection
     Properties:
@@ -135,7 +99,14 @@ Resources:
                 Action:
                   - s3:GetObject
                   - s3:PutObject
-                Resource: !Sub ${InfrastructureBucket.Arn}/*
+                Resource:
+                  !Join [
+                    "",
+                    [
+                      !ImportValue InfrastructureBucketArn,
+                      "/*",
+                    ],
+                  ]
               - Effect: Allow
                 Action:
                   - dynamodb:*
@@ -176,7 +147,7 @@ Resources:
       RoleArn: !GetAtt CodePipelineExecutionRole.Arn
       ArtifactStore:
         Type: S3
-        Location: !Ref InfrastructureBucket
+        Location: !ImportValue InfrastructureBucketName
       Stages:
         - Name: Source
           Actions:
@@ -214,11 +185,24 @@ Resources:
                       '{"name":"GIT_BRANCH","value":"#{SourceCodeRepo.BranchName}","type":"PLAINTEXT"}',
                       ',',
                       '{"name":"INFRA_BUCKET_NAME","value":"',
-                      !Ref InfrastructureBucket,
+                      !ImportValue InfrastructureBucketName,
                       '","type":"PLAINTEXT"}',
                       ']',
                     ],
                   ]
+
+  CodeStarNotification:
+    Type: AWS::CodeStarNotifications::NotificationRule
+    Properties:
+      Name: !Sub ${AWS::StackName}-notify
+      DetailType: BASIC
+      Resource: !Sub arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${ProjectName}-${GitBranchName}-pipeline
+      EventTypeIds: 
+        - codepipeline-pipeline-pipeline-execution-failed
+        - codepipeline-pipeline-pipeline-execution-succeeded
+      Targets: 
+        - TargetType: SNS 
+          TargetAddress: !ImportValue NotificationTopicArn
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
