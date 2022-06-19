@@ -775,7 +775,6 @@ Resources:
         - email
       AutoVerifiedAttributes:
         - email
-        - phone_number
       EmailConfiguration:
         EmailSendingAccount: COGNITO_DEFAULT
       EnabledMfas:

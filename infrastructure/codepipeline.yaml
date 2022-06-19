@@ -50,7 +50,6 @@ Resources:
                   - ssm:GetParameters
                   - iam:GetRole
                   - lambda:*
-                  - cognito-idp:*
                   - codestar-connections:UseConnection
                 Resource: "*"
               - Effect: "Allow"
@@ -95,7 +94,6 @@ Resources:
                 Action:
                   - cloudformation:*
                   - lambda:*
-                  - cognito-idp:*
                 Resource: "*"
               - Effect: Allow
                 Action:
