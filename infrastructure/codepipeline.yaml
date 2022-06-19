@@ -115,6 +115,7 @@ Resources:
                   - cloudfront:*
                   - events:*
                   - apigateway:*
+                  - cognito-idp:*
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:
