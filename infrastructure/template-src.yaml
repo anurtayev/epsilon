@@ -850,11 +850,11 @@ Outputs:
     Value: !GetAtt WebsiteHostingBucket.Arn
     Export:
       Name: WebsiteHostingBucketArn
-  CognitoUserPoolName:
-    Value: !Ref CognitoUserPool
-    Export:
-      Name: CognitoUserPoolName
-  CognitoUserPoolClientId:
-    Value: !Ref CognitoUserPoolClient
-    Export:
-      Name: CognitoUserPoolClientId
+#  CognitoUserPoolName:
+#    Value: !Ref CognitoUserPool
+#    Export:
+#      Name: CognitoUserPoolName
+#  CognitoUserPoolClientId:
+#    Value: !Ref CognitoUserPoolClient
+#    Export:
+#      Name: CognitoUserPoolClientId
