@@ -183,7 +183,7 @@ Resources:
         - !Ref Dependencies
       Environment:
         Variables:
-#          COGNITO_POOL_ID: !Ref CognitoUserPool
+          COGNITO_POOL_ID: !Ref CognitoUserPool
           NODE_OPTIONS: --enable-source-maps
           REGION: !Sub ${AWS::Region}
 
@@ -443,9 +443,9 @@ Resources:
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
       RequestMappingTemplate: |
-        #if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
+        if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
           $util.error("search must have at least one filter specified")
-        #end
+        end
         {
           "version" : "2017-02-28",
           "operation": "Invoke",
@@ -522,9 +522,9 @@ Resources:
           "key": {
             "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
           },
-        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "DeleteItem"
-        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
+        elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET attributes = :attributes, tags = :tags",
@@ -533,7 +533,7 @@ Resources:
               ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET attributes = :attributes REMOVE tags",
@@ -541,7 +541,7 @@ Resources:
               ":attributes": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes)
             }
           }
-        #elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
+        elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET tags = :tags REMOVE attributes",
@@ -549,14 +549,14 @@ Resources:
               ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        #end
+        end
         }
       ResponseMappingTemplate: |
-        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           null
-        #else
+        else
           $util.toJson($context.result)
-        #end
+        end
 
   WebsiteHostingBucket:
     Type: AWS::S3::Bucket
@@ -808,23 +808,23 @@ Resources:
           OriginOverride: true
         Name: !Sub ${AWS::StackName}-reponse-headers-policy
 
-#  CognitoUserPool:
-#    Type: AWS::Cognito::UserPool
-#    Properties:
-#      AutoVerifiedAttributes:
-#        - email
-#      EmailConfiguration:
-#        EmailSendingAccount: COGNITO_DEFAULT
-#      EnabledMfas:
-#        - SOFTWARE_TOKEN_MFA
-#      MfaConfiguration: "ON"
-#      UsernameAttributes:
-#        - email
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AutoVerifiedAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      MfaConfiguration: "ON"
+      UsernameAttributes:
+        - email
 
- # CognitoUserPoolClient:
- #   Type: AWS::Cognito::UserPoolClient
- #   Properties:
- #     UserPoolId: !Ref CognitoUserPool
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
 
 Outputs:
   CloudFrontDistributionUrl:
@@ -850,11 +850,11 @@ Outputs:
     Value: !GetAtt WebsiteHostingBucket.Arn
     Export:
       Name: WebsiteHostingBucketArn
-#  CognitoUserPoolName:
-#    Value: !Ref CognitoUserPool
-#    Export:
-#      Name: CognitoUserPoolName
-#  CognitoUserPoolClientId:
-#    Value: !Ref CognitoUserPoolClient
-#    Export:
-#      Name: CognitoUserPoolClientId
+  CognitoUserPoolName:
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: CognitoUserPoolName
+  CognitoUserPoolClientId:
+    Value: !Ref CognitoUserPoolClient
+    Export:
+      Name: CognitoUserPoolClientId

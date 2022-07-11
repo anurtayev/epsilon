@@ -8,6 +8,8 @@ fi
 if [ -z $CODEBUILD_CI ]
 then
   export GIT_BRANCH=$(git status|head -n 1|cut -d ' ' -f3)
+  export INFRA_BUCKET_NAME=$LOCAL_INFRA_BUCKET_NAME
+
 fi
 
 export ASPAN_AWS_ACCOUNT=$(aws sts get-caller-identity --query 'Account' --output text)
