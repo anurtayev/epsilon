@@ -171,6 +171,37 @@ Resources:
           ATTRIBUTES_TABLE: !Ref AttributesTable
           NODE_OPTIONS: --enable-source-maps
 
+  AuthLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs14.x
+      CodeUri: ../build/auth
+      Handler: index.handler
+      Timeout: 100
+      Role: !GetAtt AuthLambdaRole.Arn
+      Layers:
+        - !Ref Dependencies
+      Environment:
+        Variables:
+          COGNITO_POOL_ID: !Ref CognitoUserPool
+          NODE_OPTIONS: --enable-source-maps
+          REGION: !Sub ${AWS::Region}
+
+  AuthLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
   MetaTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -689,6 +720,9 @@ Resources:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
             ResponseHeadersPolicyId: !Ref CloudFrontResponseHeadersPolicy
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !GetAtt AuthLambda.Arn
           - AllowedMethods:
               - GET
               - HEAD
@@ -696,6 +730,9 @@ Resources:
             PathPattern: /resizer
             TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !GetAtt AuthLambda.Arn
           - AllowedMethods:
               - GET
               - HEAD
@@ -703,6 +740,9 @@ Resources:
             PathPattern: /media
             TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !GetAtt AuthLambda.Arn
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy
