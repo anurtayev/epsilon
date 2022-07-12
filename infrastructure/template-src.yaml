@@ -160,7 +160,7 @@ Resources:
     Properties:
       Handler: index.handler
       Runtime: nodejs14.x
-      Timeout: 100
+      Timeout: 5
       Policies:
         - AmazonDynamoDBReadOnlyAccess
       Layers:
