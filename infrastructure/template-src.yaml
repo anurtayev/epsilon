@@ -174,11 +174,11 @@ Resources:
   AuthLambda:
     Type: AWS::Serverless::Function
     Properties:
-      AutoPublishAlias: Live
+      AutoPublishAlias: Live2
       Runtime: nodejs14.x
       CodeUri: ../build/auth
       Handler: index.handler
-      Timeout: 4
+      Timeout: 5
       Role: !GetAtt AuthLambdaRole.Arn
       Layers:
         - !Ref Dependencies
