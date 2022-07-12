@@ -178,7 +178,7 @@ Resources:
       Runtime: nodejs14.x
       CodeUri: ../build/auth
       Handler: index.handler
-      Timeout: 5
+      Timeout: 4
       Role: !GetAtt AuthLambdaRole.Arn
       Layers:
         - !Ref Dependencies
