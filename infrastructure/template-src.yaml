@@ -174,6 +174,7 @@ Resources:
   AuthLambda:
     Type: AWS::Serverless::Function
     Properties:
+      AutoPublishAlias: Live
       Runtime: nodejs14.x
       CodeUri: ../build/auth
       Handler: index.handler
@@ -720,9 +721,9 @@ Resources:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
             ResponseHeadersPolicyId: !Ref CloudFrontResponseHeadersPolicy
-            LambdaFunctionAssociations:
-              - EventType: viewer-request
-                LambdaFunctionARN: !GetAtt AuthLambda.Arn
+#            LambdaFunctionAssociations:
+#              - EventType: viewer-request
+#                LambdaFunctionARN: !GetAtt AuthLambda.Arn
           - AllowedMethods:
               - GET
               - HEAD
@@ -730,9 +731,9 @@ Resources:
             PathPattern: /resizer
             TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
-            LambdaFunctionAssociations:
-              - EventType: viewer-request
-                LambdaFunctionARN: !GetAtt AuthLambda.Arn
+#            LambdaFunctionAssociations:
+#              - EventType: viewer-request
+#                LambdaFunctionARN: !GetAtt AuthLambda.Arn
           - AllowedMethods:
               - GET
               - HEAD
@@ -740,9 +741,9 @@ Resources:
             PathPattern: /media
             TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
-            LambdaFunctionAssociations:
-              - EventType: viewer-request
-                LambdaFunctionARN: !GetAtt AuthLambda.Arn
+#            LambdaFunctionAssociations:
+#              - EventType: viewer-request
+#                LambdaFunctionARN: !GetAtt AuthLambda.Arn
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy
@@ -858,3 +859,5 @@ Outputs:
     Value: !Ref CognitoUserPoolClient
     Export:
       Name: CognitoUserPoolClientId
+  AuthLambdaVersion:
+    Value: !Ref AuthLambda.Version
