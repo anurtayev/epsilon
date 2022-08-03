@@ -18,13 +18,13 @@
     "pipeline:update": ". scripts/env.sh && aws cloudformation update-stack --stack-name $ASPAN_APP_STACK_NAME-pipeline --template-body file://infrastructure/codepipeline.yaml  --capabilities CAPABILITY_NAMED_IAM --parameters ParameterKey=ProjectName,ParameterValue=$PROJECT ParameterKey=GitBranchName,ParameterValue=$GIT_BRANCH ParameterKey=FullRepositoryId,ParameterValue=$FULL_REPOSITORY_ID ParameterKey=PrincipalOrgID,ParameterValue=$PRINCIPAL_ORG_ID",
     "pipeline:delete": ". scripts/env.sh && aws cloudformation delete-stack --stack-name $ASPAN_APP_STACK_NAME-pipeline",
     "infra:setup": ". scripts/env.sh && aws cloudformation create-stack --stack-name aspan-$ASPAN_AWS_ACCOUNT-$AWS_DEFAULT_REGION-shared --template-body file://infrastructure/shared.yaml  --parameters ParameterKey=PrincipalOrgID,ParameterValue=$PRINCIPAL_ORG_ID",
+    "infra:update": ". scripts/env.sh && aws cloudformation update-stack --stack-name aspan-$ASPAN_AWS_ACCOUNT-$AWS_DEFAULT_REGION-shared --template-body file://infrastructure/shared.yaml  --parameters ParameterKey=PrincipalOrgID,ParameterValue=$PRINCIPAL_ORG_ID",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "eslint src"
   },
   "dependencies": {
     "@aspan/sigma": "^1.0.25",
-    "axios": "^0.27.2",
     "exifr": "^7.1.3",
     "jsonwebtoken": "^8.5.1",
     "jwk-to-pem": "^2.0.5",
@@ -39,6 +39,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "aws-sdk": "^2.1111.0",
+    "axios": "^0.27.2",
     "dotenv-cli": "^4.1.1",
     "dotenv-safe": "^8.2.0",
     "eslint": "^8.6.0",

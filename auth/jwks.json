@@ -1,0 +1,20 @@
+{
+  "keys": [
+    {
+      "alg": "RS256",
+      "e": "AQAB",
+      "kid": "xkxH+pVlTI3W3bE2oAIXeVbEdVO2njLeIZ7Pob1gmoc=",
+      "kty": "RSA",
+      "n": "mA4TX5m-EYsN9MSgeXJOtNm6CiEo5WegNwl0kSABbf6eR7vRFY2XKp2YS1DNGDVN98du7PVndjLOtSjbdeOv8APHH2cPagfz3FTqBU-nQI-k1oqhrCITz3fVJKMKeeMgGessGLEG-Tfb57romA3s2aB4jYNTPWPob-YVhc9F4Srgy6IlUypIr1grx6All6z0v6zA1O1x_F1sMFm5DjgXQWtknkhs0lhCzX5F4LZW1UppCVrdJgy_gNLA8UQzg8dhkPDzfoxCkcBO9kiINkkEMxT1CNkDEPEJdfqhhv0j4xx2YHtpXIqSyxWgVTfYbt3ap4Gtc5FlWlfpKVBqVgmXXQ",
+      "use": "sig"
+    },
+    {
+      "alg": "RS256",
+      "e": "AQAB",
+      "kid": "KSUtFPOehYn4VipCfEIGibk7cXcQhcZwwq4ieycCVfE=",
+      "kty": "RSA",
+      "n": "n4GPMLvtIdEzu_ajqOi24HHj6mG-_4eIdxRRCXEOhMucXHOi8qaXFVW1ou44O7p9-IJpc8KL35Velk3IFx5H9TFm7bZqaorvegWsrPOI610B8FhjdvdXmcXodSlWVcE29ba7yTD4MvaSaKEEX3AzeUwaPoZC680PbfppgR9uNl_agm7Xd0Sj9OXPVZIVUYge5urIlTfeVnJP0A0DvCtHkH22tDTcOwwqqqpyi-eSlGTY0ejAMJ7gKRenCJ3f9oezUt63A-aQyDHjg8dHZ_tZJDlnfxxGm7A2QtEKeFB0xPAiVwN_YVrOY0VU03Cv_dATAOzZ9n-26onQGHfPowBA8w",
+      "use": "sig"
+    }
+  ]
+}

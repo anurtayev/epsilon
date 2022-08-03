@@ -1,6 +1,6 @@
 Description: Aspan shared resources
 
-Parameters:
+Parameters:  
   PrincipalOrgID:
     Type: String
 
@@ -79,16 +79,55 @@ Resources:
               StringEquals:
                 aws:SourceAccount: !Sub ${AWS::AccountId}
 
+  CognitoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AutoVerifiedAttributes:
+        - email
+      EmailConfiguration:
+        EmailSendingAccount: COGNITO_DEFAULT
+      EnabledMfas:
+        - SOFTWARE_TOKEN_MFA
+      MfaConfiguration: "ON"
+      UsernameAttributes:
+        - email
+
+  CognitoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref CognitoUserPool
+
 Outputs:
   InfrastructureBucketName:
     Value: !Ref InfrastructureBucket
     Export:
       Name: InfrastructureBucketName
+
   InfrastructureBucketArn:
     Value: !GetAtt InfrastructureBucket.Arn
     Export:
       Name: InfrastructureBucketArn
+
   NotificationTopicArn:
     Value: !Ref NotificationTopic
     Export:
       Name: NotificationTopicArn
+
+  CognitoUserPoolId:
+    Value: !Ref CognitoUserPool
+    Export:
+      Name: CognitoUserPoolId
+
+  CognitoUserPoolArn:
+    Value: !GetAtt CognitoUserPool.Arn
+
+  CognitoUserPoolProviderName:
+    Value: !GetAtt CognitoUserPool.ProviderName
+
+  CognitoUserPoolProviderURL:
+    Value: !GetAtt CognitoUserPool.ProviderURL
+
+  CognitoUserPoolClientId:
+    Value: !Ref CognitoUserPoolClient
+    Export:
+      Name: CognitoUserPoolClientId
