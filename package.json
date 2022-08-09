@@ -3,6 +3,8 @@
   "version": "1.0.2",
   "description": "aspan back-end",
   "scripts": {
+    "auth:extract": "node auth/extractPublicKeys.js",
+    "auth:verify": "node auth/verifyToken.js",
     "build:dependencies": "scripts/build_dependencies.sh",
     "build:template": "scripts/build_template.sh",
     "build:src": "tsc",
