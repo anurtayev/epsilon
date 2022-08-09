@@ -4,7 +4,7 @@ const fs = require("fs");
 const path = require("path");
 
 const cognitoIssuer =
-  "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_3kIDIKyEE";
+  "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_L31TWrJeW";
 
 const getPublicKeys = async () => {
   const url = `${cognitoIssuer}/.well-known/jwks.json`;
