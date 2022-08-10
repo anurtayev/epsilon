@@ -25,6 +25,13 @@ Resources:
     Properties:
       ContentUri: ../dependencies
 
+  AuthLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: verifyToken.handler
+      Runtime: nodejs16.x
+      CodeUri: ../auth
+
   SearchLambda:
     Type: AWS::Serverless::Function
     Properties:
