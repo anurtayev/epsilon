@@ -28,9 +28,28 @@ Resources:
   AuthLambda:
     Type: AWS::Serverless::Function
     Properties:
+      AutoPublishAlias: Live
+      Role: !GetAtt AuthLambdaRole.Arn
+      Timeout: 4
       Handler: verifyToken.handler
       Runtime: nodejs16.x
       CodeUri: ../auth
+
+  AuthLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
 
   SearchLambda:
     Type: AWS::Serverless::Function
