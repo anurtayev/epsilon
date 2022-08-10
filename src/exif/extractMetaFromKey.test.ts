@@ -25,7 +25,7 @@ describe("extractMetaFromKey", () => {
     expect(
       extractMetaFromKey("media/20000710. Atyrau visit/Aktau_beach.jpg")
     ).toEqual({
-      dateCreated: "2000-07-10T04:00:00.000Z",
+      dateCreated: new Date(2000, 7 - 1, 10).toISOString(),
       monthCreated: 7,
       yearCreated: 2000,
     });
@@ -35,7 +35,7 @@ describe("extractMetaFromKey", () => {
     expect(
       extractMetaFromKey("media/20151110. Atyrau visit/Aktau_beach.jpg")
     ).toEqual({
-      dateCreated: "2015-11-10T05:00:00.000Z",
+      dateCreated: new Date(2015, 11 - 1, 10).toISOString(),
       monthCreated: 11,
       yearCreated: 2015,
     });

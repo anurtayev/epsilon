@@ -25,6 +25,13 @@ Resources:
     Properties:
       ContentUri: ../dependencies
 
+  AuthLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: verifyToken.handler
+      Runtime: nodejs16.x
+      CodeUri: ../auth
+
   SearchLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -412,9 +419,9 @@ Resources:
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
       RequestMappingTemplate: |
-        #if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
+        if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
           $util.error("search must have at least one filter specified")
-        #end
+        end
         {
           "version" : "2017-02-28",
           "operation": "Invoke",
@@ -491,9 +498,9 @@ Resources:
           "key": {
             "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
           },
-        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "DeleteItem"
-        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
+        elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET attributes = :attributes, tags = :tags",
@@ -502,7 +509,7 @@ Resources:
               ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET attributes = :attributes REMOVE tags",
@@ -510,7 +517,7 @@ Resources:
               ":attributes": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes)
             }
           }
-        #elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
+        elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET tags = :tags REMOVE attributes",
@@ -518,14 +525,14 @@ Resources:
               ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        #end
+        end
         }
       ResponseMappingTemplate: |
-        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           null
-        #else
+        else
           $util.toJson($context.result)
-        #end
+        end
 
   WebsiteHostingBucket:
     Type: AWS::S3::Bucket
@@ -689,6 +696,9 @@ Resources:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
             ResponseHeadersPolicyId: !Ref CloudFrontResponseHeadersPolicy
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref AuthLambda.Version
           - AllowedMethods:
               - GET
               - HEAD
@@ -696,6 +706,9 @@ Resources:
             PathPattern: /resizer
             TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref AuthLambda.Version
           - AllowedMethods:
               - GET
               - HEAD
@@ -703,6 +716,9 @@ Resources:
             PathPattern: /media
             TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
+            LambdaFunctionAssociations:
+              - EventType: viewer-request
+                LambdaFunctionARN: !Ref AuthLambda.Version
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy

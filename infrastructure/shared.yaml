@@ -1,6 +1,6 @@
 Description: Aspan shared resources
 
-Parameters:
+Parameters:  
   PrincipalOrgID:
     Type: String
 
@@ -102,18 +102,31 @@ Outputs:
     Value: !Ref InfrastructureBucket
     Export:
       Name: InfrastructureBucketName
+
   InfrastructureBucketArn:
     Value: !GetAtt InfrastructureBucket.Arn
     Export:
       Name: InfrastructureBucketArn
+
   NotificationTopicArn:
     Value: !Ref NotificationTopic
     Export:
       Name: NotificationTopicArn
-  CognitoUserPoolName:
+
+  CognitoUserPoolId:
     Value: !Ref CognitoUserPool
     Export:
-      Name: CognitoUserPoolName
+      Name: CognitoUserPoolId
+
+  CognitoUserPoolArn:
+    Value: !GetAtt CognitoUserPool.Arn
+
+  CognitoUserPoolProviderName:
+    Value: !GetAtt CognitoUserPool.ProviderName
+
+  CognitoUserPoolProviderURL:
+    Value: !GetAtt CognitoUserPool.ProviderURL
+
   CognitoUserPoolClientId:
     Value: !Ref CognitoUserPoolClient
     Export:

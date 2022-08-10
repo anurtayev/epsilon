@@ -3,6 +3,8 @@
   "version": "1.0.2",
   "description": "aspan back-end",
   "scripts": {
+    "auth:extract": "node auth/extractPublicKeys.js",
+    "auth:verify": "node auth/verifyToken.js",
     "build:dependencies": "scripts/build_dependencies.sh",
     "build:template": "scripts/build_template.sh",
     "build:src": "tsc",
@@ -25,6 +27,7 @@
   },
   "dependencies": {
     "@aspan/sigma": "^1.0.25",
+    "aws-jwt-verify": "^3.1.0",
     "exifr": "^7.1.3",
     "sharp": "^0.29.3"
   },
@@ -37,6 +40,7 @@
     "@typescript-eslint/eslint-plugin": "^5.10.1",
     "@typescript-eslint/parser": "^5.10.1",
     "aws-sdk": "^2.1111.0",
+    "axios": "^0.27.2",
     "dotenv-cli": "^4.1.1",
     "dotenv-safe": "^8.2.0",
     "eslint": "^8.6.0",
