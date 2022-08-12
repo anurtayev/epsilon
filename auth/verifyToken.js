@@ -5,7 +5,10 @@ const { CognitoJwtVerifier } = require("aws-jwt-verify");
 
 const extractCognitoParameters = (authorizationHeader) => {
   const { cognitoUserPoolId, cognitoUserPoolClientId } = JSON.parse(
-    Buffer.from(token.split(".")[1], "base64").toString("utf8")
+    Buffer.from(
+      authorizationHeader.split("Bearer ")[1].split(".")[1],
+      "base64"
+    ).toString("utf8")
   );
 
   return { cognitoUserPoolId, cognitoUserPoolClientId };
