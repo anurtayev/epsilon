@@ -4,8 +4,7 @@ const AUTHORIZATION_HEADER = "authorization";
 const CUSTOM_CLAIM_KEY = "application_name";
 const CUSTOM_CLAIM_VALUE = "Aspan";
 
-const extractCognitoParameters = (authorizationHeader) => {
-  const token = authorizationHeader.split("Bearer ")[1];
+const extractCognitoParameters = (token) => {
   console.log("==>  token", token);
   const decodedToken = Buffer.from(token.split(".")[1], "base64").toString(
     "utf8"
@@ -19,10 +18,7 @@ const extractCognitoParameters = (authorizationHeader) => {
 };
 
 exports.handler = async function (event, context) {
-  console.log(
-    "incoming event",
-    JSON.stringify(event.Records[0].cf.request, null, 2)
-  );
+  console.log("incoming event", JSON.stringify(event, null, 2));
   const request = event.Records[0].cf.request;
   const headers = request.headers;
   const authHeaderArray =
@@ -36,8 +32,10 @@ exports.handler = async function (event, context) {
   );
 
   try {
+    const cognitoToken = authHeader.value.split("Bearer ")[1];
+
     const { cognitoUserPoolId, cognitoUserPoolClientId } =
-      extractCognitoParameters(authHeader.value);
+      extractCognitoParameters(cognitoToken);
     console.log("==> cognitoUserPoolId", cognitoUserPoolId);
     console.log("==> cognitoUserPoolClientId", cognitoUserPoolClientId);
 
