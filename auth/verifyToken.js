@@ -1,7 +1,8 @@
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 
-// const CUSTOM_CLAIM_KEY = "application_name";
-// const CUSTOM_CLAIM_VALUE = "Aspan";
+const AUTHORIZATION_HEADER = "authorization";
+const CUSTOM_CLAIM_KEY = "application_name";
+const CUSTOM_CLAIM_VALUE = "Aspan";
 
 const extractCognitoParameters = (authorizationHeader) => {
   const { cognitoUserPoolId, cognitoUserPoolClientId } = JSON.parse(
@@ -23,24 +24,30 @@ exports.handler = async function (event, context) {
   const headers = request.headers;
 
   console.log("==>", headers);
-  console.log(
-    "==>",
+
+  const authHeaderArray =
     headers[
       Reflect.ownKeys(headers).find(
-        (header) => header.toLowerCase() === "authorization"
+        (header) => header.toLowerCase() === AUTHORIZATION_HEADER
       )
-    ]
+    ];
+
+  console.log(
+    "==>",
+    authHeaderArray.find(
+      ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER
+    )
   );
+
+  const authHeader = authHeaderArray.find(
+    ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER
+  );
+
+  console.log("==>", authHeader.value);
 
   try {
     const { cognitoUserPoolId, cognitoUserPoolClientId } =
-      extractCognitoParameters(
-        headers[
-          Reflect.ownKeys(headers).find(
-            (header) => header.toLowerCase() === "authorization"
-          )
-        ]
-      );
+      extractCognitoParameters(authHeader.value);
 
     const verifier = CognitoJwtVerifier.create({
       userPoolId: cognitoUserPoolId,
