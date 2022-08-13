@@ -5,12 +5,16 @@ const CUSTOM_CLAIM_KEY = "application_name";
 const CUSTOM_CLAIM_VALUE = "Aspan";
 
 const extractCognitoParameters = (authorizationHeader) => {
-  const { cognitoUserPoolId, cognitoUserPoolClientId } = JSON.parse(
-    Buffer.from(
-      authorizationHeader.split("Bearer ")[1].split(".")[1],
-      "base64"
-    ).toString("utf8")
+  console.log("==>", authorizationHeader);
+  const token = authorizationHeader.split("Bearer ")[1];
+  console.log("==>  token", token);
+  const decodedToken = Buffer.from(token.split(".")[1], "base64").toString(
+    "utf8"
   );
+  console.log("==> decoded token", decodedToken);
+
+  const { cognitoUserPoolId, cognitoUserPoolClientId } =
+    JSON.parse(decodedToken);
 
   return { cognitoUserPoolId, cognitoUserPoolClientId };
 };
@@ -22,23 +26,12 @@ exports.handler = async function (event, context) {
   );
   const request = event.Records[0].cf.request;
   const headers = request.headers;
-
-  console.log("==>", headers);
-
   const authHeaderArray =
     headers[
       Reflect.ownKeys(headers).find(
         (header) => header.toLowerCase() === AUTHORIZATION_HEADER
       )
     ];
-
-  console.log(
-    "==>",
-    authHeaderArray.find(
-      ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER
-    )
-  );
-
   const authHeader = authHeaderArray.find(
     ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER
   );
