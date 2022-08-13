@@ -5,3 +5,4 @@ node_modules
 dependencies
 build
 infrastructure/template.yaml
+auth/verifyToken.js
