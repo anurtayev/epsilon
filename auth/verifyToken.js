@@ -15,19 +15,32 @@ const extractCognitoParameters = (authorizationHeader) => {
 };
 
 exports.handler = async function (event, context) {
-  console.log("incoming event", event.Records[0].cf.request);
+  console.log(
+    "incoming event",
+    JSON.stringify(event.Records[0].cf.request, null, 2)
+  );
   const request = event.Records[0].cf.request;
   const headers = request.headers;
 
   console.log("==>", headers);
   console.log(
     "==>",
-    headers.find((header) => header.toLowerCase() === "authorization")
+    headers[
+      Reflect.ownKeys(headers).find(
+        (header) => header.toLowerCase() === "authorization"
+      )
+    ]
   );
 
   try {
     const { cognitoUserPoolId, cognitoUserPoolClientId } =
-      extractCognitoParameters(headers["authorization"]);
+      extractCognitoParameters(
+        headers[
+          Reflect.ownKeys(headers).find(
+            (header) => header.toLowerCase() === "authorization"
+          )
+        ]
+      );
 
     const verifier = CognitoJwtVerifier.create({
       userPoolId: cognitoUserPoolId,
