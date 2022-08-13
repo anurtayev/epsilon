@@ -14,7 +14,7 @@ const extractCognitoParameters = (authorizationHeader) => {
   console.log("==> decoded token", decodedToken);
 
   const { iss, aud: cognitoUserPoolClientId } = JSON.parse(decodedToken);
-  const cognitoUserPoolClientId = iss.split("/")[-1];
+  const cognitoUserPoolId = iss.split("/")[-1];
 
   return { cognitoUserPoolId, cognitoUserPoolClientId };
 };
