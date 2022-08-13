@@ -15,8 +15,15 @@ const extractCognitoParameters = (authorizationHeader) => {
 };
 
 exports.handler = async function (event, context) {
+  console.log("incoming event", event.Records[0].cf.request);
   const request = event.Records[0].cf.request;
   const headers = request.headers;
+
+  console.log("==>", headers);
+  console.log(
+    "==>",
+    headers.find((header) => header.toLowerCase() === "authorization")
+  );
 
   try {
     const { cognitoUserPoolId, cognitoUserPoolClientId } =
