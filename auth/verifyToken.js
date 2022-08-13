@@ -5,7 +5,6 @@ const CUSTOM_CLAIM_KEY = "application_name";
 const CUSTOM_CLAIM_VALUE = "Aspan";
 
 const extractCognitoParameters = (authorizationHeader) => {
-  console.log("==>", authorizationHeader);
   const token = authorizationHeader.split("Bearer ")[1];
   console.log("==>  token", token);
   const decodedToken = Buffer.from(token.split(".")[1], "base64").toString(
@@ -36,11 +35,11 @@ exports.handler = async function (event, context) {
     ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER
   );
 
-  console.log("==>", authHeader.value);
-
   try {
     const { cognitoUserPoolId, cognitoUserPoolClientId } =
       extractCognitoParameters(authHeader.value);
+    console.log("==> cognitoUserPoolId", cognitoUserPoolId);
+    console.log("==> cognitoUserPoolClientId", cognitoUserPoolClientId);
 
     const verifier = CognitoJwtVerifier.create({
       userPoolId: cognitoUserPoolId,
@@ -50,6 +49,8 @@ exports.handler = async function (event, context) {
 
     const payload = await verifier.verify(cognitoToken);
 
+    console.log("==> payload", payload);
+
     // TODO: implement custom claim challenge
     // if (payload[CUSTOM_CLAIM_KEY] !== CUSTOM_CLAIM_VALUE) {
     //   throw Error("<application_name> claim is not valid");
@@ -57,7 +58,7 @@ exports.handler = async function (event, context) {
 
     return request;
   } catch (e) {
-    console.log("invalid token", e);
+    console.log("invalid token", e.message, typeof e);
 
     return {
       body: "Forbidden",
