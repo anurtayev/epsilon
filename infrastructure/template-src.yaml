@@ -4,10 +4,6 @@ Description: >-
 
 Transform: AWS::Serverless-2016-10-31
 
-Parameters:
-  CognitoCustomClaimValue:
-    Type: String
-
 Metadata:
   BuildMethod: nodejs14.x
   BuildArchitecture: x86_64
