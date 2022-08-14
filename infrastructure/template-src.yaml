@@ -59,6 +59,7 @@ Resources:
   AuthTriggerLambdaResourceBasedPolicy:
     Type: AWS::IAM::Policy
     Properties:
+      PolicyName: !Sub ${AWS::StackName}-auth-trigger
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
