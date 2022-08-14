@@ -49,22 +49,29 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-            - cognito-idp.amazonaws.com
-          Action: sts:AssumeRole
-        - Effect": Allow
-          Principal:
-            Service: cognito-idp.amazonaws.com
-          Action: lambda:InvokeFunction
-          Resource: !GetAtt AuthTriggerLambda.Arn
-          Condition:
-            StringEquals:
-              AWS:SourceAccount: !Ref AWS::AccountId
-            ArnLike:
-              AWS:SourceArn": !GetAtt CognitoUserPool.Arn
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+              - cognito-idp.amazonaws.com
+            Action: sts:AssumeRole
+
+  AuthTriggerLambdaResourceBasedPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect": Allow
+            Principal:
+              Service: cognito-idp.amazonaws.com
+            Action: lambda:InvokeFunction
+            Resource: !GetAtt AuthTriggerLambda.Arn
+            Condition:
+              StringEquals:
+                AWS:SourceAccount: !Ref AWS::AccountId
+              ArnLike:
+                AWS:SourceArn": !GetAtt CognitoUserPool.Arn
 
   AuthLambda:
     Type: AWS::Serverless::Function
