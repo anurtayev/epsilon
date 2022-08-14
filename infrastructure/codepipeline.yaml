@@ -133,6 +133,9 @@ Resources:
                   - iam:AttachRolePolicy
                   - iam:GetPolicy
                   - iam:CreateServiceLinkedRole
+                  - iam:GetRolePolicy
+                  - iam:DeleteRolePolicy
+                  - iam:PutRolePolicy
                 Resource: "*"
                 Condition:
                   StringEqualsIfExists:

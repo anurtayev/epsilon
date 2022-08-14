@@ -56,25 +56,13 @@ Resources:
               - cognito-idp.amazonaws.com
             Action: sts:AssumeRole
 
-  AuthTriggerLambdaResourceBasedPolicy:
-    Type: AWS::IAM::Policy
+  AuthTriggerLambdaCognitoPermission:
+    Type: AWS::Lambda::Permission
     Properties:
-      PolicyName: !Sub ${AWS::StackName}-auth-trigger
-      Roles:
-        - !Ref AuthTriggerLambdaRole
-      PolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect": Allow
-            Principal:
-              Service: cognito-idp.amazonaws.com
-            Action: lambda:InvokeFunction
-            Resource: !GetAtt AuthTriggerLambda.Arn
-            Condition:
-              StringEquals:
-                AWS:SourceAccount: !Ref AWS::AccountId
-              ArnLike:
-                AWS:SourceArn": !GetAtt CognitoUserPool.Arn
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt AuthTriggerLambda.Arn
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
 
   AuthLambda:
     Type: AWS::Serverless::Function
