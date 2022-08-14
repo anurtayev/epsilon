@@ -25,6 +25,14 @@ Resources:
     Properties:
       ContentUri: ../dependencies
 
+  OnCognitoSignupPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt: AuthTriggerLambda.Arn
+      Principal: cognito-idp.amazonaws.com
+      SourceArn: !GetAtt CognitoUserPool.Arn
+
   AuthTriggerLambda:
     Type: AWS::Serverless::Function
     Properties:
