@@ -59,25 +59,12 @@ Resources:
           Principal:
             Service: cognito-idp.amazonaws.com
           Action: lambda:InvokeFunction
-          Resource: !GetAtt: AuthTriggerLambda.Arn
+          Resource: !GetAtt AuthTriggerLambda.Arn
           Condition:
             StringEquals:
               AWS:SourceAccount: !Ref AWS::AccountId
             ArnLike:
-              AWS:SourceArn":
-                !Join [
-                  "",
-                  [
-                    "arn:aws:cognito-idp",
-                    ":",
-                    !Ref AWS::Region,
-                    ":",
-                    !Ref AWS::AccountId,
-                    ":",
-                    "userpool/",
-                    !Ref CognitoUserPool
-                  ],
-                ]
+              AWS:SourceArn": !GetAtt CognitoUserPool.Arn
 
   AuthLambda:
     Type: AWS::Serverless::Function
