@@ -25,14 +25,6 @@ Resources:
     Properties:
       ContentUri: ../dependencies
 
-  OnCognitoSignupPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt: AuthTriggerLambda.Arn
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !GetAtt CognitoUserPool.Arn
-
   AuthTriggerLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -63,6 +55,16 @@ Resources:
             - lambda.amazonaws.com
             - cognito-idp.amazonaws.com
           Action: sts:AssumeRole
+        - Effect": Allow
+          Principal:
+            Service: cognito-idp.amazonaws.com
+          Action: lambda:InvokeFunction
+          Resource: !GetAtt: AuthTriggerLambda.Arn
+          Condition:
+            StringEquals:
+              AWS:SourceAccount: !Sub ${AWS::AccountId}
+            ArnLike:
+              AWS:SourceArn": !GetAtt CognitoUserPool.Arn
 
   AuthLambda:
     Type: AWS::Serverless::Function
