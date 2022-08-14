@@ -60,6 +60,8 @@ Resources:
     Type: AWS::IAM::Policy
     Properties:
       PolicyName: !Sub ${AWS::StackName}-auth-trigger
+      Roles:
+        - !Ref AuthTriggerLambdaRole
       PolicyDocument:
         Version: '2012-10-17'
         Statement:
