@@ -63,7 +63,7 @@ exports.handler = async function (event, context) {
         "x-aspan-header": [
           {
             key: "x-aspan-header",
-            value: CUSTOM_CLAIM_VALUE,
+            value: "from aspan-epsilon",
           },
         ],
       },
