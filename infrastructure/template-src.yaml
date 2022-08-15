@@ -800,7 +800,7 @@ Resources:
             Items:
               - "*"
           OriginOverride: true
-        Name: !Sub ${AWS::StackName}-reponse-headers-policy
+        Name: !Sub ${AWS::StackName}-response-headers-policy
 
 Outputs:
   CloudFrontDistributionUrl:
