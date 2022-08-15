@@ -1,8 +1,7 @@
 const { CognitoJwtVerifier } = require("aws-jwt-verify");
 
 const AUTHORIZATION_HEADER_LOWERCASE = "authorization";
-const CUSTOM_CLAIM_KEY = "aspan_custom_claim";
-const CUSTOM_CLAIM_VALUE = "";
+const ASPAN_ISS = "";
 
 const extractCognitoParameters = (token) => {
   console.log("==>  token", token);

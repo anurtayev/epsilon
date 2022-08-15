@@ -126,6 +126,8 @@ Outputs:
 
   CognitoUserPoolProviderURL:
     Value: !GetAtt CognitoUserPool.ProviderURL
+    Export:
+      Name: CognitoUserPoolProviderURL
 
   CognitoUserPoolClientId:
     Value: !Ref CognitoUserPoolClient

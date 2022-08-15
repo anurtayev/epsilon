@@ -1,8 +1,8 @@
 #!/bin/bash
 
-UUID=$(node -e "const {v4} = require('uuid'); console.log(v4())")
-
-cat auth/verifyToken-src.js | sed 's/CUSTOM_CLAIM_VALUE = "";/CUSTOM_CLAIM_VALUE = "'$UUID'";/' > auth/verifyToken.js
+ISS=$(aws cloudformation list-exports --query 'Exports[?Name==`CognitoUserPoolProviderURL`].Value | [0]')
+echo $ISS
+cat auth/verifyToken-src.js | sed 's%ASPAN_ISS = "";%ASPAN_ISS = '$ISS';%' > auth/verifyToken.js
 
 cat ./node_modules/@aspan/sigma/lib/schema.graphql | sed 's/^/        /' > schema-tabbed.graphql
 cat infrastructure/template-src.yaml | sed '/Definition: |/r ./schema-tabbed.graphql' | sed 's/aspan_custom_claim: ""/aspan_custom_claim: "'$UUID'"/' > infrastructure/template.yaml
