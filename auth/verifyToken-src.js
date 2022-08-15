@@ -48,8 +48,8 @@ exports.handler = async function (event, context) {
 
     console.log("==> payload", payload);
 
-    if (payload[CUSTOM_CLAIM_KEY] !== CUSTOM_CLAIM_VALUE) {
-      throw Error("<application_name> claim is not valid");
+    if (payload.iss !== ASPAN_ISS) {
+      throw Error("invalid iss claim");
     }
 
     return request;
