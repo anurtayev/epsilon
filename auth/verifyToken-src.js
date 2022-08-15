@@ -20,17 +20,17 @@ exports.handler = async function (event, context) {
   console.log("incoming event", JSON.stringify(event, null, 2));
   const request = event.Records[0].cf.request;
   const headers = request.headers;
-  const authHeaderArray =
-    headers[
-      Reflect.ownKeys(headers).find(
-        (header) => header.toLowerCase() === AUTHORIZATION_HEADER_LOWERCASE
-      )
-    ];
-  const authHeader = authHeaderArray.find(
-    ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER_LOWERCASE
-  );
-
   try {
+    const authHeaderArray =
+      headers[
+        Reflect.ownKeys(headers).find(
+          (header) => header.toLowerCase() === AUTHORIZATION_HEADER_LOWERCASE
+        )
+      ];
+    const authHeader = authHeaderArray.find(
+      ({ key }) => key.toLowerCase() === AUTHORIZATION_HEADER_LOWERCASE
+    );
+
     const cognitoToken = authHeader.value.split("Bearer ")[1];
 
     const { cognitoUserPoolId, cognitoUserPoolClientId } =
