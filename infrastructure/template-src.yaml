@@ -25,45 +25,6 @@ Resources:
     Properties:
       ContentUri: ../dependencies
 
-  AuthTriggerLambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      Role: !GetAtt AuthTriggerLambdaRole.Arn
-      Timeout: 4
-      Handler: verifyToken.handler
-      Runtime: nodejs16.x
-      InlineCode: |
-        exports.handler = async function (event, context) {
-          console.log("incoming event", JSON.stringify(event, null, 2));
-          event.response.claimsOverrideDetails = {
-          claimsOverrideDetails: {
-              claimsToAddOrOverride: { aspan_custom_claim: "" },
-            },
-          };
-        return event;
-        };
-
-  AuthTriggerLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-              - lambda.amazonaws.com
-              - cognito-idp.amazonaws.com
-            Action: sts:AssumeRole
-
-  AuthTriggerLambdaCognitoPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      Action: lambda:InvokeFunction
-      FunctionName: !GetAtt AuthTriggerLambda.Arn
-      Principal: cognito-idp.amazonaws.com
-      SourceArn: !GetAtt CognitoUserPool.Arn
-
   AuthLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -80,14 +41,14 @@ Resources:
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - lambda.amazonaws.com
-            - edgelambda.amazonaws.com
-          Action: sts:AssumeRole
+          - Effect: Allow
+            Principal:
+              Service:
+              - lambda.amazonaws.com
+              - edgelambda.amazonaws.com
+            Action: sts:AssumeRole
       ManagedPolicyArns:
-      - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
   SearchLambda:
     Type: AWS::Serverless::Function
@@ -841,26 +802,6 @@ Resources:
           OriginOverride: true
         Name: !Sub ${AWS::StackName}-reponse-headers-policy
 
-  CognitoUserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      AutoVerifiedAttributes:
-        - email
-      EmailConfiguration:
-        EmailSendingAccount: COGNITO_DEFAULT
-      EnabledMfas:
-        - SOFTWARE_TOKEN_MFA
-      MfaConfiguration: "ON"
-      LambdaConfig:
-        PreTokenGeneration: !GetAtt AuthTriggerLambda.Arn
-      UsernameAttributes:
-        - email
-
-  CognitoUserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      UserPoolId: !Ref CognitoUserPool
-
 Outputs:
   CloudFrontDistributionUrl:
     Value: !Join
@@ -889,22 +830,3 @@ Outputs:
     Value: !GetAtt WebsiteHostingBucket.Arn
     Export:
       Name: WebsiteHostingBucketArn
-
-  CognitoUserPoolId:
-    Value: !Ref CognitoUserPool
-    Export:
-      Name: CognitoUserPoolId
-
-  CognitoUserPoolArn:
-    Value: !GetAtt CognitoUserPool.Arn
-
-  CognitoUserPoolProviderName:
-    Value: !GetAtt CognitoUserPool.ProviderName
-
-  CognitoUserPoolProviderURL:
-    Value: !GetAtt CognitoUserPool.ProviderURL
-
-  CognitoUserPoolClientId:
-    Value: !Ref CognitoUserPoolClient
-    Export:
-      Name: CognitoUserPoolClientId
