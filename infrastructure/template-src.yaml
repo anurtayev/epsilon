@@ -713,11 +713,10 @@ Resources:
             TargetOriginId:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
+            ResponseHeadersPolicyId: 5cc3b908-e619-4b99-88e5-2cf7f45965bd
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
-              - EventType: viewer-response
-                LambdaFunctionARN: !GetAtt CloudFrontResponseFunction.FunctionMetadata.FunctionARN
           - PathPattern: /resizer
             AllowedMethods:
               - GET
@@ -784,27 +783,6 @@ Resources:
     Properties:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${AWS::StackName}-media-origin-access-identity
-
-  CloudFrontResponseFunction:
-    Type: AWS::CloudFront::Function
-    Properties: 
-      AutoPublish: true
-      FunctionConfig: 
-        Comment: adding cors headers
-        Runtime: cloudfront-js-1.0
-      Name: !Sub ${AWS::StackName}-cf-response-fn
-      FunctionCode: |
-        function handler(event)  {
-          var response  = event.response;
-          var headers  = response.headers;
-
-          headers['access-control-allow-origin'] = {value: "*"};
-          headers['access-control-allow-methods'] = {value: "*"};
-          headers['access-control-allow-headers'] = {value: "authorization,content-type"};
-          headers['access-control-expose-headers'] = {value: "*"};
-
-          return response;
-        }
 
 Outputs:
   CloudFrontDistributionUrl:
