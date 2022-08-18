@@ -713,10 +713,11 @@ Resources:
             TargetOriginId:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
-            ResponseHeadersPolicyId: !Ref CloudFrontResponseHeadersPolicy
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
+              - EventType: viewer-response
+                LambdaFunctionARN: !GetAtt CloudFrontResponseFunction.FunctionMetadata.FunctionARN
           - PathPattern: /resizer
             AllowedMethods:
               - GET
@@ -784,23 +785,26 @@ Resources:
       CloudFrontOriginAccessIdentityConfig:
         Comment: !Sub ${AWS::StackName}-media-origin-access-identity
 
-  CloudFrontResponseHeadersPolicy:
-    Type: AWS::CloudFront::ResponseHeadersPolicy
-    Properties:
-      ResponseHeadersPolicyConfig:
-        CorsConfig:
-          AccessControlAllowCredentials: false
-          AccessControlAllowHeaders:
-            Items:
-              - "*"
-          AccessControlAllowMethods:
-            Items:
-              - ALL
-          AccessControlAllowOrigins:
-            Items:
-              - "*"
-          OriginOverride: true
-        Name: !Sub ${AWS::StackName}-response-headers-policy
+  CloudFrontResponseFunction:
+    Type: AWS::CloudFront::Function
+    Properties: 
+      AutoPublish: true
+      FunctionConfig: 
+        Comment: adding cors headers
+        Runtime: cloudfront-js-1.0
+      Name: !Sub ${AWS::StackName}-cf-response-fn
+      FunctionCode: |
+        function handler(event)  {
+          var response  = event.response;
+          var headers  = response.headers;
+
+          headers['access-control-allow-origin'] = {value: "*"};
+          headers['access-control-allow-methods'] = {value: "*"};
+          headers['access-control-allow-headers'] = {value: "authorization,content-type"};
+          headers['access-control-expose-headers'] = {value: "*"};
+
+          return response;
+        }
 
 Outputs:
   CloudFrontDistributionUrl:
