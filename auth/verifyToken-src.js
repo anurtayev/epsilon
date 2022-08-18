@@ -19,6 +19,11 @@ const extractCognitoParameters = (token) => {
 exports.handler = async function (event, context) {
   console.log("incoming event", JSON.stringify(event, null, 2));
   const request = event.Records[0].cf.request;
+
+  if (request.method === "OPTIONS") {
+    return request;
+  }
+
   const headers = request.headers;
   try {
     const authHeaderArray =
