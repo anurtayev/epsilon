@@ -700,7 +700,8 @@ Resources:
           CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
         DefaultRootObject: index.html
         CacheBehaviors:
-          - AllowedMethods:
+          - PathPattern: /graphql
+            AllowedMethods:
               - GET
               - HEAD
               - OPTIONS
@@ -709,7 +710,6 @@ Resources:
               - POST
               - DELETE
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
-            PathPattern: /graphql
             TargetOriginId:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
@@ -717,21 +717,21 @@ Resources:
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
-          - AllowedMethods:
+          - PathPattern: /resizer
+            AllowedMethods:
               - GET
               - HEAD
             CachePolicyId: !GetAtt ResizerCachePolicy.Id
-            PathPattern: /resizer
             TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
-          - AllowedMethods:
+          - PathPattern: /media
+            AllowedMethods:
               - GET
               - HEAD
             CachePolicyId: !GetAtt ROCachePolicy.Id
-            PathPattern: /media
             TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
             LambdaFunctionAssociations:

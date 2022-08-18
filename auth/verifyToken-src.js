@@ -21,7 +21,8 @@ exports.handler = async function (event, context) {
   const request = event.Records[0].cf.request;
 
   if (request.method === "OPTIONS") {
-    return request;
+    const { "Access-Control-Request-Headers": toBeDeleted, ...rest } = request.headers;
+    return { ...request, headers: ...rest };
   }
 
   const headers = request.headers;
