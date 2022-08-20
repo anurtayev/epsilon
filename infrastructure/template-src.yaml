@@ -35,6 +35,16 @@ Resources:
       Runtime: nodejs16.x
       CodeUri: ../auth
 
+  ViewerResponseLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      AutoPublishAlias: Live
+      Role: !GetAtt AuthLambdaRole.Arn
+      Timeout: 4
+      Handler: addHeaders.handler
+      Runtime: nodejs16.x
+      CodeUri: ../auth
+
   AuthLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -713,10 +723,11 @@ Resources:
             TargetOriginId:
               !Select [2, !Split ["/", !GetAtt AppsyncApi.GraphQLUrl]]
             ViewerProtocolPolicy: https-only
-            ResponseHeadersPolicyId: 5cc3b908-e619-4b99-88e5-2cf7f45965bd
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
+              - EventType: viewer-response
+                LambdaFunctionARN: !Ref ViewerResponseLambda.Version                
           - PathPattern: /resizer
             AllowedMethods:
               - GET
