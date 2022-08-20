@@ -23,6 +23,13 @@ exports.handler = async function (event, context) {
     },
   ];
 
+  response.headers["access-control-allow-headers"] = [
+    {
+      key: "Access-Control-Allow-Headers",
+      value: "*",
+    },
+  ];
+
   response.headers["access-control-allow-methods"] = [
     {
       key: "Access-Control-Allow-Methods",
