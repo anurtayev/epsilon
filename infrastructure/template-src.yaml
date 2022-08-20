@@ -732,22 +732,36 @@ Resources:
             AllowedMethods:
               - GET
               - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
             CachePolicyId: !GetAtt ResizerCachePolicy.Id
             TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
+              - EventType: viewer-response
+                LambdaFunctionARN: !Ref ViewerResponseLambda.Version                
           - PathPattern: /media
             AllowedMethods:
               - GET
               - HEAD
+              - OPTIONS
+              - PUT
+              - PATCH
+              - POST
+              - DELETE
             CachePolicyId: !GetAtt ROCachePolicy.Id
             TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
             LambdaFunctionAssociations:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
+              - EventType: viewer-response
+                LambdaFunctionARN: !Ref ViewerResponseLambda.Version                
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy
