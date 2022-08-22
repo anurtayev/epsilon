@@ -21,12 +21,6 @@ exports.handler = async function (event, context) {
   const request = event.Records[0].cf.request;
 
   if (request.method === "OPTIONS") {
-    console.log(
-      "==> method: OPTIONS, deleting Access-Control-Request-Headers",
-      request.headers
-    );
-    delete request.headers["Access-Control-Request-Headers"];
-    console.log("==> after deletion", request.headers);
     return request;
   }
 

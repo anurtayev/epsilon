@@ -727,7 +727,7 @@ Resources:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
               - EventType: viewer-response
-                LambdaFunctionARN: !Ref ViewerResponseLambda.Version                
+                LambdaFunctionARN: !Ref ViewerResponseLambda.Version
           - PathPattern: /resizer
             AllowedMethods:
               - GET
@@ -744,7 +744,7 @@ Resources:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
               - EventType: viewer-response
-                LambdaFunctionARN: !Ref ViewerResponseLambda.Version                
+                LambdaFunctionARN: !Ref ViewerResponseLambda.Version
           - PathPattern: /media
             AllowedMethods:
               - GET
@@ -761,7 +761,7 @@ Resources:
               - EventType: viewer-request
                 LambdaFunctionARN: !Ref AuthLambda.Version
               - EventType: viewer-response
-                LambdaFunctionARN: !Ref ViewerResponseLambda.Version                
+                LambdaFunctionARN: !Ref ViewerResponseLambda.Version
 
   ResizerCachePolicy:
     Type: AWS::CloudFront::CachePolicy
