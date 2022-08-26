@@ -141,12 +141,25 @@ Resources:
         HttpApiEvent:
           Type: HttpApi
           Properties:
-            Method: GET
             Path: /resizer
+            Method: GET
+            ApiId: !Ref ServerlessHttpApi
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref MediaBucket
           NODE_OPTIONS: --enable-source-maps
+
+  ServerlessHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowHeaders:
+          - "*"
+        AllowMethods:
+          - "*"
+        AllowOrigins:
+          - "*"
+        MaxAge: 157680000
 
   DynamoStreamProcessingLambda:
     Type: AWS::Serverless::Function
