@@ -153,12 +153,9 @@ Resources:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
-        AllowHeaders:
-          - "*"
-        AllowMethods:
-          - "*"
-        AllowOrigins:
-          - "*"
+        AllowHeaders: "*"
+        AllowMethods: "*"
+        AllowOrigins: "*"
         MaxAge: 157680000
 
   DynamoStreamProcessingLambda:
