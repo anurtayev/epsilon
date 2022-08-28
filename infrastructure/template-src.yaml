@@ -708,8 +708,8 @@ Resources:
                 - TLSv1
                 - TLSv1.1
                 - TLSv1.2
-          - Id: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
-            DomainName: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+          - Id: !Sub ${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+            DomainName: !Sub ${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
             CustomOriginConfig:
               HTTPSPort: 443
               OriginProtocolPolicy: https-only
@@ -751,7 +751,7 @@ Resources:
               - POST
               - DELETE
             CachePolicyId: !GetAtt ResizerCachePolicy.Id
-            TargetOriginId: !Sub ${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com
+            TargetOriginId: !Sub ${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
             ViewerProtocolPolicy: https-only
             LambdaFunctionAssociations:
               - EventType: viewer-request
