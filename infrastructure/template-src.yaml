@@ -149,7 +149,7 @@ Resources:
           MEDIA_BUCKET: !Ref MediaBucket
           NODE_OPTIONS: --enable-source-maps
 
-  ServerlessHttpApi:
+  HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
       CorsConfiguration:
@@ -160,7 +160,6 @@ Resources:
         AllowMethods:
           - GET
         MaxAge: 600
-        AllowCredentials: true
 
   DynamoStreamProcessingLambda:
     Type: AWS::Serverless::Function
