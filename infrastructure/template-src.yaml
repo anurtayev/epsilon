@@ -539,9 +539,9 @@ Resources:
           "key": {
             "id": $util.dynamodb.toDynamoDBJson($ctx.args.id)
           },
-        if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "DeleteItem"
-        elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
+        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && !$util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET attributes = :attributes, tags = :tags",
@@ -550,7 +550,7 @@ Resources:
               ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        #elseif (!$util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET attributes = :attributes REMOVE tags",
@@ -558,7 +558,7 @@ Resources:
               ":attributes": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.attributes)
             }
           }
-        elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
+        #elseif (!$util.isNull($ctx.args.metaDataInput.tags) && $util.isNull($ctx.args.metaDataInput.attributes))
           "operation": "UpdateItem",
           "update": {
             "expression": "SET tags = :tags REMOVE attributes",
@@ -566,14 +566,14 @@ Resources:
               ":tags": $util.dynamodb.toDynamoDBJson($ctx.args.metaDataInput.tags)
             }
           }
-        end
+        #end
         }
       ResponseMappingTemplate: |
-        if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
+        #if ($util.isNull($ctx.args.metaDataInput) || $util.isNull($ctx.args.metaDataInput.attributes) && $util.isNull($ctx.args.metaDataInput.tags))
           null
-        else
+        #else
           $util.toJson($context.result)
-        end
+        #end
 
   WebsiteHostingBucket:
     Type: AWS::S3::Bucket
