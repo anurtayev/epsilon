@@ -460,9 +460,9 @@ Resources:
       FieldName: search
       DataSourceName: !GetAtt SearchLambdaAppsyncDataSource.Name
       RequestMappingTemplate: |
-        if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
+        #if ($util.isNull($ctx.args.searchInput) || ($util.isNull($ctx.args.searchInput.filter.attributes) && $util.isNull($ctx.args.searchInput.filter.tags)))
           $util.error("search must have at least one filter specified")
-        end
+        #end
         {
           "version" : "2017-02-28",
           "operation": "Invoke",
