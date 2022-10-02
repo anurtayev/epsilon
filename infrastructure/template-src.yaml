@@ -723,7 +723,7 @@ Resources:
           CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad
         DefaultRootObject: index.html
         CacheBehaviors:
-          - PathPattern: /graphql
+          - PathPattern: graphql
             AllowedMethods:
               - GET
               - HEAD
@@ -741,7 +741,7 @@ Resources:
                 LambdaFunctionARN: !Ref AuthLambda.Version
               - EventType: viewer-response
                 LambdaFunctionARN: !Ref ViewerResponseLambda.Version
-          - PathPattern: /resizer
+          - PathPattern: resizer
             AllowedMethods:
               - GET
               - HEAD
@@ -758,15 +758,10 @@ Resources:
                 LambdaFunctionARN: !Ref AuthLambda.Version
               - EventType: viewer-response
                 LambdaFunctionARN: !Ref ViewerResponseLambda.Version
-          - PathPattern: /media
+          - PathPattern: media/*
             AllowedMethods:
               - GET
               - HEAD
-              - OPTIONS
-              - PUT
-              - PATCH
-              - POST
-              - DELETE
             CachePolicyId: !GetAtt ROCachePolicy.Id
             TargetOriginId: !GetAtt MediaBucket.DomainName
             ViewerProtocolPolicy: https-only
