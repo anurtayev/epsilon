@@ -74,7 +74,7 @@ Resources:
         Variables:
           META_TABLE:
             Ref: MetaTable
-          ALLOWED_EXTENSIONS: jpg|jpeg
+          ALLOWED_EXTENSIONS: jpg|jpeg|heic
           NODE_OPTIONS: --enable-source-maps
     Metadata:
       SamResourceId: ExifLambda
@@ -93,7 +93,7 @@ Resources:
         Variables:
           MEDIA_BUCKET:
             Ref: MediaBucket
-          ALLOWED_EXTENSIONS: jpg|jpeg
+          ALLOWED_EXTENSIONS: jpg|jpeg|heic
           NODE_OPTIONS: --enable-source-maps
     Metadata:
       SamResourceId: ListFolderLambda
