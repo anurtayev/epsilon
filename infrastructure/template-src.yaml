@@ -106,7 +106,7 @@ Resources:
       Environment:
         Variables:
           META_TABLE: !Ref MetaTable
-          ALLOWED_EXTENSIONS: jpg|jpeg
+          ALLOWED_EXTENSIONS: jpg|jpeg|heic
           NODE_OPTIONS: --enable-source-maps
 
   ListFolderLambda:
@@ -123,7 +123,7 @@ Resources:
       Environment:
         Variables:
           MEDIA_BUCKET: !Ref MediaBucket
-          ALLOWED_EXTENSIONS: jpg|jpeg
+          ALLOWED_EXTENSIONS: jpg|jpeg|heic
           NODE_OPTIONS: --enable-source-maps
 
   ResizerLambda:
